@@ -164,6 +164,7 @@ nav.nav button.on svg{filter:drop-shadow(0 3px 6px color-mix(in srgb,var(--c) 45
 .brk:last-child{border-bottom:none}.brk .q{color:var(--muted);font-variant-numeric:tabular-nums}.brk b{min-width:52px;text-align:left;font-variant-numeric:tabular-nums}
 details.card summary{cursor:pointer;font-family:var(--fd);font-weight:700;font-size:17px}
 details.card ul{margin:10px 0 0;padding-inline-start:20px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+a.btn{text-decoration:none}
 .x{background:none;border:1px solid var(--line);border-radius:10px;padding:6px 12px;font-size:14px}
 @media (prefers-reduced-motion:no-preference){.pop{animation:pop .25s ease}@keyframes pop{from{transform:scale(.97);opacity:.6}to{transform:none;opacity:1}}}
 .toast{position:fixed;inset-inline:16px;bottom:calc(84px + env(safe-area-inset-bottom,0px));margin-inline:auto;max-width:420px;background:var(--ink);color:var(--paper);padding:12px 16px;border-radius:12px;font-size:14px;text-align:center;z-index:20}
@@ -632,13 +633,20 @@ let lastQtab='kmi';
 
 /* ============ حسابات العائلات (تعمل عند ربط Firebase) ============ */
 const CLOUD=!!FB;
-const C={ready:!CLOUD,mode:null,user:null,fam:null,famDoc:null,kidId:null,unsub:null,joining:false};
+const C={ready:!CLOUD,mode:null,user:null,fam:null,famDoc:null,kidId:null,unsub:null,unsubP:null,pins:{},joining:false};
 const SESS='miran-sess';
 function sess(){try{return JSON.parse(localStorage.getItem(SESS))}catch(e){return null}}
 function setSess(v){try{v?localStorage.setItem(SESS,JSON.stringify(v)):localStorage.removeItem(SESS)}catch(e){}}
 const normCode=c=>String(c||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
 function genCode(){const a='ABCDEFGHJKMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<6;i++)s+=a[Math.floor(Math.random()*a.length)];return s}
 const fmtCode=c=>c?c.slice(0,3)+'-'+c.slice(3):'';
+const LINK=(()=>{try{const q=new URLSearchParams(location.search);const sv=q.get('s'),pv=q.get('p');if(sv||pv)history.replaceState(null,'',location.pathname);const o={};
+ if(sv){const [c,k,pin]=sv.split('.');if(c&&k&&/^\d{4}$/.test(pin||''))o.s={code:normCode(c),kid:k,pin}}if(pv)o.p=normCode(pv);return o}catch(e){return{}}})();
+const BASE=()=>location.origin+location.pathname;
+const kidLink=(code,kid,pin)=>BASE()+'?s='+code+'.'+kid+'.'+pin;
+const invLink=inv=>BASE()+'?p='+inv;
+const wa=t=>'https://wa.me/?text='+encodeURIComponent(t);
+const rndPin=()=>String(1000+Math.floor(Math.random()*9000));
 function normP(p){if(p.term>2)p.term=2;p.log=p.log||{};p.stats=p.stats||{en:{},qd:{},th:{}};['en','qd','th'].forEach(k=>p.stats[k]=p.stats[k]||{});['hard','learned','daily','days','daySecs','plan'].forEach(k=>p[k]=p[k]||{});p.mist=p.mist||[];if(p.online===undefined)p.online=true;if(!p.nick)p.nick=p.name;if(p.group==null)p.group='';return p}
 const kidsCol=()=>fb.collection('families').doc(C.fam).collection('kids');
 function authErr(e){const c=(e&&e.code)||'';
@@ -650,18 +658,28 @@ function authErr(e){const c=(e&&e.code)||'';
  if(/too-many-requests/.test(c))return 'محاولات كثيرة. انتظر قليلاً ثم حاول مرة أخرى.';
  if(/permission-denied/.test(c))return 'البيانات غير صحيحة، أو لا تملك صلاحية.';
  return 'حدث خطأ، حاول مرة أخرى.'}
-function stopKids(){if(C.unsub){C.unsub();C.unsub=null}}
+function stopKids(){if(C.unsub){C.unsub();C.unsub=null}if(C.unsubP){C.unsubP();C.unsubP=null}}
+async function linkStudent(){C.ready=false;view={name:'loading'};render();
+ try{const r=await studentFind(LINK.s.code);if(!r.kids.some(k=>k.id===LINK.s.kid))throw{code:'bad-code'};await studentJoin({famId:r.famId,kid:LINK.s.kid,code:r.code},LINK.s.pin)}
+ catch(e){C.ready=true;toast('رابط الدخول غير صالح أو قديم. اطلب رابطاً جديداً من ولي أمرك.');const ss=sess();
+  if(C.user&&C.user.isAnonymous&&ss){C.mode='student';C.fam=ss.famId;C.kidId=ss.kidId;return subKids()}go('start')}}
 async function onAuth(u){if(C.joining){C.user=u;return}
+ if(LINK.s&&!LINK.sDone){LINK.sDone=true;if(!u||u.isAnonymous){C.user=u;fbUid=u?u.uid:null;return linkStudent()}toast('هذا رابط دخول طالب. افتحه على جوال الطالب.')}
  C.user=u;fbUid=u?u.uid:null;boardKey='';stopKids();
- if(!u){C.mode=null;C.fam=null;C.famDoc=null;C.kidId=null;S={profiles:[],active:null};C.ready=true;return go('start')}
+ if(!u){C.mode=null;C.fam=null;C.famDoc=null;C.kidId=null;S={profiles:[],active:null};C.ready=true;return go(LINK.p&&!LINK.pDone?'plogin':'start')}
  if(u.isAnonymous){const ss=sess();if(!ss){if(view.name==='slogin'){C.ready=true;return}await firebase.auth().signOut();return}C.mode='student';C.fam=ss.famId;C.kidId=ss.kidId;return subKids()}
  C.mode='parent';
  try{const ud=await fb.collection('users').doc(u.uid).get();C.fam=ud.exists?ud.data().famId:null}catch(e){C.fam=null}
- if(!C.fam){C.ready=true;return go('pfam')}
+ if(LINK.p&&!LINK.pDone){LINK.pDone=true;
+  try{let ok=!C.fam;if(C.fam){const k=await famRef(C.fam).collection('kids').get();ok=k.empty}
+   if(ok){await joinInvite(LINK.p);toast('انضممت إلى حساب العائلة');return}
+   toast('حسابك مرتبط بعائلة فيها أبناء، لذلك لم ننضم للعائلة الأخرى.')}catch(e){toast('رابط الدعوة غير صالح.')}}
+ if(!C.fam){try{await createFamily();return}catch(e){C.ready=true;return go('pfam')}}
  subKids()}
 async function subKids(){stopKids();C.ready=false;render();
  if(C.mode==='parent'){try{const f=await fb.collection('families').doc(C.fam).get();C.famDoc=f.data()||null}catch(e){C.famDoc=null}}
  const onErr=e=>{C.ready=true;if(C.mode==='student'&&/permission/.test(e.code||'')){setSess(null);firebase.auth().signOut();toast('انتهى ربط هذا الجهاز. ادخل برمز العائلة مرة أخرى.')}else{toast(authErr(e));render()}};
+ if(C.mode==='parent')C.unsubP=famRef(C.fam).collection('secrets').onSnapshot(sn=>{C.pins={};sn.docs.forEach(d=>C.pins[d.id]=d.data().pin);if(view.name==='parent')render()},()=>{});
  C.unsub=C.mode==='student'?kidsCol().doc(C.kidId).onSnapshot(d=>applyKids(d.exists?[d]:[]),onErr):kidsCol().onSnapshot(sn=>applyKids(sn.docs),onErr)}
 function applyKids(docs){const loc={};S.profiles.forEach(p=>loc[p.id]=p);const busy=['quiz','flash','result'].includes(view.name);
  S.profiles=docs.map(d=>{const r=normP(Object.assign({},d.data(),{id:d.id}));const l=loc[d.id];
@@ -704,13 +722,12 @@ async function logout(){flushSave();if(C.mode==='student')setSess(null);try{awai
 /* شاشات الدخول */
 const startTop=()=>`<div class="top"><div class="brand">مِران</div></div>`;
 function vLoading(){return startTop()+`<div class="sec"><div class="card" style="text-align:center"><p style="margin:0">جارٍ التحميل…</p></div></div>`}
-function vStart(){return startTop()+band('أهلاً بك في مِران','تدريب في الإنجليزي والقدرات والتحصيلي لطلاب المرحلة المتوسطة.')+`<div class="sec">${T('أنا طالب','ادخل برمز العائلة ورقمك السري','sLogin',true)}${T('أنا ولي أمر','سجّل أو ادخل لإضافة أبنائك ومتابعة تقدّمهم','pLogin')}</div>`}
-function vPlogin(){const t=view.t||'in';return startTop()+band(t==='in'?'دخول ولي الأمر':'حساب جديد لولي الأمر',t==='in'?'ادخل بالبريد الذي سجّلت به.':'بعد إنشاء الحساب تضيف أبناءك وتحصل على رمز العائلة.')+`
- <div class="seg" style="margin-top:14px"><button type="button" class="${t==='in'?'on':''}" data-pt="in">تسجيل الدخول</button><button type="button" class="${t==='up'?'on':''}" data-pt="up">حساب جديد</button></div>
+function vStart(){return startTop()+band('أهلاً بك في مِران','تدريب في الإنجليزي والقدرات والتحصيلي لطلاب المرحلة المتوسطة.')+`<div class="sec">${T('أنا ولي أمر','ادخل ببريدك لإضافة أبنائك ومتابعة تقدّمهم','pLogin',true)}${T('أنا طالب','افتح الرابط الذي أرسله لك ولي أمرك، أو ادخل برمز العائلة','sLogin')}</div>`}
+function vPlogin(){const inv=LINK.p&&!LINK.pDone;return startTop()+band(inv?'دعوة للانضمام لعائلة':'دخول ولي الأمر',inv?'سجّل ببريدك وستنضم لحساب العائلة تلقائياً.':'أول مرة؟ اكتب بريدك واختر كلمة مرور، وسننشئ حسابك تلقائياً.')+`
  <form class="sec" id="lform"><label class="f" for="lem">البريد الإلكتروني<input type="email" id="lem" dir="ltr" autocomplete="email" required></label>
- <label class="f" for="lpw">كلمة المرور<input type="password" id="lpw" dir="ltr" minlength="6" autocomplete="${t==='in'?'current-password':'new-password'}" required></label>${t==='up'?'<span class="note">6 أحرف أو أرقام على الأقل.</span>':''}
- <p class="warn" id="lerr" hidden></p><button class="btn wide" type="submit" id="lbtn">${t==='in'?'دخول':'إنشاء الحساب'}</button>
- ${t==='in'?'<button type="button" class="x" data-act="reset" style="align-self:center">نسيت كلمة المرور؟</button>':''}<button type="button" class="btn plain wide" data-go="start">رجوع</button></form>`}
+ <label class="f" for="lpw">كلمة المرور<input type="password" id="lpw" dir="ltr" minlength="6" autocomplete="current-password" required></label><span class="note">6 أحرف أو أرقام على الأقل.</span>
+ <p class="warn" id="lerr" hidden></p><button class="btn wide" type="submit" id="lbtn">متابعة</button>
+ <button type="button" class="x" data-act="reset" style="align-self:center">نسيت كلمة المرور؟</button><button type="button" class="btn plain wide" data-go="start">رجوع</button></form>`}
 function vPfam(){return startTop()+band('حساب العائلة','خطوة أخيرة: أنشئ حساباً جديداً لعائلتك، أو انضم لعائلة موجودة برمز دعوة من ولي الأمر الآخر.')+`<div class="sec">
  ${T('إنشاء حساب عائلة جديد','أضيف فيه أبنائي، وأحصل على رمز العائلة ورمز الدعوة','createFam',true)}
  <form class="card stack" id="iform"><h3>لدي رمز دعوة</h3><label class="f" for="icode">رمز الدعوة من ولي الأمر الآخر<input type="text" id="icode" dir="ltr" autocapitalize="characters" placeholder="ABC-123" style="text-align:center;letter-spacing:.15em"></label><p class="warn" id="ierr" hidden></p><button class="btn" type="submit">انضمام</button></form>
@@ -720,12 +737,17 @@ function vSlogin(){const st=view.step||'code';
  if(st==='pick')return startTop()+band('من أنت؟','اختر اسمك.')+`<div class="sec">${view.kids.length?view.kids.map(k=>`<button class="tile" data-kid="${esc(k.id)}"><span class="av lg ${k.gender==='f'?'f':'m'}">${esc((k.name||'؟').trim()[0])}</span><span class="grow"><h3>${esc(k.name)}</h3></span><span class="go">‹</span></button>`).join(''):'<div class="card">لم يُضِف ولي الأمر أي أسماء بعد.</div>'}<button class="btn plain wide" data-act="sBack">رجوع</button></div>`;
  const k=view.kids.find(x=>x.id===view.kid)||{};
  return startTop()+band('أهلاً يا '+esc(k.name||''),'اكتب رقمك السري المكوّن من 4 أرقام.')+`<form class="sec" id="spform"><label class="f" for="spin">الرقم السري<input type="password" id="spin" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" dir="ltr" style="text-align:center;font-size:28px;letter-spacing:.5em"></label><p class="warn" id="perr" hidden></p><button class="btn wide" type="submit" id="pbtn">دخول</button><button type="button" class="btn plain wide" data-act="sBackPick">رجوع</button></form>`}
-function vFamCard(){const d=C.famDoc||{};return `${isAdm()?T('إدارة النظام','كل العائلات والطلاب: إضافة وتعديل وحذف','admin',true):''}<div class="card stack"><h3>ربط الأجهزة</h3>
- <div class="row between"><span>رمز العائلة للطلاب</span><button class="x" data-copy="${esc(fmtCode(d.code))}"><b class="m" style="font-size:18px;letter-spacing:.1em">${esc(fmtCode(d.code))}</b> نسخ</button></div>
- <p class="note" style="margin:0">على جهاز الابن: افتح التطبيق ← «أنا طالب» ← اكتب الرمز ← اختر الاسم ← الرقم السري. تحدّد الرقم السري من «تعديل» بجانب كل اسم.</p>
- <div class="row between"><span>رمز دعوة ولي أمر</span><button class="x" data-copy="${esc(fmtCode(d.invite))}"><b class="m" style="font-size:18px;letter-spacing:.1em">${esc(fmtCode(d.invite))}</b> نسخ</button></div>
- <p class="note" style="margin:0">ولي الأمر الثاني: يفتح التطبيق ← «أنا ولي أمر» ← حساب جديد ← «لدي رمز دعوة». بعدها يرى الأبناء نفسهم ويتابعهم.</p>
- <p class="note" style="margin:0">حسابك: ${esc((C.user&&C.user.email)||'')}</p><button class="btn plain" data-act="logout">تسجيل الخروج</button></div>`}
+function vFamCard(){const d=C.famDoc||{};
+ const rows=S.profiles.map(k=>{const pin=C.pins[k.id];if(!pin||!d.code)return '';const l=kidLink(d.code,k.id,pin);
+  return `<div class="li"><span class="av ${k.gender}">${esc((k.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(k.name)}</b></span><a class="btn" style="padding:8px 14px" href="${esc(wa('رابط دخولك إلى مِران يا '+k.name+' (افتحه مرة واحدة من جوالك):\n'+l))}" target="_blank" rel="noopener">واتساب</a><button class="x" data-copy="${esc(l)}">نسخ</button></div>`}).join('');
+ return `${isAdm()?T('إدارة النظام','كل العائلات والطلاب: إضافة وتعديل وحذف','admin',true):''}
+ <div class="card stack"><h3>دخول الأبناء من أجهزتهم</h3><p class="note" style="margin:0">أرسل لكل ابن رابطه. يفتحه على جواله مرة واحدة، فيدخل مباشرة ويبقى مسجّلاً بدون أي رموز.</p>${rows?`<div class="list">${rows}</div>`:'<p class="note" style="margin:0">جارٍ تجهيز الروابط…</p>'}</div>
+ <div class="card stack"><h3>ولي أمر ثانٍ</h3><p class="note" style="margin:0">أرسل له رابط الدعوة. يفتحه ويسجّل ببريده، فينضم لعائلتك تلقائياً ويتابع الأبناء معك.</p>
+ ${d.invite?`<div class="row"><a class="btn grow" href="${esc(wa('انضم لحساب عائلتنا في مِران لمتابعة الأبناء:\n'+invLink(d.invite)))}" target="_blank" rel="noopener">إرسال الدعوة واتساب</a><button class="btn plain" data-copy="${esc(invLink(d.invite))}">نسخ</button></div>`:''}</div>
+ <details class="card"><summary>الدخول اليدوي بالرمز</summary><div class="stack" style="margin-top:10px"><div class="row between"><span>رمز العائلة</span><button class="x" data-copy="${esc(fmtCode(d.code))}"><b class="m" style="letter-spacing:.1em">${esc(fmtCode(d.code))}</b> نسخ</button></div>
+ <p class="note" style="margin:0">للطالب: «أنا طالب» ← رمز العائلة ← اسمه ← رقمه السري. الرقم السري تجده في «تعديل» بجانب اسمه.</p>
+ <div class="row between"><span>رمز دعوة ولي أمر</span><b class="m" style="letter-spacing:.1em">${esc(fmtCode(d.invite))}</b></div></div></details>
+ <p class="note" style="margin:0">حسابك: ${esc((C.user&&C.user.email)||'')}</p><button class="btn plain" data-act="logout">تسجيل الخروج</button>`}
 function vStudentWho(){const p=cur();return header()+band('حسابك',p?esc(p.name)+' · '+GRADES[p.grade]:'')+`<div class="sec"><button class="btn wide" data-go="home">متابعة التدريب</button><button class="btn plain wide" data-act="logout">تسجيل الخروج من هذا الجهاز</button><p class="note">بعد الخروج تحتاج رمز العائلة ورقمك السري للدخول مرة أخرى.</p></div>`}
 
 /* ============ إدارة النظام (للمدير فقط) ============ */
@@ -795,13 +817,13 @@ function adKidForm(f,id){const v=A.form;const sg=(k,o)=>`<div class="seg">${o.ma
  <label class="f" for="adp">الرقم السري (4 أرقام)<input type="tel" inputmode="numeric" maxlength="4" id="adp" value="${esc(v.pin)}" dir="ltr" style="text-align:center;letter-spacing:.4em"></label>
  <p class="warn" id="aderr" hidden></p><div class="row"><button class="btn grow" type="submit">حفظ</button><button type="button" class="btn plain grow" data-act="adCancel">إلغاء</button></div></form>`}
 function vAdminFam(){const f=(A.fams||[]).find(x=>x.id===view.fid);if(!f)return vAdmin();
- const kids=f.kids.map(k=>A.edit===k.id?adKidForm(f,k.id):`<div class="li"><span class="av ${k.gender}">${esc((k.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(k.name)}</b><br><span class="note">${GRADES[k.grade]} · ${TERMS[k.term]||''} · الرقم السري <span class="m">${esc(k.pin||'—')}</span> · ${k.score} نقطة${k.last?' · آخر تدريب '+k.last:''}</span></span>
+ const kids=f.kids.map(k=>A.edit===k.id?adKidForm(f,k.id):`<div class="li"><span class="av ${k.gender}">${esc((k.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(k.name)}</b><br><span class="note">${GRADES[k.grade]} · ${TERMS[k.term]||''} · الرقم السري <span class="m">${esc(k.pin||'—')}</span>${k.pin?` · <button class="x" style="padding:2px 8px" data-copy="${esc(kidLink(f.code,k.id,k.pin))}">نسخ رابط الدخول</button>`:''} · ${k.score} نقطة${k.last?' · آخر تدريب '+k.last:''}</span></span>
   ${A.del===k.id?`<button class="btn danger" data-addelok="${k.id}">تأكيد الحذف</button><button class="x" data-act="adCancel">إلغاء</button>`:`<button class="x" data-adedit="${k.id}">تعديل</button><button class="x" style="color:var(--bad)" data-addel="${k.id}">حذف</button>`}</div>`).join('');
  const pars=f.parents.map(p=>`<div class="li"><span class="grow" dir="ltr" style="text-align:right">${esc(p.email||p.uid)}</span>${p.email?`<button class="x" data-adreset="${esc(p.email)}">إعادة كلمة المرور</button>`:''}<button class="x" style="color:var(--bad)" data-adrmpar="${p.uid}">إزالة</button></div>`).join('');
  return startTop()+`<div class="row" style="justify-content:flex-end;margin-bottom:10px"><button class="x" data-act="adBackList">رجوع للقائمة</button></div>`+band(esc(famTitle(f)),`${f.kids.length} طالب · ${f.devices} جهاز طالب مرتبط`)+`<div class="sec">
  <div class="card stack"><h3>الرموز</h3><div class="row between"><span>رمز العائلة للطلاب</span><button class="x" data-copy="${esc(fmtCode(f.code))}"><b class="m" style="letter-spacing:.1em">${esc(fmtCode(f.code))}</b> نسخ</button></div>
  <div class="row between"><span>رمز دعوة ولي أمر</span><button class="x" data-copy="${esc(fmtCode(f.invite))}"><b class="m" style="letter-spacing:.1em">${esc(fmtCode(f.invite))}</b> نسخ</button></div>
- <p class="note" style="margin:0">لتسجيل ولي أمر في هذه العائلة: يفتح التطبيق ← أنا ولي أمر ← حساب جديد ← «لدي رمز دعوة» ← يكتب رمز الدعوة.</p></div>
+ <div class="row"><button class="btn plain grow" data-copy="${esc(invLink(f.invite))}">نسخ رابط دعوة ولي الأمر</button></div><p class="note" style="margin:0">أرسل رابط الدعوة لولي الأمر. يفتحه ويسجّل ببريده، فينضم لهذه العائلة تلقائياً.</p></div>
  <div class="card stack"><h3>أولياء الأمور</h3>${pars?`<div class="list">${pars}</div>`:'<p class="note" style="margin:0">لم ينضم ولي أمر بعد. أرسل له رمز الدعوة.</p>'}</div>
  <div class="card stack"><div class="row between"><h3>الطلاب</h3>${A.edit?'':'<button class="x" data-act="adAdd">+ إضافة طالب</button>'}</div>${A.edit==='new'?adKidForm(f,null):''}${kids?`<div class="list">${kids}</div>`:(A.edit==='new'?'':'<p class="note" style="margin:0">لا يوجد طلاب.</p>')}</div>
  ${f.devices?`<button class="btn plain wide" data-act="adUnlink">فصل كل أجهزة الطلاب (${f.devices})</button><p class="note" style="margin:0">مفيد عند ضياع جوال: يحتاج الطالب بعدها للدخول برمز العائلة ورقمه السري من جديد.</p>`:''}
@@ -969,7 +991,7 @@ function vSetup(){const rows=view.rows;
   <div class="f stack"><b style="font-size:14px">الجنس</b>${segH('gender',[['m','ذكر'],['f','أنثى']],r.gender,`data-i="${i}"`)}</div>
   <div class="f stack"><b style="font-size:14px">الصف</b>${segH('grade',[[1,'أول متوسط'],[2,'ثاني متوسط'],[3,'ثالث متوسط']],r.grade,`data-i="${i}"`)}</div>
   <div class="f stack"><b style="font-size:14px">الفصل الدراسي</b>${segH('term',[[1,'الأول'],[2,'الثاني']],r.term,`data-i="${i}"`)}</div>
-  ${CLOUD?`<label class="f" for="rp-${i}">رقم سري من 4 أرقام (يدخل به من جهازه)<input type="tel" inputmode="numeric" maxlength="4" id="rp-${i}" class="rpin" data-i="${i}" value="${esc(r.pin||'')}" dir="ltr" style="text-align:center;letter-spacing:.4em"></label>`:''}</div>`).join('')}
+  ${CLOUD?`<label class="f" for="rp-${i}">رقم سري (اختياري، يُنشأ تلقائياً)<input type="tel" inputmode="numeric" maxlength="4" placeholder="تلقائي" id="rp-${i}" class="rpin" data-i="${i}" value="${esc(r.pin||'')}" dir="ltr" style="text-align:center;letter-spacing:.4em"></label>`:''}</div>`).join('')}
  <button type="button" class="btn ghost wide" data-act="addRow">إضافة اسم آخر</button>
  <p class="warn" id="serr" hidden>اكتب الاسم في كل خانة، أو احذف الخانة الفارغة.</p>
  <button class="btn wide" type="submit">حفظ والبدء</button>
@@ -999,7 +1021,7 @@ function render(){if(CLOUD){if(!C.ready&&view.name!=='loading')view={name:'loadi
  if(view.name==='comp'){subscribeBoard();renderBoard();const of=$('#oform');of.addEventListener('submit',e=>{e.preventDefault();const p=cur();p.nick=$('#onick').value.trim()||p.name;p.group=$('#ogrp').value.trim().toUpperCase();save();pushAll(true);boardKey='';render();const sv=$('#osaved');if(sv)sv.hidden=false})}
  bindAuthForms();bindAdmin();if(view.name==='admin'&&C.user&&C.user.emailVerified&&!A.fams&&!A.loading&&!A.err)adminLoad();
  const sf=$('#sform');if(sf)sf.addEventListener('submit',e=>{e.preventDefault();syncRows();if(view.rows.some(r=>!r.name.trim())){$('#serr').hidden=false;return}
-  if(CLOUD){if(view.rows.some(r=>!/^\d{4}$/.test(r.pin||''))){const el=$('#serr');el.textContent='اكتب رقماً سرياً من 4 أرقام لكل اسم.';el.hidden=false;return}const b=sf.querySelector('button[type=submit]');b.disabled=true;b.textContent='جارٍ الحفظ…';cloudAddKids(view.rows).then(()=>go('who')).catch(er=>{b.disabled=false;b.textContent='حفظ والبدء';toast(authErr(er))});return}
+  if(CLOUD){view.rows.forEach(r=>{if(!/^\d{4}$/.test(r.pin||''))r.pin=rndPin()});const b=sf.querySelector('button[type=submit]');b.disabled=true;b.textContent='جارٍ الحفظ…';cloudAddKids(view.rows).then(()=>go('who')).catch(er=>{b.disabled=false;b.textContent='حفظ والبدء';toast(authErr(er))});return}
   view.rows.forEach(r=>S.profiles.push(newP(r.name.trim(),r.gender,r.grade,r.term)));save();go('who')});
  const f=$('#pform');if(f)f.addEventListener('submit',e=>{e.preventDefault();const nm=$('#pname').value.trim();if(!nm){$('#ferr').hidden=false;return}view.f.name=nm;
   if(CLOUD&&view.editId){const pin=($('#fpin')||{}).value||'';if(pin&&!/^\d{4}$/.test(pin)){const el=$('#ferr');el.textContent='الرقم السري 4 أرقام.';el.hidden=false;return}cloudEditKid(view.editId,{name:nm,gender:view.f.gender,grade:view.f.grade,term:view.f.term,daily:{}},pin).then(()=>go('parent')).catch(er=>toast(authErr(er)));return}
@@ -1010,7 +1032,8 @@ function render(){if(CLOUD){if(!C.ready&&view.name!=='loading')view={name:'loadi
 
 function bindAuthForms(){
  const lf=$('#lform');if(lf)lf.addEventListener('submit',e=>{e.preventDefault();const em=$('#lem').value.trim(),pw=$('#lpw').value;const b=$('#lbtn'),er=$('#lerr');b.disabled=true;er.hidden=true;
-  const A=firebase.auth();(view.t==='up'?A.createUserWithEmailAndPassword(em,pw):A.signInWithEmailAndPassword(em,pw)).catch(x=>{b.disabled=false;er.textContent=authErr(x);er.hidden=false})});
+  const FA=firebase.auth();FA.createUserWithEmailAndPassword(em,pw).catch(x=>{if(/email-already-in-use/.test(x.code||''))return FA.signInWithEmailAndPassword(em,pw).catch(y=>{throw /invalid-credential|wrong-password|invalid-login/.test(y.code||'')?{code:'x-wrongpw'}:y});throw x})
+   .catch(x=>{b.disabled=false;er.textContent=x.code==='x-wrongpw'?'كلمة المرور غير صحيحة لهذا البريد. اضغط «نسيت كلمة المرور» إن احتجت.':authErr(x);er.hidden=false})});
  const inf=$('#iform');if(inf)inf.addEventListener('submit',e=>{e.preventDefault();const er=$('#ierr');er.hidden=true;if(normCode($('#icode').value).length<6){er.textContent='اكتب رمز الدعوة المكوّن من 6 أحرف وأرقام، أو اختر «إنشاء حساب عائلة جديد» إذا كنت أول ولي أمر.';er.hidden=false;return}joinInvite($('#icode').value).catch(x=>{er.textContent=x&&x.code==='bad-invite'?'رمز الدعوة غير صحيح.':authErr(x);er.hidden=false})});
  const scf=$('#scform');if(scf)scf.addEventListener('submit',e=>{e.preventDefault();const raw=$('#fcode').value,er=$('#serr2');er.hidden=true;if(normCode(raw).length<6){er.textContent='اكتب رمز العائلة المكوّن من 6 أحرف وأرقام.';er.hidden=false;return}
   studentFind(raw).then(r=>go('slogin',Object.assign({step:'pick'},r))).catch(x=>{er.textContent=x&&x.code==='bad-code'?'رمز العائلة غير صحيح. تأكّد منه مع ولي أمرك.':authErr(x);er.hidden=false})});
@@ -1051,7 +1074,7 @@ function act(a){const p=cur();
  case 'adVerify':C.user.sendEmailVerification().then(()=>toast('أرسلنا رابط التأكيد إلى بريدك.')).catch(e=>toast(authErr(e)));break;
  case 'adRefresh':C.user.reload().then(()=>C.user.getIdToken(true)).then(()=>{C.user=firebase.auth().currentUser;if(!C.user.emailVerified)toast('لم يُؤكَّد البريد بعد. افتح الرابط في رسالة Firebase ثم حاول مرة أخرى.');render()}).catch(e=>toast(authErr(e)));break;
  case 'adNewFam':adBusy(async()=>{const id=await adminCreateFam();view.fid=id},'أُنشئت العائلة').then(()=>{if(view.fid)go('adminFam',{fid:view.fid})});break;
- case 'adAdd':A.edit='new';A.form={name:'',gender:'m',grade:1,term:1,pin:String(Math.floor(1000+Math.random()*9000))};render();break;
+ case 'adAdd':A.edit='new';A.form={name:'',gender:'m',grade:1,term:1,pin:rndPin()};render();break;
  case 'adCancel':A.edit=null;A.form=null;A.del=null;A.delFam=false;render();break;
  case 'adUnlink':adBusy(()=>adminUnlink(view.fid),'تم فصل الأجهزة');break;
  case 'adDelFam':A.delFam=true;render();break;
@@ -1098,7 +1121,7 @@ function act(a){const p=cur();
 
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;
  if(d.say){speak(d.say);return}
- if(d.copy){const t=d.copy;try{navigator.clipboard.writeText(t).then(()=>toast('تم النسخ: '+t),()=>toast(t))}catch(e){toast(t)}return}
+ if(d.copy){const t=d.copy;try{navigator.clipboard.writeText(t).then(()=>toast(t.length>24?'تم نسخ الرابط':'تم النسخ: '+t),()=>toast(t))}catch(e){toast(t)}return}
  if(d.pt){go('plogin',{t:d.pt});return}
  if(d.afam){A.edit=null;A.del=null;A.delFam=false;go('adminFam',{fid:d.afam,q:view.q});return}
  if(d.adedit){const f=A.fams.find(x=>x.id===view.fid),k=f&&f.kids.find(x=>x.id===d.adedit);if(!k)return;A.edit=k.id;A.del=null;A.form={name:k.name,gender:k.gender,grade:k.grade,term:k.term||1,pin:k.pin||''};render();return}
