@@ -1,0 +1,77 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signed() { return request.auth != null; }
+    function notAnon() { return signed() && request.auth.token.firebase.sign_in_provider != 'anonymous'; }
+    function famPath(f) { return /databases/$(database)/documents/families/$(f); }
+    function memPath(f) { return /databases/$(database)/documents/families/$(f)/members/$(request.auth.uid); }
+    function isMember(f) { return signed() && exists(memPath(f)); }
+    function isParent(f) { return isMember(f) && get(memPath(f)).data.role == 'parent'; }
+    // مدير النظام: بريده مؤكَّد فقط
+    function isAdmin() { return signed() && request.auth.token.email == 'alfifitop2015@gmail.com' && request.auth.token.email_verified == true; }
+    function isKid(f, k) { return isMember(f) && get(memPath(f)).data.role == 'student' && get(memPath(f)).data.kidId == k; }
+
+    // حساب ولي الأمر: يحفظ رقم عائلته فقط
+    match /users/{uid} {
+      allow read, write: if notAnon() && request.auth.uid == uid;
+      allow read, write: if isAdmin();
+    }
+
+    // رموز العائلة ورموز الدعوة: تُقرأ بالرمز فقط ولا يمكن استعراضها كلها
+    match /codes/{code} {
+      allow get: if true;
+      allow list: if false;
+      allow create: if isParent(request.resource.data.famId);
+      allow update: if isParent(resource.data.famId) && request.resource.data.famId == resource.data.famId;
+      allow delete: if isParent(resource.data.famId);
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /families/{f} {
+      allow create: if notAnon() && request.resource.data.owner == request.auth.uid;
+      allow read, update: if isParent(f);
+      allow read, write: if isAdmin();
+
+      // أعضاء العائلة: أولياء الأمور وأجهزة الطلاب
+      match /members/{uid} {
+        allow read: if isParent(f) || (signed() && request.auth.uid == uid);
+        allow create, update: if signed() && request.auth.uid == uid && (
+          (request.resource.data.role == 'parent' && notAnon() && (
+              get(famPath(f)).data.owner == uid
+              || request.resource.data.invite == get(famPath(f)).data.invite))
+          || (request.resource.data.role == 'student'
+              && request.resource.data.code == get(famPath(f)).data.code
+              && request.resource.data.pin == get(/databases/$(database)/documents/families/$(f)/secrets/$(request.resource.data.kidId)).data.pin)
+        );
+        allow delete: if isParent(f) || (signed() && request.auth.uid == uid);
+        allow read, write: if isAdmin();
+      }
+
+      // ملفات الأبناء وتقدّمهم: ولي الأمر يرى الجميع، والطالب يرى ملفه فقط
+      match /kids/{k} {
+        allow read, write: if isParent(f) || isKid(f, k) || isAdmin();
+      }
+
+      // الأرقام السرية: لأولياء الأمور فقط
+      match /secrets/{k} {
+        allow read, write: if isParent(f) || isAdmin();
+      }
+    }
+
+    // لوحة الترتيب العامة
+    match /players/{id} {
+      allow read: if true;
+      allow create, update: if (isParent(request.resource.data.famId) || isKid(request.resource.data.famId, request.resource.data.kidId))
+        && id == request.resource.data.famId + '_' + request.resource.data.kidId
+        && request.resource.data.nick is string
+        && request.resource.data.nick.size() > 0
+        && request.resource.data.nick.size() <= 20
+        && request.resource.data.group is string
+        && request.resource.data.group.size() <= 20
+        && request.resource.data.total is int
+        && request.resource.data.total >= 0;
+      allow delete: if isParent(resource.data.famId) || isKid(resource.data.famId, resource.data.kidId) || isAdmin();
+    }
+  }
+}

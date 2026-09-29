@@ -677,7 +677,7 @@ function cloudSave(){if(!fb||!C.fam)return;const p=cur();if(!p)return;clearTimeo
  csT=setTimeout(()=>{const q=S.profiles.find(x=>x.id===id);if(!q)return;const d=JSON.parse(JSON.stringify(q));delete d.id;kidsCol().doc(id).set(d).catch(()=>{})},4000)}
 function flushSave(){if(csT){clearTimeout(csT);csT=null;const p=cur();if(p&&fb&&C.fam){const d=JSON.parse(JSON.stringify(p));delete d.id;kidsCol().doc(p.id).set(d).catch(()=>{})}}}
 async function createFamily(){const u=C.user;const ref=fb.collection('families').doc();const code=genCode(),inv=genCode();
- await ref.set({owner:u.uid,code,invite:inv,created:Date.now()});
+ await ref.set({owner:u.uid,ownerEmail:u.email||'',code,invite:inv,created:Date.now()});
  await ref.collection('members').doc(u.uid).set({role:'parent',email:u.email||''});
  await fb.collection('codes').doc(code).set({famId:ref.id,type:'student',kids:[]});
  await fb.collection('codes').doc(inv).set({famId:ref.id,type:'invite'});
@@ -687,8 +687,7 @@ async function joinInvite(raw){const code=normCode(raw);const c=await fb.collect
  if(!c.exists||c.data().type!=='invite')throw{code:'bad-invite'};const f=c.data().famId;
  await fb.collection('families').doc(f).collection('members').doc(C.user.uid).set({role:'parent',invite:code,email:C.user.email||''});
  await fb.collection('users').doc(C.user.uid).set({famId:f});C.fam=f;return subKids()}
-async function syncCodeKids(){const code=C.famDoc&&C.famDoc.code;if(!code)return;const sn=await kidsCol().get();
- await fb.collection('codes').doc(code).update({kids:sn.docs.map(d=>({id:d.id,name:d.data().name,gender:d.data().gender}))})}
+async function syncCodeKids(){return famSyncCode(C.fam)}
 async function cloudAddKids(rows){const f=fb.collection('families').doc(C.fam);
  for(const r of rows){const p=newP(r.name.trim(),r.gender,r.grade,r.term);const d=JSON.parse(JSON.stringify(p));delete d.id;await f.collection('secrets').doc(p.id).set({pin:r.pin});await f.collection('kids').doc(p.id).set(d)}
  await syncCodeKids()}
@@ -715,19 +714,104 @@ function vPlogin(){const t=view.t||'in';return startTop()+band(t==='in'?'دخو�
 function vPfam(){return startTop()+band('حساب العائلة','خطوة أخيرة: أنشئ حساباً جديداً لعائلتك، أو انضم لعائلة موجودة برمز دعوة من ولي الأمر الآخر.')+`<div class="sec">
  ${T('إنشاء حساب عائلة جديد','أضيف فيه أبنائي، وأحصل على رمز العائلة ورمز الدعوة','createFam',true)}
  <form class="card stack" id="iform"><h3>لدي رمز دعوة</h3><label class="f" for="icode">رمز الدعوة من ولي الأمر الآخر<input type="text" id="icode" dir="ltr" autocapitalize="characters" placeholder="ABC-123" style="text-align:center;letter-spacing:.15em"></label><p class="warn" id="ierr" hidden></p><button class="btn" type="submit">انضمام</button></form>
- <button class="btn plain wide" data-act="logout">تسجيل الخروج</button></div>`}
+ ${isAdm()?T('إدارة النظام','كل العائلات والطلاب: إضافة وتعديل وحذف','admin'):''}<button class="btn plain wide" data-act="logout">تسجيل الخروج</button></div>`}
 function vSlogin(){const st=view.step||'code';
  if(st==='code')return startTop()+band('دخول الطالب','اطلب رمز العائلة من ولي أمرك.')+`<form class="sec" id="scform"><label class="f" for="fcode">رمز العائلة<input type="text" id="fcode" dir="ltr" autocapitalize="characters" placeholder="ABC-123" style="text-align:center;font-size:24px;letter-spacing:.2em" value="${esc(view.raw||'')}"></label><p class="warn" id="serr2" hidden></p><button class="btn wide" type="submit">التالي</button><button type="button" class="btn plain wide" data-go="start">رجوع</button></form>`;
  if(st==='pick')return startTop()+band('من أنت؟','اختر اسمك.')+`<div class="sec">${view.kids.length?view.kids.map(k=>`<button class="tile" data-kid="${esc(k.id)}"><span class="av lg ${k.gender==='f'?'f':'m'}">${esc((k.name||'؟').trim()[0])}</span><span class="grow"><h3>${esc(k.name)}</h3></span><span class="go">‹</span></button>`).join(''):'<div class="card">لم يُضِف ولي الأمر أي أسماء بعد.</div>'}<button class="btn plain wide" data-act="sBack">رجوع</button></div>`;
  const k=view.kids.find(x=>x.id===view.kid)||{};
  return startTop()+band('أهلاً يا '+esc(k.name||''),'اكتب رقمك السري المكوّن من 4 أرقام.')+`<form class="sec" id="spform"><label class="f" for="spin">الرقم السري<input type="password" id="spin" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" dir="ltr" style="text-align:center;font-size:28px;letter-spacing:.5em"></label><p class="warn" id="perr" hidden></p><button class="btn wide" type="submit" id="pbtn">دخول</button><button type="button" class="btn plain wide" data-act="sBackPick">رجوع</button></form>`}
-function vFamCard(){const d=C.famDoc||{};return `<div class="card stack"><h3>ربط الأجهزة</h3>
+function vFamCard(){const d=C.famDoc||{};return `${isAdm()?T('إدارة النظام','كل العائلات والطلاب: إضافة وتعديل وحذف','admin',true):''}<div class="card stack"><h3>ربط الأجهزة</h3>
  <div class="row between"><span>رمز العائلة للطلاب</span><button class="x" data-copy="${esc(fmtCode(d.code))}"><b class="m" style="font-size:18px;letter-spacing:.1em">${esc(fmtCode(d.code))}</b> نسخ</button></div>
  <p class="note" style="margin:0">على جهاز الابن: افتح التطبيق ← «أنا طالب» ← اكتب الرمز ← اختر الاسم ← الرقم السري. تحدّد الرقم السري من «تعديل» بجانب كل اسم.</p>
  <div class="row between"><span>رمز دعوة ولي أمر</span><button class="x" data-copy="${esc(fmtCode(d.invite))}"><b class="m" style="font-size:18px;letter-spacing:.1em">${esc(fmtCode(d.invite))}</b> نسخ</button></div>
  <p class="note" style="margin:0">ولي الأمر الثاني: يفتح التطبيق ← «أنا ولي أمر» ← حساب جديد ← «لدي رمز دعوة». بعدها يرى الأبناء نفسهم ويتابعهم.</p>
  <p class="note" style="margin:0">حسابك: ${esc((C.user&&C.user.email)||'')}</p><button class="btn plain" data-act="logout">تسجيل الخروج</button></div>`}
 function vStudentWho(){const p=cur();return header()+band('حسابك',p?esc(p.name)+' · '+GRADES[p.grade]:'')+`<div class="sec"><button class="btn wide" data-go="home">متابعة التدريب</button><button class="btn plain wide" data-act="logout">تسجيل الخروج من هذا الجهاز</button><p class="note">بعد الخروج تحتاج رمز العائلة ورقمك السري للدخول مرة أخرى.</p></div>`}
+
+/* ============ إدارة النظام (للمدير فقط) ============ */
+const ADMIN_EMAIL='alfifitop2015@gmail.com';
+const ADMV=['admin','adminFam'];
+const isAdm=()=>CLOUD&&C.user&&!C.user.isAnonymous&&(C.user.email||'').toLowerCase()===ADMIN_EMAIL;
+const A={loading:false,fams:null,err:null,edit:null,form:null,del:null,delFam:false};
+const famRef=f=>fb.collection('families').doc(f);
+async function famSyncCode(f){const fd=(await famRef(f).get()).data()||{};if(!fd.code)return;const sn=await famRef(f).collection('kids').get();
+ await fb.collection('codes').doc(fd.code).set({famId:f,type:'student',kids:sn.docs.map(d=>({id:d.id,name:d.data().name,gender:d.data().gender}))})}
+async function adminLoad(){A.loading=true;render();
+ try{const sn=await fb.collection('families').get();const fams=[];
+  for(const d of sn.docs){const r=famRef(d.id);const f=Object.assign({id:d.id},d.data());
+   const [m,k,s]=await Promise.all([r.collection('members').get(),r.collection('kids').get(),r.collection('secrets').get()]);
+   f.parents=m.docs.filter(x=>x.data().role==='parent').map(x=>({uid:x.id,email:x.data().email||''}));
+   f.devices=m.docs.filter(x=>x.data().role==='student').length;
+   const pins={};s.docs.forEach(x=>pins[x.id]=x.data().pin);
+   f.kids=k.docs.map(x=>{const p=normP(Object.assign({},x.data(),{id:x.id}));return{id:x.id,name:p.name,gender:p.gender,grade:p.grade,term:p.term,pin:pins[x.id]||'',score:lifetime(p),last:Object.keys(p.log).sort().pop()||''}});
+   fams.push(f)}
+  fams.sort((a,b)=>(b.created||0)-(a.created||0));A.fams=fams;A.err=null}
+ catch(e){A.err=authErr(e)}
+ A.loading=false;render()}
+async function adminCreateFam(){const ref=fb.collection('families').doc();const code=genCode(),inv=genCode();
+ await ref.set({owner:C.user.uid,ownerEmail:'',code,invite:inv,created:Date.now(),byAdmin:true});
+ await fb.collection('codes').doc(code).set({famId:ref.id,type:'student',kids:[]});
+ await fb.collection('codes').doc(inv).set({famId:ref.id,type:'invite'});return ref.id}
+async function adminSaveKid(f,id,v){const r=famRef(f);
+ if(!id){const p=newP(v.name,v.gender,v.grade,v.term);const d=JSON.parse(JSON.stringify(p));delete d.id;await r.collection('secrets').doc(p.id).set({pin:v.pin});await r.collection('kids').doc(p.id).set(d)}
+ else{await r.collection('kids').doc(id).update({name:v.name,gender:v.gender,grade:v.grade,term:v.term,daily:{}});await r.collection('secrets').doc(id).set({pin:v.pin})}
+ await famSyncCode(f)}
+async function adminDelKid(f,id){const r=famRef(f);await r.collection('kids').doc(id).delete();await r.collection('secrets').doc(id).delete().catch(()=>{});
+ await fb.collection('players').doc(f+'_'+id).delete().catch(()=>{});
+ const m=await r.collection('members').get();for(const d of m.docs)if(d.data().kidId===id)await r.collection('members').doc(d.id).delete();
+ await famSyncCode(f)}
+async function adminRmParent(f,uid){await famRef(f).collection('members').doc(uid).delete();await fb.collection('users').doc(uid).delete().catch(()=>{})}
+async function adminUnlink(f){const r=famRef(f);const m=await r.collection('members').get();for(const d of m.docs)if(d.data().role==='student')await r.collection('members').doc(d.id).delete()}
+async function adminDelFam(f){const r=famRef(f);const [m,k,s]=await Promise.all([r.collection('members').get(),r.collection('kids').get(),r.collection('secrets').get()]);
+ for(const d of k.docs){await r.collection('kids').doc(d.id).delete();await fb.collection('players').doc(f+'_'+d.id).delete().catch(()=>{})}
+ for(const d of s.docs)await r.collection('secrets').doc(d.id).delete();
+ for(const d of m.docs){if(d.data().role==='parent')await fb.collection('users').doc(d.id).delete().catch(()=>{});await r.collection('members').doc(d.id).delete()}
+ const fd=(await r.get()).data()||{};if(fd.code)await fb.collection('codes').doc(fd.code).delete().catch(()=>{});if(fd.invite)await fb.collection('codes').doc(fd.invite).delete().catch(()=>{});
+ await r.delete()}
+function adBusy(fn,okMsg){const bs=[...document.querySelectorAll('#app button')];bs.forEach(b=>b.disabled=true);
+ return fn().then(()=>{if(okMsg)toast(okMsg);return adminLoad()}).catch(e=>{bs.forEach(b=>b.disabled=false);toast(authErr(e))})}
+const famTitle=f=>f.parents.length?f.parents.map(p=>p.email||'ولي أمر').join('، '):'عائلة بدون ولي أمر بعد';
+function vAdmin(){const u=C.user;const back=`<div class="row" style="justify-content:flex-end;margin-bottom:10px"><button class="x" data-act="adBack">رجوع</button></div>`;
+ if(!u.emailVerified)return startTop()+back+band('إدارة النظام','خطوة أمان لمرة واحدة.')+`<div class="sec"><div class="card stack"><p style="margin:0">لتفعيل صلاحيات المدير يجب تأكيد بريدك <b dir="ltr">${esc(u.email)}</b>.</p>
+  <button class="btn" data-act="adVerify">أرسل رابط التأكيد إلى بريدي</button><p class="note" style="margin:0">افتح الرسالة من Firebase في بريدك واضغط الرابط، ثم ارجع هنا.</p><button class="btn plain" data-act="adRefresh">أكّدت بريدي</button></div></div>`;
+ let body;
+ if(A.err)body=`<div class="warn stack">${esc(A.err)}<span class="note">تأكد أنك نشرت قواعد الحماية الجديدة في Firebase.</span><button class="btn plain" data-act="adReload">إعادة المحاولة</button></div>`;
+ else if(!A.fams)body=`<div class="card">جارٍ تحميل العائلات…</div>`;
+ else{const kids=A.fams.reduce((n,f)=>n+f.kids.length,0),par=A.fams.reduce((n,f)=>n+f.parents.length,0);
+  body=`<div class="stats"><div class="stat" style="--c:var(--home)"><b>${A.fams.length}</b><span>عائلة</span></div><div class="stat" style="--c:var(--en)"><b>${par}</b><span>ولي أمر</span></div><div class="stat" style="--c:var(--th)"><b>${kids}</b><span>طالب</span></div></div>
+  ${T('إنشاء عائلة لشخص آخر','تضيف طلابها بنفسك، وترسل رمز الدعوة لولي الأمر ليسجّل وينضم','adNewFam',true)}
+  <label class="f" for="adq">بحث بالبريد أو اسم الطالب أو الرمز<input type="text" id="adq" value="${esc(view.q||'')}" placeholder="ابحث…"></label>
+  <div class="stack" id="adlist">${adList()}</div>
+  <button class="btn plain wide" data-act="adReload">تحديث القائمة</button>`}
+ return startTop()+back+band('إدارة النظام','كل العائلات والطلاب في التطبيق. هذه الصفحة تظهر لك فقط.')+`<div class="sec">${body}</div>`}
+function adList(){const q=(view.q||'').trim().toLowerCase();const fs=A.fams.filter(f=>!q||[famTitle(f),f.code,f.invite,fmtCode(f.code),...f.kids.map(k=>k.name)].join(' ').toLowerCase().includes(q));
+ return fs.length?fs.map(f=>`<button class="tile" data-afam="${f.id}"><span class="grow"><h3 dir="auto" style="text-align:start">${esc(famTitle(f))}${f.id===C.fam?' <span class="chip">عائلتك</span>':''}</h3><span class="meta">${f.kids.length?f.kids.map(k=>esc(k.name)).join('، '):'لا يوجد طلاب'} · رمز <span class="m">${esc(fmtCode(f.code))}</span></span></span><span class="go">‹</span></button>`).join(''):'<div class="card">لا توجد نتائج.</div>'}
+function adKidForm(f,id){const v=A.form;const sg=(k,o)=>`<div class="seg">${o.map(([x,l])=>`<button type="button" class="${v[k]===x?'on':''}" data-adset="${k}" data-v="${x}">${l}</button>`).join('')}</div>`;
+ return `<form class="card stack" id="adkform"><h3>${id?'تعديل الطالب':'إضافة طالب'}</h3>
+ <label class="f" for="adn">الاسم<input type="text" id="adn" maxlength="20" value="${esc(v.name)}"></label>
+ <div class="f stack"><b style="font-size:14px">الجنس</b>${sg('gender',[['m','ذكر'],['f','أنثى']])}</div>
+ <div class="f stack"><b style="font-size:14px">الصف</b>${sg('grade',[[1,'أول متوسط'],[2,'ثاني متوسط'],[3,'ثالث متوسط']])}</div>
+ <div class="f stack"><b style="font-size:14px">الفصل الدراسي</b>${sg('term',[[1,'الأول'],[2,'الثاني']])}</div>
+ <label class="f" for="adp">الرقم السري (4 أرقام)<input type="tel" inputmode="numeric" maxlength="4" id="adp" value="${esc(v.pin)}" dir="ltr" style="text-align:center;letter-spacing:.4em"></label>
+ <p class="warn" id="aderr" hidden></p><div class="row"><button class="btn grow" type="submit">حفظ</button><button type="button" class="btn plain grow" data-act="adCancel">إلغاء</button></div></form>`}
+function vAdminFam(){const f=(A.fams||[]).find(x=>x.id===view.fid);if(!f)return vAdmin();
+ const kids=f.kids.map(k=>A.edit===k.id?adKidForm(f,k.id):`<div class="li"><span class="av ${k.gender}">${esc((k.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(k.name)}</b><br><span class="note">${GRADES[k.grade]} · ${TERMS[k.term]||''} · الرقم السري <span class="m">${esc(k.pin||'—')}</span> · ${k.score} نقطة${k.last?' · آخر تدريب '+k.last:''}</span></span>
+  ${A.del===k.id?`<button class="btn danger" data-addelok="${k.id}">تأكيد الحذف</button><button class="x" data-act="adCancel">إلغاء</button>`:`<button class="x" data-adedit="${k.id}">تعديل</button><button class="x" style="color:var(--bad)" data-addel="${k.id}">حذف</button>`}</div>`).join('');
+ const pars=f.parents.map(p=>`<div class="li"><span class="grow" dir="ltr" style="text-align:right">${esc(p.email||p.uid)}</span>${p.email?`<button class="x" data-adreset="${esc(p.email)}">إعادة كلمة المرور</button>`:''}<button class="x" style="color:var(--bad)" data-adrmpar="${p.uid}">إزالة</button></div>`).join('');
+ return startTop()+`<div class="row" style="justify-content:flex-end;margin-bottom:10px"><button class="x" data-act="adBackList">رجوع للقائمة</button></div>`+band(esc(famTitle(f)),`${f.kids.length} طالب · ${f.devices} جهاز طالب مرتبط`)+`<div class="sec">
+ <div class="card stack"><h3>الرموز</h3><div class="row between"><span>رمز العائلة للطلاب</span><button class="x" data-copy="${esc(fmtCode(f.code))}"><b class="m" style="letter-spacing:.1em">${esc(fmtCode(f.code))}</b> نسخ</button></div>
+ <div class="row between"><span>رمز دعوة ولي أمر</span><button class="x" data-copy="${esc(fmtCode(f.invite))}"><b class="m" style="letter-spacing:.1em">${esc(fmtCode(f.invite))}</b> نسخ</button></div>
+ <p class="note" style="margin:0">لتسجيل ولي أمر في هذه العائلة: يفتح التطبيق ← أنا ولي أمر ← حساب جديد ← «لدي رمز دعوة» ← يكتب رمز الدعوة.</p></div>
+ <div class="card stack"><h3>أولياء الأمور</h3>${pars?`<div class="list">${pars}</div>`:'<p class="note" style="margin:0">لم ينضم ولي أمر بعد. أرسل له رمز الدعوة.</p>'}</div>
+ <div class="card stack"><div class="row between"><h3>الطلاب</h3>${A.edit?'':'<button class="x" data-act="adAdd">+ إضافة طالب</button>'}</div>${A.edit==='new'?adKidForm(f,null):''}${kids?`<div class="list">${kids}</div>`:(A.edit==='new'?'':'<p class="note" style="margin:0">لا يوجد طلاب.</p>')}</div>
+ ${f.devices?`<button class="btn plain wide" data-act="adUnlink">فصل كل أجهزة الطلاب (${f.devices})</button><p class="note" style="margin:0">مفيد عند ضياع جوال: يحتاج الطالب بعدها للدخول برمز العائلة ورقمه السري من جديد.</p>`:''}
+ ${A.delFam?`<div class="warn stack">سيُحذف كل شيء في هذه العائلة: الطلاب وتقدّمهم وأولياء الأمور والرموز. لا يمكن التراجع.<div class="row"><button class="btn danger" data-act="adDelFamOk">نعم، احذف العائلة</button><button class="btn plain" data-act="adCancel">إلغاء</button></div></div>`:`<button class="btn plain wide" style="color:var(--bad)" data-act="adDelFam">حذف العائلة بالكامل</button>`}
+ <p class="note">حسابات البريد نفسها تبقى مسجّلة في Firebase. لحذفها نهائياً: Firebase ← Authentication ← Users.</p></div>`}
+function bindAdmin(){const q=$('#adq');if(q)q.addEventListener('input',()=>{view.q=q.value;const l=$('#adlist');if(l)l.innerHTML=adList()});
+ const kf=$('#adkform');if(kf)kf.addEventListener('submit',e=>{e.preventDefault();adSync();const v=A.form,er=$('#aderr');
+  if(!v.name.trim()){er.textContent='اكتب الاسم.';er.hidden=false;return}if(!/^\d{4}$/.test(v.pin)){er.textContent='الرقم السري 4 أرقام.';er.hidden=false;return}
+  const id=A.edit==='new'?null:A.edit;const f=view.fid;v.name=v.name.trim();adBusy(()=>adminSaveKid(f,id,v),'تم الحفظ').then(()=>{A.edit=null;A.form=null;render()})})}
+function adSync(){const n=$('#adn'),p=$('#adp');if(A.form){if(n)A.form.name=n.value;if(p)A.form.pin=p.value.trim()}}
 
 /* ============ الحالة والتنقل ============ */
 let view={name:'who'};
@@ -904,16 +988,16 @@ function vForm(){const f=view.f;const seg=(key,opts)=>`<div class="seg" role="ra
 function secOf(){const n=view.name;if(['en','flash','hard','readList'].includes(n))return 'en';if(n==='qd'||n==='mist')return(lastQtab==='t'||lastQtab==='thl')?'th':'qd';if((n==='quiz'||n==='result')&&view.q&&view.q.items[0])return view.q.items[0].sec;if(n==='comp')return 'cp';return ''}
 function band(t,sub){return `<div class="band"><h1>${t}</h1>${sub?`<p class="sub">${sub}</p>`:''}</div>`}
 const AUTHV=['start','plogin','pfam','slogin','loading'];
-function render(){if(CLOUD){if(!C.ready&&view.name!=='loading')view={name:'loading'};else if(C.ready&&!C.user&&!['start','plogin','slogin'].includes(view.name))view={name:'start'};else if(C.ready&&C.mode==='parent'&&!C.fam&&view.name!=='pfam')view={name:'pfam'}}
- const p=cur();document.body.dataset.sec=secOf();if(!AUTHV.includes(view.name)&&(!CLOUD||(C.mode==='parent'&&C.fam))&&!S.profiles.length&&view.name!=='setup'){view={name:'setup',rows:[{name:'',gender:'m',grade:1,term:1}]}}
+function render(){if(CLOUD){if(!C.ready&&view.name!=='loading')view={name:'loading'};else if(C.ready&&!C.user&&!['start','plogin','slogin'].includes(view.name))view={name:'start'};else if(C.ready&&C.mode==='parent'&&!C.fam&&!['pfam',...ADMV].includes(view.name))view={name:'pfam'}}
+ const p=cur();document.body.dataset.sec=secOf();if(!AUTHV.includes(view.name)&&!ADMV.includes(view.name)&&(!CLOUD||(C.mode==='parent'&&C.fam))&&!S.profiles.length&&view.name!=='setup'){view={name:'setup',rows:[{name:'',gender:'m',grade:1,term:1}]}}
  document.body.dataset.g=(view.name==='form'?view.f.gender:view.name==='setup'?'m':(p?p.gender:'m'));
- const map={start:vStart,plogin:vPlogin,pfam:vPfam,slogin:vSlogin,loading:vLoading,who:vWho,home:vHome,en:vEn,qd:vQd,flash:vFlash,readList:vReadList,hard:vHard,mist:vMist,quiz:vQuiz,result:vResult,parent:vParent,form:vForm,setup:vSetup,comp:vComp};
+ const map={admin:vAdmin,adminFam:vAdminFam,start:vStart,plogin:vPlogin,pfam:vPfam,slogin:vSlogin,loading:vLoading,who:vWho,home:vHome,en:vEn,qd:vQd,flash:vFlash,readList:vReadList,hard:vHard,mist:vMist,quiz:vQuiz,result:vResult,parent:vParent,form:vForm,setup:vSetup,comp:vComp};
  app.innerHTML=(map[view.name]||vWho)();
- const nav=$('#nav');nav.hidden=!p||['who','form','quiz','setup',...AUTHV].includes(view.name);document.body.classList.toggle('has-nav',!nav.hidden);
+ const nav=$('#nav');nav.hidden=!p||['who','form','quiz','setup',...AUTHV,...ADMV].includes(view.name);document.body.classList.toggle('has-nav',!nav.hidden);
  nav.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.go===view.name||(b.dataset.go==='en'&&['flash','readList','hard'].includes(view.name))||(b.dataset.go==='qd'&&view.name==='mist')));
  if(view.name==='quiz'){const it=view.q.items[view.q.i];if(!it.shownAt)it.shownAt=Date.now();if(it.autoSpeak&&view.q.res[view.q.i]==null&&!it._spoken){it._spoken=true;setTimeout(()=>speak(it.speak),250)}tickTimer()}
  if(view.name==='comp'){subscribeBoard();renderBoard();const of=$('#oform');of.addEventListener('submit',e=>{e.preventDefault();const p=cur();p.nick=$('#onick').value.trim()||p.name;p.group=$('#ogrp').value.trim().toUpperCase();save();pushAll(true);boardKey='';render();const sv=$('#osaved');if(sv)sv.hidden=false})}
- bindAuthForms();
+ bindAuthForms();bindAdmin();if(view.name==='admin'&&C.user&&C.user.emailVerified&&!A.fams&&!A.loading&&!A.err)adminLoad();
  const sf=$('#sform');if(sf)sf.addEventListener('submit',e=>{e.preventDefault();syncRows();if(view.rows.some(r=>!r.name.trim())){$('#serr').hidden=false;return}
   if(CLOUD){if(view.rows.some(r=>!/^\d{4}$/.test(r.pin||''))){const el=$('#serr');el.textContent='اكتب رقماً سرياً من 4 أرقام لكل اسم.';el.hidden=false;return}const b=sf.querySelector('button[type=submit]');b.disabled=true;b.textContent='جارٍ الحفظ…';cloudAddKids(view.rows).then(()=>go('who')).catch(er=>{b.disabled=false;b.textContent='حفظ والبدء';toast(authErr(er))});return}
   view.rows.forEach(r=>S.profiles.push(newP(r.name.trim(),r.gender,r.grade,r.term)));save();go('who')});
@@ -960,6 +1044,18 @@ function act(a){const p=cur();
  switch(a){
  case 'switch':if(CLOUD&&C.mode==='student'){go('who');break}S.active=null;save();go('who');break;
  case 'sLogin':go('slogin',{step:'code'});break;
+ case 'admin':if(!isAdm())break;A.fams=null;A.err=null;A.edit=null;A.del=null;A.delFam=false;go('admin');break;
+ case 'adBack':go(C.fam?'parent':'pfam');break;
+ case 'adBackList':A.edit=null;A.del=null;A.delFam=false;go('admin',{q:view.q});break;
+ case 'adReload':A.fams=null;A.err=null;adminLoad();break;
+ case 'adVerify':C.user.sendEmailVerification().then(()=>toast('أرسلنا رابط التأكيد إلى بريدك.')).catch(e=>toast(authErr(e)));break;
+ case 'adRefresh':C.user.reload().then(()=>C.user.getIdToken(true)).then(()=>{C.user=firebase.auth().currentUser;if(!C.user.emailVerified)toast('لم يُؤكَّد البريد بعد. افتح الرابط في رسالة Firebase ثم حاول مرة أخرى.');render()}).catch(e=>toast(authErr(e)));break;
+ case 'adNewFam':adBusy(async()=>{const id=await adminCreateFam();view.fid=id},'أُنشئت العائلة').then(()=>{if(view.fid)go('adminFam',{fid:view.fid})});break;
+ case 'adAdd':A.edit='new';A.form={name:'',gender:'m',grade:1,term:1,pin:String(Math.floor(1000+Math.random()*9000))};render();break;
+ case 'adCancel':A.edit=null;A.form=null;A.del=null;A.delFam=false;render();break;
+ case 'adUnlink':adBusy(()=>adminUnlink(view.fid),'تم فصل الأجهزة');break;
+ case 'adDelFam':A.delFam=true;render();break;
+ case 'adDelFamOk':{const f=view.fid;adBusy(()=>adminDelFam(f),'حُذفت العائلة').then(()=>{A.delFam=false;go('admin')});break}
  case 'pLogin':go('plogin',{t:'in'});break;
  case 'sBack':go('slogin',{step:'code',raw:fmtCode(view.code)});break;
  case 'sBackPick':view.step='pick';render();break;
@@ -1004,6 +1100,13 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
  if(d.say){speak(d.say);return}
  if(d.copy){const t=d.copy;try{navigator.clipboard.writeText(t).then(()=>toast('تم النسخ: '+t),()=>toast(t))}catch(e){toast(t)}return}
  if(d.pt){go('plogin',{t:d.pt});return}
+ if(d.afam){A.edit=null;A.del=null;A.delFam=false;go('adminFam',{fid:d.afam,q:view.q});return}
+ if(d.adedit){const f=A.fams.find(x=>x.id===view.fid),k=f&&f.kids.find(x=>x.id===d.adedit);if(!k)return;A.edit=k.id;A.del=null;A.form={name:k.name,gender:k.gender,grade:k.grade,term:k.term||1,pin:k.pin||''};render();return}
+ if(d.adset){adSync();A.form[d.adset]=d.adset==='gender'?d.v:+d.v;render();return}
+ if(d.addel){A.del=d.addel;A.edit=null;render();return}
+ if(d.addelok){const f=view.fid,id=d.addelok;adBusy(()=>adminDelKid(f,id),'حُذف الطالب').then(()=>{A.del=null;render()});return}
+ if(d.adrmpar){const f=view.fid,u=d.adrmpar;adBusy(()=>adminRmParent(f,u),'أُزيل ولي الأمر');return}
+ if(d.adreset){firebase.auth().sendPasswordResetEmail(d.adreset).then(()=>toast('أُرسل رابط إعادة كلمة المرور إلى '+d.adreset)).catch(e=>toast(authErr(e)));return}
  if(d.kid){view.kid=d.kid;view.step='pin';render();return}
  if(d.go){if(view.name==='quiz'&&view.q)view.q.endAt=null;go(d.go);return}
  if(d.pick){S.active=d.pick;save();go('home');return}
