@@ -927,8 +927,8 @@ function render(){if(CLOUD){if(!C.ready&&view.name!=='loading')view={name:'loadi
 function bindAuthForms(){
  const lf=$('#lform');if(lf)lf.addEventListener('submit',e=>{e.preventDefault();const em=$('#lem').value.trim(),pw=$('#lpw').value;const b=$('#lbtn'),er=$('#lerr');b.disabled=true;er.hidden=true;
   const A=firebase.auth();(view.t==='up'?A.createUserWithEmailAndPassword(em,pw):A.signInWithEmailAndPassword(em,pw)).catch(x=>{b.disabled=false;er.textContent=authErr(x);er.hidden=false})});
- const inf=$('#iform');if(inf)inf.addEventListener('submit',e=>{e.preventDefault();const er=$('#ierr');er.hidden=true;joinInvite($('#icode').value).catch(x=>{er.textContent=x&&x.code==='bad-invite'?'رمز الدعوة غير صحيح.':authErr(x);er.hidden=false})});
- const scf=$('#scform');if(scf)scf.addEventListener('submit',e=>{e.preventDefault();const raw=$('#fcode').value,er=$('#serr2');er.hidden=true;
+ const inf=$('#iform');if(inf)inf.addEventListener('submit',e=>{e.preventDefault();const er=$('#ierr');er.hidden=true;if(normCode($('#icode').value).length<6){er.textContent='اكتب رمز الدعوة المكوّن من 6 أحرف وأرقام، أو اختر «إنشاء حساب عائلة جديد» إذا كنت أول ولي أمر.';er.hidden=false;return}joinInvite($('#icode').value).catch(x=>{er.textContent=x&&x.code==='bad-invite'?'رمز الدعوة غير صحيح.':authErr(x);er.hidden=false})});
+ const scf=$('#scform');if(scf)scf.addEventListener('submit',e=>{e.preventDefault();const raw=$('#fcode').value,er=$('#serr2');er.hidden=true;if(normCode(raw).length<6){er.textContent='اكتب رمز العائلة المكوّن من 6 أحرف وأرقام.';er.hidden=false;return}
   studentFind(raw).then(r=>go('slogin',Object.assign({step:'pick'},r))).catch(x=>{er.textContent=x&&x.code==='bad-code'?'رمز العائلة غير صحيح. تأكّد منه مع ولي أمرك.':authErr(x);er.hidden=false})});
  const spf=$('#spform');if(spf){const pi=$('#spin');setTimeout(()=>{try{pi.focus()}catch(e){}},50);spf.addEventListener('submit',e=>{e.preventDefault();const pin=pi.value.trim(),er=$('#perr'),b=$('#pbtn');er.hidden=true;
   if(!/^\d{4}$/.test(pin)){er.textContent='الرقم السري 4 أرقام.';er.hidden=false;return}b.disabled=true;
