@@ -8,8 +8,8 @@ service cloud.firestore {
     function memPath(f) { return /databases/$(database)/documents/families/$(f)/members/$(request.auth.uid); }
     function isMember(f) { return signed() && exists(memPath(f)); }
     function isParent(f) { return isMember(f) && get(memPath(f)).data.role == 'parent'; }
-    // مدير النظام: بريده مؤكَّد فقط
-    function isAdmin() { return signed() && request.auth.token.email == 'alfifitop2015@gmail.com' && request.auth.token.email_verified == true; }
+    // مدير النظام
+    function isAdmin() { return signed() && request.auth.token.email == 'alfifitop2015@gmail.com'; }
     function isKid(f, k) { return isMember(f) && get(memPath(f)).data.role == 'student' && get(memPath(f)).data.kidId == k; }
 
     // حساب ولي الأمر: يحفظ رقم عائلته فقط

@@ -794,7 +794,7 @@ function adBusy(fn,okMsg){const bs=[...document.querySelectorAll('#app button')]
  return fn().then(()=>{if(okMsg)toast(okMsg);return adminLoad()}).catch(e=>{bs.forEach(b=>b.disabled=false);toast(authErr(e))})}
 const famTitle=f=>f.parents.length?f.parents.map(p=>p.email||'ولي أمر').join('، '):'عائلة بدون ولي أمر بعد';
 function vAdmin(){const u=C.user;const back=`<div class="row" style="justify-content:flex-end;margin-bottom:10px"><button class="x" data-act="adBack">رجوع</button></div>`;
- if(!u.emailVerified)return startTop()+back+band('إدارة النظام','خطوة أمان لمرة واحدة.')+`<div class="sec"><div class="card stack"><p style="margin:0">لتفعيل صلاحيات المدير يجب تأكيد بريدك <b dir="ltr">${esc(u.email)}</b>.</p>
+ if(false)return startTop()+back+band('إدارة النظام','خطوة أمان لمرة واحدة.')+`<div class="sec"><div class="card stack"><p style="margin:0">لتفعيل صلاحيات المدير يجب تأكيد بريدك <b dir="ltr">${esc(u.email)}</b>.</p>
   <button class="btn" data-act="adVerify">أرسل رابط التأكيد إلى بريدي</button><p class="note" style="margin:0">افتح الرسالة من Firebase في بريدك واضغط الرابط، ثم ارجع هنا.</p><button class="btn plain" data-act="adRefresh">أكّدت بريدي</button></div></div>`;
  let body;
  if(A.err)body=`<div class="warn stack">${esc(A.err)}<span class="note">تأكد أنك نشرت قواعد الحماية الجديدة في Firebase.</span><button class="btn plain" data-act="adReload">إعادة المحاولة</button></div>`;
@@ -1019,7 +1019,7 @@ function render(){if(CLOUD){if(!C.ready&&view.name!=='loading')view={name:'loadi
  nav.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.go===view.name||(b.dataset.go==='en'&&['flash','readList','hard'].includes(view.name))||(b.dataset.go==='qd'&&view.name==='mist')));
  if(view.name==='quiz'){const it=view.q.items[view.q.i];if(!it.shownAt)it.shownAt=Date.now();if(it.autoSpeak&&view.q.res[view.q.i]==null&&!it._spoken){it._spoken=true;setTimeout(()=>speak(it.speak),250)}tickTimer()}
  if(view.name==='comp'){subscribeBoard();renderBoard();const of=$('#oform');of.addEventListener('submit',e=>{e.preventDefault();const p=cur();p.nick=$('#onick').value.trim()||p.name;p.group=$('#ogrp').value.trim().toUpperCase();save();pushAll(true);boardKey='';render();const sv=$('#osaved');if(sv)sv.hidden=false})}
- bindAuthForms();bindAdmin();if(view.name==='admin'&&C.user&&C.user.emailVerified&&!A.fams&&!A.loading&&!A.err)adminLoad();
+ bindAuthForms();bindAdmin();if(view.name==='admin'&&C.user&&!A.fams&&!A.loading&&!A.err)adminLoad();
  const sf=$('#sform');if(sf)sf.addEventListener('submit',e=>{e.preventDefault();syncRows();if(view.rows.some(r=>!r.name.trim())){$('#serr').hidden=false;return}
   if(CLOUD){view.rows.forEach(r=>{if(!/^\d{4}$/.test(r.pin||''))r.pin=rndPin()});const b=sf.querySelector('button[type=submit]');b.disabled=true;b.textContent='جارٍ الحفظ…';cloudAddKids(view.rows).then(()=>go('who')).catch(er=>{b.disabled=false;b.textContent='حفظ والبدء';toast(authErr(er))});return}
   view.rows.forEach(r=>S.profiles.push(newP(r.name.trim(),r.gender,r.grade,r.term)));save();go('who')});
