@@ -167,6 +167,21 @@ details.card ul{margin:10px 0 0;padding-inline-start:20px;display:flex;flex-dire
 a.btn{text-decoration:none}
 .x{background:none;border:1px solid var(--line);border-radius:10px;padding:6px 12px;font-size:14px}
 @media (prefers-reduced-motion:no-preference){.pop{animation:pop .25s ease}@keyframes pop{from{transform:scale(.97);opacity:.6}to{transform:none;opacity:1}}}
+.chat{display:flex;flex-direction:column;gap:10px;direction:ltr}
+.bub{max-width:86%;padding:10px 14px;border-radius:18px;line-height:1.55}
+.bub.bot{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-bottom-left-radius:6px;font-family:var(--fe);font-size:18px}
+.bub.me{align-self:flex-end;background:linear-gradient(135deg,var(--acc),var(--acc2));color:var(--onacc);border-bottom-right-radius:6px;font-family:var(--fe);font-size:17px}
+.bub.sys{align-self:stretch;max-width:100%;direction:rtl;text-align:right;background:var(--badbg);border-radius:14px;font-size:15px}
+.bub.sys.ok{background:var(--okbg)}
+.bubtools{display:flex;gap:6px;margin-top:6px;direction:rtl;justify-content:flex-end}.bubtools .x{font-size:12px;padding:4px 10px;display:inline-flex;align-items:center;gap:4px;font-family:var(--fb)}.bubtools svg{width:14px;height:14px}
+.bubar{direction:rtl;text-align:right;font-family:var(--fb);font-size:14px;color:var(--muted);margin-top:4px}
+.bub.sys .x{margin-top:6px;display:inline-flex;align-items:center;gap:4px}.bub.sys svg{width:14px;height:14px}
+.tknote{margin-top:6px;font-size:14px}.tkmodel{font-family:var(--fe);font-size:18px;font-weight:600;margin:6px 0;text-align:left}
+.tkctl{display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 0}
+.mic{width:86px;height:86px;border-radius:50%;border:none;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:0 10px 24px -10px var(--acc)}
+.mic svg{width:38px;height:38px}.mic.on{background:var(--bad)}
+@media (prefers-reduced-motion:no-preference){.mic.on{animation:pulse 1.2s ease-in-out infinite}@keyframes pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--bad) 45%,transparent)}50%{box-shadow:0 0 0 16px transparent}}}
+.tklive{min-height:1.6em;font-family:var(--fe);font-size:17px;color:var(--muted);text-align:center}
 .toast{position:fixed;inset-inline:16px;bottom:calc(84px + env(safe-area-inset-bottom,0px));margin-inline:auto;max-width:420px;background:var(--ink);color:var(--paper);padding:12px 16px;border-radius:12px;font-size:14px;text-align:center;z-index:20}
 .homegrid{display:grid;gap:22px}
 @media (min-width:720px){
@@ -186,7 +201,22 @@ a.btn{text-decoration:none}
  body.has-nav .top .brand{visibility:hidden}
  .wrap{max-width:980px;padding-block:18px 48px}
  .homegrid{grid-template-columns:1.25fr 1fr;align-items:start}
- .toast{bottom:28px}
+ .chat{display:flex;flex-direction:column;gap:10px;direction:ltr}
+.bub{max-width:86%;padding:10px 14px;border-radius:18px;line-height:1.55}
+.bub.bot{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-bottom-left-radius:6px;font-family:var(--fe);font-size:18px}
+.bub.me{align-self:flex-end;background:linear-gradient(135deg,var(--acc),var(--acc2));color:var(--onacc);border-bottom-right-radius:6px;font-family:var(--fe);font-size:17px}
+.bub.sys{align-self:stretch;max-width:100%;direction:rtl;text-align:right;background:var(--badbg);border-radius:14px;font-size:15px}
+.bub.sys.ok{background:var(--okbg)}
+.bubtools{display:flex;gap:6px;margin-top:6px;direction:rtl;justify-content:flex-end}.bubtools .x{font-size:12px;padding:4px 10px;display:inline-flex;align-items:center;gap:4px;font-family:var(--fb)}.bubtools svg{width:14px;height:14px}
+.bubar{direction:rtl;text-align:right;font-family:var(--fb);font-size:14px;color:var(--muted);margin-top:4px}
+.bub.sys .x{margin-top:6px;display:inline-flex;align-items:center;gap:4px}.bub.sys svg{width:14px;height:14px}
+.tknote{margin-top:6px;font-size:14px}.tkmodel{font-family:var(--fe);font-size:18px;font-weight:600;margin:6px 0;text-align:left}
+.tkctl{display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 0}
+.mic{width:86px;height:86px;border-radius:50%;border:none;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:0 10px 24px -10px var(--acc)}
+.mic svg{width:38px;height:38px}.mic.on{background:var(--bad)}
+@media (prefers-reduced-motion:no-preference){.mic.on{animation:pulse 1.2s ease-in-out infinite}@keyframes pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--bad) 45%,transparent)}50%{box-shadow:0 0 0 16px transparent}}}
+.tklive{min-height:1.6em;font-family:var(--fe);font-size:17px;color:var(--muted);text-align:center}
+.toast{bottom:28px}
 }
 @media (max-width:380px){.catrow{grid-template-columns:90px 1fr 40px}.stat b{font-size:20px}}
 </style>
@@ -277,7 +307,7 @@ const LET=['أ','ب','ج','د'];
 const GRADES={1:'الأول المتوسط',2:'الثاني المتوسط',3:'الثالث المتوسط'};
 const TERMS={1:'الفصل الأول',2:'الفصل الثاني'};
 const QCAT={arith:'الحساب',ratio:'النسب والتناسب',alg:'الجبر',geo:'الهندسة',cmp:'المقارنات',seq:'الأنماط والمتتابعات',stat:'الإحصاء'};
-const ECAT={vocab:'المفردات',grammar:'القواعد',reading:'القراءة',listen:'الاستماع'};
+const ECAT={vocab:'المفردات',grammar:'القواعد',reading:'القراءة',listen:'الاستماع',speak:'المحادثة'};
 const dkey=d=>{d=d||new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const daysAgo=n=>{const d=new Date();d.setDate(d.getDate()-n);return dkey(d)};
 const canSynth='speechSynthesis' in window&&typeof SpeechSynthesisUtterance!=='undefined';
@@ -835,6 +865,151 @@ function bindAdmin(){const q=$('#adq');if(q)q.addEventListener('input',()=>{view
   const id=A.edit==='new'?null:A.edit;const f=view.fid;v.name=v.name.trim();adBusy(()=>adminSaveKid(f,id,v),'تم الحفظ').then(()=>{A.edit=null;A.form=null;render()})})}
 function adSync(){const n=$('#adn'),p=$('#adp');if(A.form){if(n)A.form.name=n.value;if(p)A.form.pin=p.value.trim()}}
 
+/* ============ المحادثة الصوتية ============ */
+// كل جملة: [كلام التطبيق, الترجمة, التلميح, الإجابة النموذجية, الكلمات المقبولة (| بين البدائل، + للجمع)]
+const TALKS=[
+{id:'t1',g:1,t:'التعارف',e:'Meeting a new friend',turns:[
+['Hi! What is your name?','مرحباً! ما اسمك؟','اذكر اسمك. ابدأ بـ My name is','My name is Ali.','my name is|i am|name is'],
+['Nice to meet you. How old are you?','تشرفت بمعرفتك. كم عمرك؟','اذكر عمرك: I am ... years old','I am thirteen years old.','years old|i am'],
+['Where are you from?','من أين أنت؟','اذكر بلدك أو مدينتك: I am from ...','I am from Saudi Arabia.','from'],
+['What is your favorite subject?','ما مادتك المفضلة؟','My favorite subject is ...','My favorite subject is English.','favorite subject|favourite subject|i like|i love|english|math|science'],
+['Nice! See you tomorrow.','جميل! أراك غداً.','ودّعه: Goodbye / See you','Goodbye, see you tomorrow.','bye|see you']]},
+{id:'t2',g:1,t:'في المدرسة',e:'At school',turns:[
+['Good morning! Are you ready for class?','صباح الخير! هل أنت جاهز للحصة؟','أجب بنعم: Yes, I am ready','Yes, I am ready.','yes|ready'],
+['Do you have your English book?','هل معك كتاب الإنجليزي؟','Yes, I have ... / No, I do not','Yes, I have my book.','yes|no|have'],
+['What time does your school start?','متى تبدأ مدرستك؟','It starts at ... o\'clock','It starts at seven o\'clock.','o clock|at+seven|at+six|at+eight|seven|six|eight|7|6|8'],
+['How do you go to school?','كيف تذهب إلى المدرسة؟','I go to school by bus / by car','I go to school by bus.','by bus|by car|walk|on foot|by'],
+['Who is your best friend?','من صديقك المفضل؟','My best friend is ...','My best friend is Omar.','best friend|friend is|my friend']]},
+{id:'t3',g:1,t:'العائلة',e:'My family',turns:[
+['How many people are there in your family?','كم عدد أفراد عائلتك؟','There are ... people in my family','There are six people in my family.','people|there are|we are|family'],
+['Do you have any brothers or sisters?','هل عندك إخوة أو أخوات؟','I have ... brothers and ... sisters','I have two brothers and one sister.','i have|brother|sister|no'],
+['What does your father do?','ماذا يعمل والدك؟','My father is a ... (teacher / engineer)','My father is a teacher.','my father is|he is|he works|father'],
+['What do you do with your family on the weekend?','ماذا تفعلون في عطلة نهاية الأسبوع؟','We visit ... / We go to ...','We visit our grandparents.','we visit|we go|we play|we eat|we watch|we'],
+['That sounds lovely!','هذا يبدو جميلاً!','اشكره: Thank you','Thank you.','thank']]},
+{id:'t4',g:1,t:'في المطعم',e:'At a restaurant',turns:[
+['Welcome! What would you like to eat?','أهلاً! ماذا تريد أن تأكل؟','I would like ..., please','I would like a chicken burger, please.','i would like|i want|please|can i have|i will have'],
+['Would you like something to drink?','هل تريد شيئاً للشرب؟','Yes, ... juice, please','Yes, orange juice, please.','juice|water|milk|tea|yes|no'],
+['Small or large?','صغير أم كبير؟','اختر الحجم: Small / Large','Large, please.','small|large|medium|big'],
+['Is that for here or to go?','هل تأكل هنا أم سفري؟','For here / To go','For here, please.','for here|to go|here|takeaway|take away'],
+['That will be twenty riyals.','الحساب عشرون ريالاً.','ادفع واشكره: Here you are','Here you are. Thank you.','here you are|thank|here']]},
+{id:'t5',g:2,t:'الهوايات',e:'Hobbies',turns:[
+['What do you like to do in your free time?','ماذا تحب أن تفعل في وقت فراغك؟','I like + فعل بـ ing: I like playing ...','I like playing football.','i like|i love|i enjoy'],
+['How often do you do it?','كم مرة تمارسها؟','every day / twice a week','I play every weekend.','every|always|usually|sometimes|week|day|times'],
+['Who do you do it with?','مع من تمارسها؟','with my friends / with my brother','I play with my friends.','with|alone'],
+['Why do you like it?','لماذا تحبها؟','ابدأ بـ Because','Because it is fun and healthy.','because|fun|it is'],
+['Would you like to try a new hobby?','هل تحب أن تجرّب هواية جديدة؟','Yes, I would like to try ...','Yes, I would like to try swimming.','yes|no|would like|want']]},
+{id:'t6',g:2,t:'الطقس والعطلة',e:'Weather and weekend',turns:[
+['What is the weather like today?','كيف الطقس اليوم؟','It is sunny / hot / cold','It is sunny and hot.','sunny|hot|cold|cloudy|rainy|windy|warm|nice|weather is'],
+['What did you do last weekend?','ماذا فعلت في العطلة الماضية؟','استخدم الماضي: I visited / I played / I went','I visited my uncle.','visited|played|went|watched|stayed|read|ate|did|had|was|made'],
+['Did you enjoy it?','هل استمتعت؟','Yes, I did / No, I did not','Yes, I did. It was fun.','yes|no|did|enjoyed|it was'],
+['What are you going to do next weekend?','ماذا ستفعل في العطلة القادمة؟','I am going to ...','I am going to visit the beach.','going to|will|plan'],
+['Have a great weekend!','عطلة سعيدة!','ردّ عليه: Thank you, you too','Thank you, you too.','thank|you too']]},
+{id:'t7',g:2,t:'التسوّق',e:'Shopping',turns:[
+['Hello, can I help you?','مرحباً، هل أساعدك؟','I am looking for ...','Yes, I am looking for a T-shirt.','looking for|i want|i need|i would like|yes'],
+['What color do you want?','أي لون تريد؟','اذكر لوناً: I want a blue one','I want a blue one.','blue|red|black|white|green|yellow|pink|grey|gray|brown|color|colour'],
+['What size are you?','ما مقاسك؟','Small / Medium / Large','Medium, please.','small|medium|large|size'],
+['It is fifty riyals.','سعره خمسون ريالاً.','اطلب تخفيضاً أو وافق: Can I have a discount?','Can I have a discount?','discount|ok|okay|i will take|fine|expensive|cheaper|good'],
+['Here is your bag. Have a nice day!','تفضل كيسك. يوماً سعيداً!','اشكره وودّعه','Thank you, goodbye.','thank|bye']]},
+{id:'t8',g:2,t:'عند الطبيب',e:'At the doctor',turns:[
+['Hello. What is the problem?','مرحباً. ما المشكلة؟','I have a headache / a stomachache','I have a headache.','i have|headache|stomachache|fever|cold|cough|pain|sore|hurts|tired|sick'],
+['When did it start?','متى بدأ؟','yesterday / two days ago','It started yesterday.','yesterday|ago|today|morning|started|night|last'],
+['Do you have a fever?','هل عندك حرارة؟','Yes, I do / No, I do not','No, I do not.','yes|no'],
+['You should rest and drink a lot of water.','يجب أن ترتاح وتشرب ماءً كثيراً.','وافق: OK, I will','OK, I will. Thank you, doctor.','ok|okay|i will|thank|sure'],
+['Get well soon!','أتمنى لك الشفاء العاجل!','اشكره: Thank you very much','Thank you very much.','thank']]},
+{id:'t9',g:3,t:'المستقبل والمهنة',e:'Future career',turns:[
+['What do you want to be in the future?','ماذا تريد أن تكون في المستقبل؟','I want to be a/an ...','I want to be an engineer.','want to be|would like to be|will be|wish to be|become|going to be'],
+['Why did you choose this job?','لماذا اخترت هذه المهنة؟','ابدأ بـ Because','Because I love building things.','because'],
+['What do you need to study?','ماذا تحتاج أن تدرس؟','I need to study ...','I need to study math and science.','need to|study|have to|should|must'],
+['Where would you like to work?','أين تحب أن تعمل؟','I would like to work in ...','I would like to work in Riyadh.','work in|work at|work for|would like|in'],
+['I am sure you will succeed!','أنا متأكد أنك ستنجح!','اشكره: Thank you, I hope so','Thank you, I hope so.','thank|hope']]},
+{id:'t10',g:3,t:'البيئة',e:'The environment',turns:[
+['What is the biggest problem for our environment?','ما أكبر مشكلة تواجه البيئة؟','Pollution / Plastic waste is ...','Pollution is a big problem.','pollution|waste|plastic|global warming|climate|trash|garbage'],
+['How can we reduce pollution?','كيف نقلل التلوث؟','We can ... / We should ...','We can use public transport.','we can|we should|use|plant|recycle|reduce|stop'],
+['Do you recycle at home?','هل تعيدون التدوير في البيت؟','Yes, we recycle ... / No, we do not','Yes, we recycle paper and plastic.','yes|no|recycle'],
+['What will you do to save water?','ماذا ستفعل لتوفير الماء؟','I will ... (turn off the tap)','I will turn off the tap.','i will|turn off|save|use less|close'],
+['Great ideas!','أفكار رائعة!','اشكره: Thank you','Thank you.','thank']]},
+{id:'t11',g:3,t:'في المطار',e:'At the airport',turns:[
+['Good morning. Can I see your passport, please?','صباح الخير. هل أرى جواز سفرك؟','Here you are','Here you are.','here you are|here it is|yes|sure|of course|here'],
+['Where are you flying to?','إلى أين تسافر؟','I am flying to ...','I am flying to London.','flying to|going to|travel to|traveling to|travelling to|to'],
+['How long will you stay?','كم ستبقى هناك؟','For two weeks / For five days','For two weeks.','for|week|day|month'],
+['Do you have any bags to check in?','هل عندك حقائب للشحن؟','Yes, I have one bag','Yes, I have one bag.','yes|no|bag'],
+['Here is your boarding pass. Have a nice flight!','هذه بطاقة الصعود. رحلة سعيدة!','اشكره: Thank you very much','Thank you very much.','thank']]},
+{id:'t12',g:3,t:'التقنية',e:'Technology',turns:[
+['How many hours do you use your phone every day?','كم ساعة تستخدم جوالك يومياً؟','About ... hours a day','About three hours a day.','hour|about'],
+['What do you use it for?','لماذا تستخدمه؟','I use it for ... / to ...','I use it for studying and talking to friends.','i use it|for|to|study|game|talk|watch|chat'],
+['Is technology good or bad for students?','هل التقنية مفيدة أم ضارة للطلاب؟','I think it is ... because ...','I think it is good because it helps us learn.','good|bad|both|useful|helpful|i think'],
+['How can we stay safe online?','كيف نبقى آمنين على الإنترنت؟','We should not share ...','We should not share our passwords.','should not|should|never|do not share|password|safe|careful'],
+['That is very wise!','هذا تصرف حكيم جداً!','اشكره: Thank you','Thank you.','thank']]}
+];
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition||null;
+const CONTR=[["i'm","i am"],["you're","you are"],["it's","it is"],["that's","that is"],["what's","what is"],["he's","he is"],["she's","she is"],["we're","we are"],["they're","they are"],["don't","do not"],["doesn't","does not"],["didn't","did not"],["can't","can not"],["cannot","can not"],["won't","will not"],["isn't","is not"],["aren't","are not"],["shouldn't","should not"],["i'd","i would"],["i'll","i will"],["we'll","we will"],["i've","i have"],["o'clock","o clock"],["let's","let us"]];
+function tnorm(s){s=String(s||'').toLowerCase().replace(/[’`]/g,"'");CONTR.forEach(([a,b])=>{s=s.split(a).join(b)});return s.replace(/[^a-z0-9' ]+/g,' ').replace(/'/g,'').replace(/\s+/g,' ').trim()}
+const tokEq=(w,k)=>w===k||(k.length>=3&&(w.startsWith(k)||w.endsWith(k)));
+function thas(t,ph){const T=t.split(' '),P=ph.split(' ').filter(Boolean);if(!P.length)return false;for(let i=0;i+P.length<=T.length;i++){if(P.every((k,j)=>tokEq(T[i+j],k)))return true}return false}
+const tvars=raw=>[tnorm(raw),tnorm(String(raw||'').replace(/['’]s\b/gi,' is'))];
+function tmatch(raw,turn){return tvars(raw).some(t=>t&&turn[4].split('|').some(g=>g.split('+').every(ph=>thas(t,tnorm(ph)))))}
+function tsim(raw,model){const m=tnorm(model).split(' ').filter(w=>w.length>1);if(!m.length)return 0;return Math.max(...tvars(raw).map(v=>{const set=new Set(v.split(' '));return m.filter(w=>set.has(w)).length/m.length}))}
+const GNOTES=[[/\bi is\b/,'نقول I am وليس I is.'],[/\b(he|she|it) (go|play|like|have|do|want|live|work)\b/,'مع he / she / it نضيف s للفعل في المضارع: he goes, she plays, it has.'],[/\bi am (go|play|like|have|want|live|work|agree)\b/,'لا نضع am قبل الفعل العادي: نقول I go وليس I am go.'],[/\bi has\b/,'مع I نقول have وليس has.'],[/\b(yesterday|last)\b.*\b(go|play|visit|watch|eat)\b/,'مع yesterday و last نستخدم الماضي: went, played, visited.'],[/\ba (apple|orange|engineer|english|hour)\b/,'قبل الكلمة التي تبدأ بصوت حرف علّة نستخدم an: an engineer, an apple.'],[/\bmore (big|small|hot|cold|tall|fast)\b/,'الصفات القصيرة نضيف لها er: bigger وليس more big.']];
+function gnotes(raw){const t=tnorm(raw);return GNOTES.filter(([r])=>r.test(t)).map(x=>x[1])}
+let TK=null,REC=null;
+const tkTurn=()=>TK.sc.turns[TK.i];
+function startTalk(id){const sc=TALKS.find(x=>x.id===id);if(!sc)return;TK={sc,i:0,attempts:0,log:[],listening:false,typing:!SR,done:false,first:0,score:0,waitNext:false};go('talkRun');tkBot()}
+function tkBot(){const t=tkTurn();TK.attempts=0;TK.waitNext=false;TK.log.push({w:'bot',t:t[0],ar:t[1]});render();tkScroll();setTimeout(()=>speak(t[0]),350)}
+function tkScroll(){setTimeout(()=>{window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})},60)}
+function tkSys(html,extra){TK.log.push(Object.assign({w:'sys',h:html},extra||{}))}
+function tkListen(){if(!SR){TK.typing=true;render();return}
+ if(TK.listening){try{REC&&REC.stop()}catch(e){}return}
+ try{speechSynthesis.cancel()}catch(e){}
+ const r=new SR();REC=r;r.lang='en-US';r.interimResults=true;r.maxAlternatives=3;r.continuous=false;
+ let finals=[],interim='',err=null;
+ r.onresult=e=>{interim='';for(let i=e.resultIndex;i<e.results.length;i++){const res=e.results[i];if(res.isFinal){for(let j=0;j<res.length;j++)finals.push(res[j].transcript)}else interim+=res[0].transcript}const el=$('#tklive');if(el)el.textContent=interim||finals[0]||'…'};
+ r.onerror=e=>{err=e.error};
+ r.onend=()=>{TK.listening=false;REC=null;if(!finals.length&&interim)finals=[interim];
+  if(finals.length)return tkEval(finals);
+  if(err==='not-allowed'||err==='service-not-allowed'||err==='audio-capture'){tkSys('لم أستطع استخدام المايكروفون. اسمح للموقع باستخدام المايكروفون من إعدادات المتصفح، أو اكتب إجابتك بدلاً من ذلك.');TK.typing=true}
+  else if(err==='network')tkSys('التعرّف على الصوت يحتاج اتصالاً بالإنترنت. تحقق من الاتصال ثم حاول مرة أخرى، أو اكتب إجابتك.');
+  else tkSys('لم أسمع صوتك. اضغط زر المايكروفون، ثم تكلّم بوضوح وقرّب الجوال منك.');
+  render();tkScroll()};
+ try{r.start();TK.listening=true;render()}catch(e){TK.typing=true;render()}}
+function tkEval(alts){const t=tkTurn();let ok=false,best=alts[0];
+ for(const a of alts){if(tmatch(a,t)||(TK.attempts>=2&&tsim(a,t[3])>=0.6)){ok=true;best=a;break}}
+ TK.log.push({w:'me',t:best});
+ const notes=gnotes(best);
+ if(ok){const first=TK.attempts===0;if(first)TK.first++;TK.score+=first?2:1;
+  record({sec:'en',cat:'speak'},TK.attempts<2,'practice',null);
+  tkSys(`<b>${first?g('ممتاز! فهمتك.','ممتازة! فهمتكِ.'):g('أحسنت! هذه المرة فهمتك.','أحسنتِ! هذه المرة فهمتكِ.')}</b>${notes.length?`<div class="tknote">تصحيح: ${notes.join(' ')}</div>`:''}${tsim(best,t[3])<0.5?`<div class="tknote">جملة أكمل:</div><div class="tkmodel" dir="ltr" style="font-size:16px">${esc(t[3])}</div>`:''}`,{ok:true});
+  TK.waitNext=true}
+ else{TK.attempts++;
+  if(TK.attempts===1)tkSys(`<b>${g('لم أفهمك جيداً.','لم أفهمكِ جيداً.')}</b> ${g('أعد الكلام','أعيدي الكلام')} بنطق أوضح وجملة كاملة.<div class="tknote">تلميح: ${esc(t[2])}</div>${notes.length?`<div class="tknote">ملاحظة: ${notes.join(' ')}</div>`:''}`);
+  else if(TK.attempts===2){tkSys(`<b>ما زلت لا أفهم.</b> الإجابة المتوقعة هي:<div class="tkmodel" dir="ltr">${esc(t[3])}</div>${g('استمع إليها ثم كرّرها بصوتك.','استمعي إليها ثم كرّريها بصوتكِ.')}`,{say:t[3]});setTimeout(()=>speak(t[3]),500)}
+  else{record({sec:'en',cat:'speak'},false,'practice',null);tkSys(`لا بأس، ننتقل للجملة التالية. ${g('تدرّب','تدرّبي')} على هذه الجملة لاحقاً:<div class="tkmodel" dir="ltr">${esc(t[3])}</div>`,{say:t[3]});TK.waitNext=true}}
+ render();tkScroll()}
+function tkNext(){TK.i++;if(TK.i>=TK.sc.turns.length){TK.done=true;const p=cur();p.talk=p.talk||{};const pct=Math.round(100*TK.first/TK.sc.turns.length);p.talk[TK.sc.id]=Math.max(p.talk[TK.sc.id]||0,pct);save();render();tkScroll();return}tkBot()}
+function tkShow(){const t=tkTurn();if(TK.attempts<2){TK.attempts=2;TK.log.push({w:'me',t:'…'});tkSys(`الإجابة المتوقعة:<div class="tkmodel" dir="ltr">${esc(t[3])}</div>${g('استمع إليها ثم كرّرها بصوتك.','استمعي إليها ثم كرّريها بصوتكِ.')}`,{say:t[3]});render();tkScroll();setTimeout(()=>speak(t[3]),400)}}
+const MICSVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3M9 21h6"/></svg>';
+function vTalkList(){const p=cur();const own=TALKS.filter(x=>x.g===p.grade),rest=TALKS.filter(x=>x.g!==p.grade);
+ const tile=s=>{const b=(p.talk||{})[s.id];return `<button class="tile" data-talk="${s.id}"><span class="grow"><h3>${s.t}</h3><span class="meta"><span class="en" dir="ltr">${s.e}</span> · ${s.turns.length} جمل${b!=null?' · أفضل نتيجة '+b+'%':''}</span></span><span class="go">‹</span></button>`};
+ return header()+band('المحادثة الصوتية',g('تحدّث بالإنجليزي، والتطبيق يسمعك ويصحّح لك.','تحدّثي بالإنجليزي، والتطبيق يسمعكِ ويصحّح لكِ.'))+`<div class="sec">
+ ${SR?'':'<div class="warn">هذا المتصفح لا يدعم التعرّف على الصوت، لذلك ستكتب إجاباتك. للتحدث بصوتك استخدم Chrome أو Safari.</div>'}
+ <div class="card"><p style="margin:0;font-size:14px">التطبيق يقول جملة ويسألك. اضغط زر المايكروفون وأجب بصوتك. إذا لم يفهمك يطلب منك الإعادة مع تلميح، وإذا تكرر ذلك يعرض لك الإجابة المتوقعة لتكرّرها.</p></div>
+ <h2>محادثات ${GRADES[p.grade]}</h2>${own.map(tile).join('')}
+ <h2>محادثات أخرى</h2>${rest.map(tile).join('')}
+ <button class="btn plain wide" data-go="en">رجوع</button></div>`}
+function vTalkRun(){if(!TK)return vTalkList();const s=TK.sc,n=s.turns.length;
+ const log=TK.log.map(m=>m.w==='bot'?`<div class="bub bot pop"><div>${esc(m.t)}</div><div class="bubtools"><button class="x" data-say="${esc(m.t)}">${ICON.spk} استمع</button><button class="x" data-tktr="1">ترجمة</button></div><div class="bubar" hidden>${esc(m.ar)}</div></div>`
+  :m.w==='me'?`<div class="bub me pop">${esc(m.t)}</div>`
+  :`<div class="bub sys ${m.ok?'ok':''} pop">${m.h}${m.say?`<div><button class="x" data-say="${esc(m.say)}">${ICON.spk} استمع للإجابة</button></div>`:''}</div>`).join('');
+ let ctl;
+ if(TK.done){const pct=Math.round(100*TK.first/n);ctl=`<div class="card stack" style="text-align:center;align-items:center"><div class="big">${TK.first}/${n}</div><p style="margin:0">فهمتك من أول محاولة في ${TK.first} من ${n} جمل (${pct}%).</p>
+  <div class="row" style="width:100%"><button class="btn grow" data-talk="${s.id}">إعادة المحادثة</button><button class="btn plain grow" data-act="tkList">محادثة أخرى</button></div></div>`}
+ else if(TK.waitNext)ctl=`<button class="btn wide" data-act="tkNext">${TK.i<n-1?'الجملة التالية':'عرض النتيجة'}</button>`;
+ else ctl=`<div class="tkctl">${TK.typing?`<form id="tkform" class="row" style="width:100%"><input type="text" id="tkin" dir="ltr" autocomplete="off" placeholder="Type your answer…" class="grow"><button class="btn" type="submit">إرسال</button></form>${SR?'<button class="x" data-act="tkMicMode">العودة للتحدث بالصوت</button>':''}`
+  :`<button class="mic ${TK.listening?'on':''}" data-act="tkMic" aria-label="${TK.listening?'إيقاف':'تكلّم'}">${MICSVG}</button><div class="tklive" id="tklive" dir="ltr">${TK.listening?'…':''}</div><p class="note" style="margin:0">${TK.listening?g('أستمع إليك… تكلّم الآن، ثم اضغط للإيقاف','أستمع إليكِ… تكلّمي الآن، ثم اضغطي للإيقاف'):g('اضغط وتكلّم بالإنجليزي','اضغطي وتكلّمي بالإنجليزي')}</p><button class="x" data-act="tkType">اكتب بدلاً من ذلك</button>`}
+  ${TK.attempts<2?'<button class="x" data-act="tkShow">لا أعرف، أظهر الإجابة</button>':''}</div>`;
+ return header()+`<div class="qhead"><h2>${s.t}</h2><button class="x" data-act="tkQuit">إنهاء</button></div>
+ <div class="sec"><p class="prog">الجملة ${Math.min(TK.i+1,n)} من ${n}</p><div class="bar"><i style="width:${100*(TK.done?n:TK.i)/n}%"></i></div>
+ <div class="chat">${log}</div>${ctl}</div>`}
+
 /* ============ الحالة والتنقل ============ */
 let view={name:'who'};
 function go(name,extra){view=Object.assign({name},extra||{});render();window.scrollTo(0,0)}
@@ -882,13 +1057,13 @@ function vHome(){const p=cur();const today=dkey();const mins=Math.round((p.daySe
  return header()+`<h1>أهلاً يا ${esc(p.name)}</h1><p class="sub">${GRADES[p.grade]} · ${TERMS[p.term]}</p>
  <div class="${board.length>1?'homegrid':''}"><div class="sec"><div class="stats"><div class="stat" style="--c:var(--cp)"><b>${sc}</b><span>رصيدك</span></div><div class="stat" style="--c:var(--pink)"><b>${p.streak}</b><span>أيام متتالية</span></div><div class="stat" style="--c:var(--en)"><b>${mins}</b><span>دقيقة اليوم</span></div></div>
  <div class="hero"><h2>تدريب اليوم</h2><p class="sub">${st<0?g('أنهيت','أنهيتِ')+' الثلاثة اليوم، وحصلت على 30 نقطة إضافية.':g('اختر','اختاري')+' ما تريد. إكمال الثلاثة في يوم واحد يعطي 30 نقطة إضافية.'}</p>
- <ul class="plan">${PLAN.map(x=>`<li><button type="button" class="${pl[x.k]?'done':''}" data-act="${x.k}" style="--c:var(--${x.c})"><span class="n">${pl[x.k]?'<i>✓</i>':x.i}</span><span class="grow"><b>${x.t}</b><br><span class="m2">${pl[x.k]?'تم اليوم · اضغط للتدريب مرة أخرى':x.m}</span></span><span class="go" aria-hidden="true">‹</span></button></li>`).join('')}</ul></div></div>
+ <ul class="plan">${PLAN.map(x=>`<li><button type="button" class="${pl[x.k]?'done':''}" data-act="${x.k}" style="--c:var(--${x.c})"><span class="n">${pl[x.k]?'<i>✓</i>':x.i}</span><span class="grow"><b>${x.t}</b><br><span class="m2">${pl[x.k]?'تم اليوم · اضغط للتدريب مرة أخرى':x.m}</span></span><span class="go" aria-hidden="true">‹</span></button></li>`).join('')}</ul></div>${T('المحادثة الصوتية','تحدّث بالإنجليزي، والتطبيق يسمعك ويصحّح لك','talk')}</div>
  <div>${board.length>1?`<div class="sec"><div class="row between"><h2>الترتيب</h2><button class="x" data-go="comp">المنافسة</button></div><div class="card"><div class="list">${board.map((q,i)=>`<div class="li"><b style="width:18px">${i+1}</b><span class="av ${q.gender}">${esc(q.name.trim()[0]||'؟')}</span><span class="grow">${esc(q.name)}</span><span style="text-align:left"><b>${lifetime(q)}</b><br><span class="note">${tierOf(lifetime(q)).name}</span></span></div>`).join('')}</div></div></div>`:''}
  ${CLOUD&&C.mode==='student'?'':'<div class="sec"><button class="btn plain wide" data-go="parent">لوحة ولي الأمر</button></div>'}</div></div>`}
 
 function vEn(){const p=cur();const hc=Object.keys(p.hard).length;
  return header()+band('الإنجليزي',`تدريب إضافي · ${GRADES[p.grade]} · ${TERMS[p.term]}`)+`
- <div class="sec">${T('تدريب إضافي','10 أسئلة جديدة: مفردات وقواعد واستماع وقراءة','enTrain',true)}
+ <div class="sec">${T('المحادثة الصوتية','تحدّث بالإنجليزي، والتطبيق يسمعك ويصحّح لك','talk',true)}${T('تدريب إضافي','10 أسئلة جديدة: مفردات وقواعد واستماع وقراءة','enTrain')}
  ${hc?T('الكلمات الصعبة',hc+' كلمات أخطأت فيها تحتاج مراجعة','hard'):''}</div>`}
 
 function vQd(){const p=cur();const tab=(lastQtab==='t'||lastQtab==='thl')?'t':'q';
@@ -1007,19 +1182,19 @@ function vForm(){const f=view.f;const seg=(key,opts)=>`<div class="seg" role="ra
  <p class="warn" id="ferr" hidden>اكتب الاسم أولاً.</p>
  <button class="btn wide" type="submit">حفظ</button></form>`}
 
-function secOf(){const n=view.name;if(['en','flash','hard','readList'].includes(n))return 'en';if(n==='qd'||n==='mist')return(lastQtab==='t'||lastQtab==='thl')?'th':'qd';if((n==='quiz'||n==='result')&&view.q&&view.q.items[0])return view.q.items[0].sec;if(n==='comp')return 'cp';return ''}
+function secOf(){const n=view.name;if(['en','flash','hard','readList','talkList','talkRun'].includes(n))return 'en';if(n==='qd'||n==='mist')return(lastQtab==='t'||lastQtab==='thl')?'th':'qd';if((n==='quiz'||n==='result')&&view.q&&view.q.items[0])return view.q.items[0].sec;if(n==='comp')return 'cp';return ''}
 function band(t,sub){return `<div class="band"><h1>${t}</h1>${sub?`<p class="sub">${sub}</p>`:''}</div>`}
 const AUTHV=['start','plogin','pfam','slogin','loading'];
 function render(){if(CLOUD){if(!C.ready&&view.name!=='loading')view={name:'loading'};else if(C.ready&&!C.user&&!['start','plogin','slogin'].includes(view.name))view={name:'start'};else if(C.ready&&C.mode==='parent'&&!C.fam&&!['pfam',...ADMV].includes(view.name))view={name:'pfam'}}
  const p=cur();document.body.dataset.sec=secOf();if(!AUTHV.includes(view.name)&&!ADMV.includes(view.name)&&(!CLOUD||(C.mode==='parent'&&C.fam))&&!S.profiles.length&&view.name!=='setup'){view={name:'setup',rows:[{name:'',gender:'m',grade:1,term:1}]}}
  document.body.dataset.g=(view.name==='form'?view.f.gender:view.name==='setup'?'m':(p?p.gender:'m'));
- const map={admin:vAdmin,adminFam:vAdminFam,start:vStart,plogin:vPlogin,pfam:vPfam,slogin:vSlogin,loading:vLoading,who:vWho,home:vHome,en:vEn,qd:vQd,flash:vFlash,readList:vReadList,hard:vHard,mist:vMist,quiz:vQuiz,result:vResult,parent:vParent,form:vForm,setup:vSetup,comp:vComp};
+ const map={talkList:vTalkList,talkRun:vTalkRun,admin:vAdmin,adminFam:vAdminFam,start:vStart,plogin:vPlogin,pfam:vPfam,slogin:vSlogin,loading:vLoading,who:vWho,home:vHome,en:vEn,qd:vQd,flash:vFlash,readList:vReadList,hard:vHard,mist:vMist,quiz:vQuiz,result:vResult,parent:vParent,form:vForm,setup:vSetup,comp:vComp};
  app.innerHTML=(map[view.name]||vWho)();
- const nav=$('#nav');nav.hidden=!p||['who','form','quiz','setup',...AUTHV,...ADMV].includes(view.name);document.body.classList.toggle('has-nav',!nav.hidden);
- nav.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.go===view.name||(b.dataset.go==='en'&&['flash','readList','hard'].includes(view.name))||(b.dataset.go==='qd'&&view.name==='mist')));
+ const nav=$('#nav');nav.hidden=!p||['who','form','quiz','setup','talkRun',...AUTHV,...ADMV].includes(view.name);document.body.classList.toggle('has-nav',!nav.hidden);
+ nav.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.go===view.name||(b.dataset.go==='en'&&['flash','readList','hard','talkList','talkRun'].includes(view.name))||(b.dataset.go==='qd'&&view.name==='mist')));
  if(view.name==='quiz'){const it=view.q.items[view.q.i];if(!it.shownAt)it.shownAt=Date.now();if(it.autoSpeak&&view.q.res[view.q.i]==null&&!it._spoken){it._spoken=true;setTimeout(()=>speak(it.speak),250)}tickTimer()}
  if(view.name==='comp'){subscribeBoard();renderBoard();const of=$('#oform');of.addEventListener('submit',e=>{e.preventDefault();const p=cur();p.nick=$('#onick').value.trim()||p.name;p.group=$('#ogrp').value.trim().toUpperCase();save();pushAll(true);boardKey='';render();const sv=$('#osaved');if(sv)sv.hidden=false})}
- bindAuthForms();bindAdmin();if(view.name==='admin'&&C.user&&!A.fams&&!A.loading&&!A.err)adminLoad();
+ bindAuthForms();const tkf=$('#tkform');if(tkf)tkf.addEventListener('submit',e=>{e.preventDefault();const v=$('#tkin').value.trim();if(!v)return;tkEval([v])});bindAdmin();if(view.name==='admin'&&C.user&&!A.fams&&!A.loading&&!A.err)adminLoad();
  const sf=$('#sform');if(sf)sf.addEventListener('submit',e=>{e.preventDefault();syncRows();if(view.rows.some(r=>!r.name.trim())){$('#serr').hidden=false;return}
   if(CLOUD){view.rows.forEach(r=>{if(!/^\d{4}$/.test(r.pin||''))r.pin=rndPin()});const b=sf.querySelector('button[type=submit]');b.disabled=true;b.textContent='جارٍ الحفظ…';cloudAddKids(view.rows).then(()=>go('who')).catch(er=>{b.disabled=false;b.textContent='حفظ والبدء';toast(authErr(er))});return}
   view.rows.forEach(r=>S.profiles.push(newP(r.name.trim(),r.gender,r.grade,r.term)));save();go('who')});
@@ -1090,6 +1265,14 @@ function act(a){const p=cur();
  case 'parentFromWho':go('parent');break;
  case 'formBack':go(view.back||(cur()?'parent':'who'));break;
  case 'planNext':{const st=planStep(p);if(st<0){go('home');break}act(PLAN[st].k);break}
+ case 'talk':go('talkList');break;
+ case 'tkList':TK=null;go('talkList');break;
+ case 'tkQuit':try{REC&&REC.abort()}catch(e){}try{speechSynthesis.cancel()}catch(e){}TK=null;go('talkList');break;
+ case 'tkMic':tkListen();break;
+ case 'tkType':TK.typing=true;render();setTimeout(()=>{const i=$('#tkin');if(i)i.focus()},50);break;
+ case 'tkMicMode':TK.typing=false;render();break;
+ case 'tkNext':tkNext();break;
+ case 'tkShow':tkShow();break;
  case 'enTrain':startQuiz({title:'تدريب الإنجليزي',kind:'enTrain',back:'en',items:enTrainItems(p)});break;
  case 'qTrain':startQuiz({title:'تدريب القدرات',kind:'qTrain',back:'qd',items:qTrainItems(p)});break;
  case 'tTrain':lastQtab='t';startQuiz({title:'تدريب التحصيلي',kind:'tTrain',back:'qd',items:tTrainItems(p)});break;
@@ -1123,6 +1306,8 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
  if(d.say){speak(d.say);return}
  if(d.copy){const t=d.copy;try{navigator.clipboard.writeText(t).then(()=>toast(t.length>24?'تم نسخ الرابط':'تم النسخ: '+t),()=>toast(t))}catch(e){toast(t)}return}
  if(d.pt){go('plogin',{t:d.pt});return}
+ if(d.talk){startTalk(d.talk);return}
+ if(d.tktr){const a=b.closest('.bub').querySelector('.bubar');if(a)a.hidden=!a.hidden;return}
  if(d.afam){A.edit=null;A.del=null;A.delFam=false;go('adminFam',{fid:d.afam,q:view.q});return}
  if(d.adedit){const f=A.fams.find(x=>x.id===view.fid),k=f&&f.kids.find(x=>x.id===d.adedit);if(!k)return;A.edit=k.id;A.del=null;A.form={name:k.name,gender:k.gender,grade:k.grade,term:k.term||1,pin:k.pin||''};render();return}
  if(d.adset){adSync();A.form[d.adset]=d.adset==='gender'?d.v:+d.v;render();return}
@@ -1151,7 +1336,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
 
 /* وقت التدريب */
 let lastSave=0;
-setInterval(()=>{if(view.name==='quiz')tickTimer();const p=cur();if(!p||document.hidden)return;if(!['quiz','flash','readList','hard','mist'].includes(view.name))return;const k=dkey();p.secs++;p.daySecs[k]=(p.daySecs[k]||0)+1;lg(p,k).s++;if(Date.now()-lastSave>(CLOUD?30000:15000)){lastSave=Date.now();save()}},1000);
+setInterval(()=>{if(view.name==='quiz')tickTimer();const p=cur();if(!p||document.hidden)return;if(!['quiz','flash','readList','hard','mist','talkRun'].includes(view.name))return;const k=dkey();p.secs++;p.daySecs[k]=(p.daySecs[k]||0)+1;lg(p,k).s++;if(Date.now()-lastSave>(CLOUD?30000:15000)){lastSave=Date.now();save()}},1000);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});
 
 document.documentElement.lang='ar';
