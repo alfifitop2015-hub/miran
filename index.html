@@ -75,6 +75,8 @@ h1{font-size:28px;font-weight:800}h2{font-size:21px;font-weight:700}h3{font-size
 .plan .n{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-family:var(--fd);font-weight:700;border:2px solid currentColor;flex:none}
 .plan button.done .n{background:var(--onacc)}.plan button.done .n i{color:var(--acc);font-style:normal}
 .plan .m2{font-size:12px;opacity:.85}
+.rkt{display:inline-block;font-size:12px;font-weight:700;border-radius:99px;padding:1px 9px;margin-inline-start:4px;vertical-align:middle;white-space:nowrap}
+.rkt.r1{background:#FFE9A8;color:#7A5200}.rkt.r2{background:#E6E9F0;color:#3E4658}.rkt.r3{background:#F6D9C2;color:#7A3E12}.rkt.r4{background:color-mix(in srgb,var(--pink) 16%,transparent);color:var(--pink)}
 .seccard{display:flex;align-items:center;gap:16px;width:100%;text-align:start;border:none;border-radius:20px;padding:20px;color:#fff;background:linear-gradient(135deg,var(--c),var(--c2));box-shadow:0 14px 30px -14px var(--c);cursor:pointer}
 .seccard b{display:block;font-family:var(--fd);font-size:24px;line-height:1.2}.seccard span span{display:block;font-size:13px;opacity:.92;margin-top:3px}
 .seccard .scst{display:inline-block!important;margin-top:8px!important;background:rgba(255,255,255,.22);border-radius:99px;padding:3px 10px;font-weight:700;opacity:1!important}
@@ -397,19 +399,21 @@ function fbStart(){if(!FB)return;const b='https://www.gstatic.com/firebasejs/10.
   firebase.initializeApp(FB);fb=firebase.firestore();try{fb.enablePersistence({synchronizeTabs:true}).catch(()=>{})}catch(e){}firebase.auth().onAuthStateChanged(u=>{onAuth(u)})}).catch(()=>{fb=null;C.ready=true;app.innerHTML=startTop()+'<div class="warn">تعذّر تحميل الخدمة. تحقّق من الإنترنت ثم أعد فتح الصفحة.</div>'})}
 function pushAll(force){if(!fb||!C.sid||C.mode!=='student')return;if(!force&&Date.now()-lastPush<30000){clearTimeout(pushAll.t);pushAll.t=setTimeout(()=>pushAll(true),30000);return}lastPush=Date.now();
  const p=cur();if(!p)return;const ref=fb.collection('players').doc(p.id);if(!p.name){ref.delete().catch(()=>{});return}
- const sc=scoreAll(p);ref.set({sid:p.id,nick:p.name.slice(0,20),grade:p.grade,stage:stageOf(p.grade),total:sc.total,days:sc.days,acc:Math.round(sc.accv*100),answers:sc.a,updated:Date.now()}).catch(()=>{})}
+ const sc=scoreAll(p);ref.set({sid:p.id,nick:p.name.slice(0,20),gender:p.gender||'m',grade:p.grade,stage:stageOf(p.grade),total:sc.total,days:sc.days,acc:Math.round(sc.accv*100),answers:sc.a,updated:Date.now()}).catch(()=>{})}
 document.addEventListener('visibilitychange',()=>{if(document.hidden){pushAll(true);if(CLOUD)flushSave()}});
 function subscribeBoard(){const p=cur();const bs=view.bs||'all';const key=bs+'|'+p.grade+'|'+(C.sid||'');if(key===boardKey)return;boardKey=key;if(unsub){unsub();unsub=null}boardRows=null;if(!fb)return;
  let q=fb.collection('players');
  if(bs==='st')q=q.where('stage','==',stageOf(p.grade));else if(bs==='gr')q=q.where('grade','==',p.grade);else q=q.orderBy('total','desc').limit(100);
  unsub=q.onSnapshot(sn=>{boardRows=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>r.sid).sort((a,b)=>b.total-a.total).slice(0,100);renderBoard()},()=>{boardRows=[];renderBoard()})}
+function rankTitle(i,gd){const f=gd==='f';return i===1?['🥇',f?'فارسة المنافسة':'فارس المنافسة','r1']:i===2?['🥈',f?'منافسة شرسة':'منافس شرس','r2']:i===3?['🥉',f?'منافسة قوية':'منافس قوي','r3']:i<=10?['🔥',f?'صاعدة بقوة':'صاعد بقوة','r4']:null}
+function rankBadge(i,gd,tot){const t=tot>0?rankTitle(i,gd):null;return t?`<span class="rkt ${t[2]}">${t[0]} ${t[1]}</span>`:''}
 function renderBoard(){const el=$('#board');if(!el)return;let rows,note='';const bs=view.bs||'all',me=cur();
  if(!fb){rows=S.profiles.filter(p=>p.online&&(bs==='all'||(bs==='st'?stageOf(p.grade)===stageOf(me.grade):p.grade===me.grade))).map(p=>({nick:p.nick||p.name,grade:p.grade,total:lifetime(p),me:p.id===S.active})).sort((a,b)=>b.total-a.total);
   note=FB?'جارٍ الاتصال بالترتيب الأونلاين…':'هذه نسخة تجريبية: الترتيب هنا لملفات هذا الجهاز فقط. الترتيب الأونلاين للجميع يعمل في النسخة المنشورة على الإنترنت.'}
  else if(boardRows==null){el.innerHTML='<p class="note">جارٍ تحميل الترتيب…</p>';return}
  else{rows=boardRows.map((r,i)=>Object.assign({},r,{me:r.id===C.sid,rk:i+1}));if(!rows.length)note='لا يوجد متنافسون بعد في هذه القائمة. كن أول من يبدأ.';
   else if(view.name==='home'&&rows.length>10){const mi=rows.findIndex(r=>r.me);rows=rows.slice(0,10).concat(mi>=10?[rows[mi]]:[])}}
- el.innerHTML=(rows.length?`<div class="list">${rows.map((r,i)=>`<div class="brd ${r.me?'me':''}"><span class="n">${r.rk||i+1}</span><span>${esc(r.nick)}${r.me?' <span class="note">(أنت)</span>':''}<br><span class="note">${GRADES[r.grade]||''}</span> <span class="tier">${tierOf(r.total||0).name}</span></span><span class="sc">${r.total||0}</span></div>`).join('')}</div>`:'')+(note?`<p class="note" style="margin:8px 0 0">${note}</p>`:'')}
+ el.innerHTML=(rows.length?`<div class="list">${rows.map((r,i)=>`<div class="brd ${r.me?'me':''}"><span class="n">${r.rk||i+1}</span><span>${esc(r.nick)}${r.me?' <span class="note">(أنت)</span>':''} ${fb?rankBadge(r.rk||i+1,r.gender,r.total||0):''}<br><span class="note">${GRADES[r.grade]||''}</span> <span class="tier">${tierOf(r.total||0).name}</span></span><span class="sc">${r.total||0}</span></div>`).join('')}</div>`:'')+(note?`<p class="note" style="margin:8px 0 0">${note}</p>`:'')}
 
 function sumSt(o){let c=0,t=0;Object.values(o||{}).forEach(s=>{c+=s.c;t+=s.t});return{c,t}}
 
@@ -786,7 +790,7 @@ async function adminMigrate(){const fams=await fb.collection('families').get();l
  for(const f of fams.docs){const r=fb.collection('families').doc(f.id);
   const [k,s,m]=await Promise.all([r.collection('kids').get(),r.collection('secrets').get(),r.collection('members').get()]);
   for(const d of k.docs){const ex=await stuRef(d.id).get();if(!ex.exists){const p=normP(Object.assign({},d.data(),{id:d.id}));const x=stuDoc(p);x.created=Date.now();x.migrated=true;await stuRef(d.id).set(x);n++;
-    if(p.nick){const sc=scoreAll(p);await fb.collection('players').doc(d.id).set({sid:d.id,nick:p.name.slice(0,20),grade:p.grade,stage:stageOf(p.grade),total:sc.total,days:sc.days,acc:Math.round(sc.accv*100),answers:sc.a,updated:Date.now()}).catch(()=>{})}}
+    if(p.nick){const sc=scoreAll(p);await fb.collection('players').doc(d.id).set({sid:d.id,nick:p.name.slice(0,20),gender:p.gender||'m',grade:p.grade,stage:stageOf(p.grade),total:sc.total,days:sc.days,acc:Math.round(sc.accv*100),answers:sc.a,updated:Date.now()}).catch(()=>{})}}
    await fb.collection('players').doc(f.id+'_'+d.id).delete().catch(()=>{});await r.collection('kids').doc(d.id).delete()}
   for(const d of s.docs)await r.collection('secrets').doc(d.id).delete();
   for(const d of m.docs){if(d.data().role==='parent')await fb.collection('users').doc(d.id).delete().catch(()=>{});await r.collection('members').doc(d.id).delete()}
@@ -828,7 +832,7 @@ function adBoardLoad(){AB.rows=null;render();fb.collection('players').orderBy('t
 function vAdBoard(){const sg=(k,l)=>`<button type="button" class="${AB.st===k?'on':''}" data-abst="${k}">${l}</button>`;
  const rows=(AB.rows||[]).filter(r=>AB.st==='all'||(r.stage||stageOf(r.grade))===AB.st);
  return startTop()+band('الترتيب','ترتيب كل الطلاب كما يظهر لهم في التطبيق.')+`<div class="sec"><div class="seg">${sg('all','الجميع')}${sg('p','ابتدائي')}${sg('m','متوسط')}${sg('s','ثانوي')}</div>
- ${AB.rows==null?'<div class="card">جارٍ التحميل…</div>':rows.length?`<div class="list">${rows.map((r,i)=>`<div class="brd"><span class="n">${i+1}</span><span>${esc(r.nick)}<br><span class="note">${GRADES[r.grade]||''}</span> <span class="tier">${tierOf(r.total||0).name}</span></span><span class="sc">${r.total||0}</span></div>`).join('')}</div>`:'<div class="card">لا يوجد متنافسون بعد.</div>'}
+ ${AB.rows==null?'<div class="card">جارٍ التحميل…</div>':rows.length?`<div class="list">${rows.map((r,i)=>`<div class="brd"><span class="n">${i+1}</span><span>${esc(r.nick)} ${rankBadge(i+1,r.gender,r.total||0)}<br><span class="note">${GRADES[r.grade]||''}</span> <span class="tier">${tierOf(r.total||0).name}</span></span><span class="sc">${r.total||0}</span></div>`).join('')}</div>`:'<div class="card">لا يوجد متنافسون بعد.</div>'}
  <button class="btn plain wide" data-act="adBoard">تحديث</button><button class="btn wide" data-act="adHome">رجوع لإدارة النظام</button></div>`}
 function adSync(){const n=$('#adn');if(A.form&&n)A.form.name=n.value}
 function bindAdmin(){const q=$('#adq');if(q)q.addEventListener('input',()=>{view.q=q.value;const l=$('#adlist');if(l)l.innerHTML=adFiltered().map(adRow).join('')||'<div class="card">لا يوجد منافسون بعد.</div>'});
@@ -1191,7 +1195,7 @@ function loadPack(){if(location.protocol==='file:'||!FB)return;const d=new Date(
 let view={name:'who'};
 function go(name,extra){view=Object.assign({name},extra||{});render();window.scrollTo(0,0)}
 function touchDay(p){const k=dkey();if(p.lastDay!==k){p.streak=(p.lastDay===daysAgo(1))?p.streak+1:1;p.lastDay=k}p.days[k]=(p.days[k]||0)+1}
-function record(it,ok,mode,dt){const p=cur();if(!p)return;const l=lg(p);if(it.cat==='speed'){if(ok){p.points+=5;if((dt==null||dt>=700)&&l.sp<30)l.sp++}touchDay(p);save();return}if(dt==null||dt>=2000){l.a++;if(ok)l.c++}const sec=it.sec;const st=p.stats[sec][it.cat]||(p.stats[sec][it.cat]={c:0,t:0});st.t++;if(ok){st.c++;p.points+=10}touchDay(p);
+function record(it,ok,mode,dt){const p=cur();if(!p)return;const l=lg(p);if(it.cat==='speed'){if(ok){p.points+=5;if(dt==null||dt>=700)l.sp++}touchDay(p);save();return}if(dt==null||dt>=2000){l.a++;if(ok)l.c++}const sec=it.sec;const st=p.stats[sec][it.cat]||(p.stats[sec][it.cat]={c:0,t:0});st.t++;if(ok){st.c++;p.points+=10}touchDay(p);
  if(it.word){const w=it.word.w;if(!ok)p.hard[w]={n:2};else if(p.hard[w]){p.hard[w].n--;if(p.hard[w].n<=0){delete p.hard[w];l.wm++}}}
  if((sec==='qd'||sec==='th')&&it.cat!=='speed'){if(!ok&&!p.mist.some(x=>x.id===it.id)){p.mist.unshift({id:it.id,sec:it.sec,cat:it.cat,passage:it.passage,chLtr:it.chLtr,q:it.q,c:it.c,a:it.a,ex:it.ex,tip:it.tip});p.mist=p.mist.slice(0,40)}
   if(ok&&mode==='mist'&&p.mist.some(x=>x.id===it.id)){p.mist=p.mist.filter(x=>x.id!==it.id);l.mf++}}
@@ -1308,7 +1312,7 @@ function vComp(){const p=cur();const sc=scoreAll(p);const t=tierOf(sc.total);con
  <details class="card"><summary>كيف تُحسب النقاط؟</summary><ul>
  <li>كل يوم تدريب: 20 نقطة.</li><li>كل سؤال محلول: نقطة، وكل دقيقة تدريب: نقطة.</li><li>كل إجابة صحيحة: نقطتان إضافيتان.</li>
  <li>إكمال تدريب اليوم الأربعة (كلمات اليوم، المحادثة الصوتية، القدرات، التحصيلي) في يوم واحد 30، كلمات اليوم 15، اختبار محاكي 20، تصحيح سؤال من دفتر الأخطاء 5، إتقان كلمة صعبة 3.</li>
- <li>تمرين السرعة: نقطة لكل إجابة صحيحة، بحد أقصى 30 في اليوم.</li><li>مكافأة 50 نقطة عن كل أسبوع تتحسّن فيه الدقة 5% أو أكثر عن الأسبوع الذي قبله.</li>
+ <li>تمرين السرعة: نقطة لكل إجابة صحيحة.</li><li>مكافأة 50 نقطة عن كل أسبوع تتحسّن فيه الدقة 5% أو أكثر عن الأسبوع الذي قبله.</li>
  <li>المجموع يُضرب في معامل الدقة العام: من 0.7 عند دقة 0% إلى 1.3 عند دقة 100%.</li><li>الرصيد تراكمي ويُحدَّث في الترتيب خلال ثوانٍ من كل إجابة.</li><li>لا سقف للنقاط ولا حد يومي: كلما تدرّبت أكثر ارتفع رصيدك.</li>
  <li>الإجابة في أقل من ثانيتين لا تُحسب، حتى لا يُضغط عشوائياً.</li><li>الأسئلة تتكيّف مع صف كل طالب ومستواه، فالدقة تُقاس على أسئلة مناسبة له، ويمكن عرض الترتيب حسب المرحلة أو الصف.</li>
  <li>الألقاب: برونزي 300، فضي 1000، ذهبي 3000، ماسي 7000، أسطوري 15000 نقطة.</li></ul></details></div>`}
