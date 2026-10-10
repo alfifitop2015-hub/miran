@@ -1006,7 +1006,7 @@ function vTalkRun(){if(!TK)return vTalkList();const s=TK.sc,n=s.turns.length;
   :m.w==='me'?`<div class="bub me pop">${esc(m.t)}</div>`
   :`<div class="bub sys ${m.ok?'ok':''} pop">${m.h}${m.say?`<div><button class="x" data-say="${esc(m.say)}">${ICON.spk} استمع للإجابة</button></div>`:''}</div>`).join('');
  let ctl;
- if(TK.done){const pct=Math.round(100*TK.first/n);ctl=`<div class="card stack" style="text-align:center;align-items:center"><div class="big">${TK.first}/${n}</div><p style="margin:0">فهمتك من أول محاولة في ${TK.first} من ${n} جمل (${pct}%).</p>${TK.allDone?`<p style="margin:0;font-weight:700;color:var(--ok)">${g('أنهيت','أنهيتِ')} تدريب اليوم كاملاً: +30 نقطة إضافية!</p>`:''}
+ if(TK.done){const pct=Math.round(100*TK.first/n);ctl=`<div class="card stack" style="text-align:center;align-items:center"><div class="big">${TK.first}/${n}</div><p style="margin:0">فهمتك من أول محاولة في ${TK.first} من ${n} جمل (${pct}%).</p>${TK.allDone?`<p style="margin:0;font-weight:700;color:var(--ok)">${g('أنهيت','أنهيتِ')} تدريب اليوم كاملاً. ${g('أحسنت','أحسنتِ')}!</p>`:''}
   <div class="row" style="width:100%"><button class="btn grow" data-talk="${s.id}">إعادة المحادثة</button><button class="btn plain grow" data-act="tkList">محادثة أخرى</button></div><button class="btn plain wide" data-go="home">الرئيسية</button></div>`}
  else if(TK.waitNext)ctl=`<button class="btn wide" data-act="tkNext">${TK.i<n-1?'الجملة التالية':'عرض النتيجة'}</button>`;
  else ctl=`<div class="tkctl">${TK.typing?`<form id="tkform" class="row" style="width:100%"><input type="text" id="tkin" dir="ltr" autocomplete="off" placeholder="Type your answer…" class="grow"><button class="btn" type="submit">إرسال</button></form>${SR?'<button class="x" data-act="tkMicMode">العودة للتحدث بالصوت</button>':''}`
@@ -1232,8 +1232,8 @@ function vWho(){if(CLOUD&&C.mode==='student')return vStudentWho();return header(
 
 const SECS=[{k:'en',go:'en',c:'en',c2:'pink',i:'E',t:'الإنجليزي',items:['enDay','talk'],m:'كلمات اليوم · المحادثة الصوتية · تدريب إضافي · الكلمات الصعبة'},{k:'q',go:'goQ',c:'qd',c2:'home',i:'ق',t:'القدرات',items:['qTrain'],m:'كمي ولفظي · اختبار محاكي · دفتر الأخطاء'},{k:'t',go:'goT',c:'th',c2:'en',i:'ت',t:'التحصيلي',items:['tTrain'],m:'رياضيات وعلوم · اختبار محاكي · دفتر الأخطاء'}];
 function vHome(){const p=cur();const pl=planOf(p);const st=planStep(p);const done=PLAN.filter(x=>pl[x.k]).length;const bs=view.bs||'all';
- const card=x=>{const d=x.items.filter(k=>pl[k]).length,all=d===x.items.length;return `<button class="seccard" ${x.go==='en'?'data-go="en"':`data-act="${x.go}"`} style="--c:var(--${x.c});--c2:var(--${x.c2})"><span class="sci">${all?'✓':x.i}</span><span class="grow"><b>${x.t}</b><span>${x.m}</span><span class="scst">${all?'تم تدريب اليوم ✓':x.items.length>1?`تدريب اليوم: ${d} من ${x.items.length}`:'تدريب اليوم لم يكتمل بعد'}</span></span><span class="go">‹</span></button>`};
- return header()+`<h1>أهلاً يا ${esc(p.name)}</h1><p class="sub">${st<0?g('أنهيت','أنهيتِ')+' تدريب اليوم كاملاً وحصلت على 30 نقطة إضافية.':`تدريب اليوم: ${done} من ${PLAN.length} · إكمال الأربعة يعطي 30 نقطة إضافية.`}</p>
+ const card=x=>{const d=x.items.filter(k=>pl[k]).length,all=d===x.items.length;return `<button class="seccard" ${x.go==='en'?'data-go="en"':`data-act="${x.go}"`} style="--c:var(--${x.c});--c2:var(--${x.c2})"><span class="sci">${x.i}</span><span class="grow"><b>${x.t}</b><span>${x.m}</span>${d?`<span class="scst">✓ ${g('تدرّبت','تدرّبتِ')} اليوم</span>`:''}</span><span class="go">‹</span></button>`};
+ return header()+`<h1>أهلاً يا ${esc(p.name)}</h1><p class="sub">${g('كلما تدرّبت أكثر زادت نقاطك، ولا يوجد حد يومي للنقاط.','كلما تدرّبتِ أكثر زادت نقاطكِ، ولا يوجد حد يومي للنقاط.')}</p>
  <div class="homegrid"><div class="sec">${SECS.map(card).join('')}</div>
  <div>${CLOUD?`<div class="sec"><div class="row between"><h2>🏆 الترتيب</h2><button class="x" data-go="comp">عرض الكل</button></div><div class="card"><div class="seg">${['all','st','gr'].map(k=>`<button type="button" class="${bs===k?'on':''}" data-bs="${k}">${k==='all'?'الجميع':k==='st'?STAGES[stageOf(p.grade)]:'صفّي'}</button>`).join('')}</div><div id="board" style="margin-top:10px"></div></div></div>`:`<div class="sec"><button class="btn plain wide" data-go="comp">🏆 الترتيب</button><button class="btn plain wide" data-go="parent">لوحة ولي الأمر</button></div>`}</div></div>`}
 
@@ -1243,7 +1243,7 @@ function vEn(){const p=cur();const hc=Object.keys(p.hard).length;const pl=planOf
  ${T('كلمات اليوم'+(pl.enDay?' ✓':''),pl.enDay?'تم اليوم · اضغط للتدريب مرة أخرى':'5 كلمات جديدة، ثم 10 أسئلة عليها وعلى القواعد والقراءة','enDay',!pl.enDay)}
  ${T('تدريب إضافي','10 أسئلة جديدة: مفردات وقواعد واستماع وقراءة','enTrain')}
  ${hc?T('الكلمات الصعبة',hc+' كلمات أخطأت فيها تحتاج مراجعة','hard'):''}
- <p class="note" style="margin:0">تدريب اليوم في الإنجليزي: المحادثة الصوتية وكلمات اليوم.</p></div>`}
+ </div>`}
 
 const isThM=x=>TCAT[x.cat]!=null;
 const mistOf=p=>p.mist.filter(x=>((lastQtab==='t'||lastQtab==='thl')?isThM(x):!isThM(x)));
@@ -1294,7 +1294,7 @@ function vResult(){const Q=view.q;const p=cur();const n=Q.mode==='speed'?Q.res.l
  <div class="sec"><div class="card stack" style="align-items:center;text-align:center">${Q.mode==='speed'?`<div class="big">${ok}</div><p style="margin:0">إجابة صحيحة في دقيقة${ok>=p.speedBest&&ok>0?' · رقم قياسي جديد':''}</p>`:`<div class="big">${ok}/${n}</div><p style="margin:0">${pct}% · ${msg}</p>`}${Q.used!=null?`<p class="note" style="margin:0">الوقت المستغرق: ${Math.floor(Q.used/60)}:${String(Q.used%60).padStart(2,'0')}</p>`:''}</div>
  ${Q.sections?`<div class="card stack"><h3>حسب القسم</h3>${Q.sections.map((sc,k)=>{let c=0;for(let j=sc.start;j<sc.end;j++)if(Q.res[j]===Q.items[j].a)c++;return `<div class="catrow"><span>القسم ${k+1}: ${sc.name}</span><div class="bar"><i style="width:${100*c/(sc.end-sc.start)}%"></i></div><span class="v">${c}/${sc.end-sc.start}</span></div>`}).join('')}</div>`:''}
  ${Q.mode!=='speed'&&Object.keys(byCat).length>1?`<div class="card stack"><h3>حسب نوع السؤال</h3>${Object.entries(byCat).map(([k,v])=>`<div class="catrow"><span>${catName(k)}</span><div class="bar"><i style="width:${100*v.c/v.t}%"></i></div><span class="v">${v.c}/${v.t}</span></div>`).join('')}</div>`:''}
- ${PLAN.some(x=>x.k===Q.kind)?(planStep(p)>=0?'':`<div class="hero" style="text-align:center"><h2>${g('أنهيت','أنهيتِ')} تدريب اليوم كاملاً</h2><p class="sub">+30 نقطة إضافية. ${g('أحسنت','أحسنتِ')}!</p></div>`):''}
+ ${PLAN.some(x=>x.k===Q.kind)?(planStep(p)>=0?'':`<div class="hero" style="text-align:center"><h2>${g('أنهيت','أنهيتِ')} تدريب اليوم كاملاً</h2><p class="sub">${g('أحسنت! واصل التدريب لتجمع نقاطاً أكثر.','أحسنتِ! واصلي التدريب لتجمعي نقاطاً أكثر.')}</p></div>`):''}
  <div class="row"><button class="btn ${PLAN.some(x=>x.k===Q.kind)?'plain':''} grow" data-act="again">إعادة</button><button class="btn plain grow" data-go="${Q.back||'home'}">رجوع</button></div>
  ${Q.mode==='exam'?`<h2 style="margin-top:8px">مراجعة الإجابات</h2>${Q.items.map((it,k)=>{const r=Q.res[k];const good=r===it.a;return `<div class="card stack"><div class="row between"><span class="chip">${catName(it.cat)}</span><b style="color:var(--${good?'ok':'bad'})">${good?'صحيحة':r==null?'لم تُجب':'خاطئة'}</b></div><div>${it.q}</div>${!good?`<p class="note" style="margin:0">${r!=null?'إجابتك: '+it.c[r]+' · ':''}الصحيحة: ${it.c[it.a]}</p>`:''}<div class="rev"><ol style="margin:0;padding-inline-start:20px">${it.ex.map(s=>`<li>${s}</li>`).join('')}</ol></div></div>`}).join('')}`:''}</div>`}
 
@@ -1309,7 +1309,7 @@ function vComp(){const p=cur();const sc=scoreAll(p);const t=tierOf(sc.total);con
  <li>كل يوم تدريب: 20 نقطة.</li><li>كل سؤال محلول: نقطة، وكل دقيقة تدريب: نقطة.</li><li>كل إجابة صحيحة: نقطتان إضافيتان.</li>
  <li>إكمال تدريب اليوم الأربعة (كلمات اليوم، المحادثة الصوتية، القدرات، التحصيلي) في يوم واحد 30، كلمات اليوم 15، اختبار محاكي 20، تصحيح سؤال من دفتر الأخطاء 5، إتقان كلمة صعبة 3.</li>
  <li>تمرين السرعة: نقطة لكل إجابة صحيحة، بحد أقصى 30 في اليوم.</li><li>مكافأة 50 نقطة عن كل أسبوع تتحسّن فيه الدقة 5% أو أكثر عن الأسبوع الذي قبله.</li>
- <li>المجموع يُضرب في معامل الدقة العام: من 0.7 عند دقة 0% إلى 1.3 عند دقة 100%.</li><li>الرصيد تراكمي ويُحدَّث في الترتيب خلال ثوانٍ من كل إجابة.</li><li>لا سقف للنقاط: كلما تدرّبت أكثر ارتفع رصيدك.</li>
+ <li>المجموع يُضرب في معامل الدقة العام: من 0.7 عند دقة 0% إلى 1.3 عند دقة 100%.</li><li>الرصيد تراكمي ويُحدَّث في الترتيب خلال ثوانٍ من كل إجابة.</li><li>لا سقف للنقاط ولا حد يومي: كلما تدرّبت أكثر ارتفع رصيدك.</li>
  <li>الإجابة في أقل من ثانيتين لا تُحسب، حتى لا يُضغط عشوائياً.</li><li>الأسئلة تتكيّف مع صف كل طالب ومستواه، فالدقة تُقاس على أسئلة مناسبة له، ويمكن عرض الترتيب حسب المرحلة أو الصف.</li>
  <li>الألقاب: برونزي 300، فضي 1000، ذهبي 3000، ماسي 7000، أسطوري 15000 نقطة.</li></ul></details></div>`}
 
