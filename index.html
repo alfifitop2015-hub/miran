@@ -789,30 +789,30 @@ async function adminMigrate(){const fams=await fb.collection('families').get();l
 function adBusy(fn,okMsg){const bs=[...document.querySelectorAll('#app button')];bs.forEach(b=>b.disabled=true);
  return fn().then(r=>{if(okMsg)toast(typeof okMsg==='function'?okMsg(r):okMsg);return adminLoad()}).catch(e=>{bs.forEach(b=>b.disabled=false);toast(authErr(e))})}
 function adForm(id){const v=A.form;const sg=(k,o)=>`<div class="seg">${o.map(([x,l])=>`<button type="button" class="${v[k]===x?'on':''}" data-adset="${k}" data-v="${x}">${l}</button>`).join('')}</div>`;
- return `<form class="card stack" id="adkform"><h3>${id?'تعديل بيانات الطالب':'إضافة طالب'}</h3>
+ return `<form class="card stack" id="adkform"><h3>${id?'تعديل بيانات المنافس':'منافس جديد'}</h3>
  <label class="f" for="adn">الاسم<input type="text" id="adn" maxlength="20" value="${esc(v.name)}"></label>
  <div class="f stack"><b style="font-size:14px">الجنس</b>${sg('gender',[['m','طالب'],['f','طالبة']])}</div>
  <div class="f stack"><b style="font-size:14px">الصف</b>${gradeSeg('data-adset',v.grade)}<span class="note">${GRADES[v.grade]||''}</span></div>
  <div class="f stack"><b style="font-size:14px">الفصل الدراسي</b>${sg('term',[[1,'الأول'],[2,'الثاني']])}</div>
- ${id?'':'<p class="note" style="margin:0">بعد الحفظ يظهر رابط دخول ترسله للطالب، فيفتحه ويبدأ مباشرة.</p>'}
+ ${id?'':'<p class="note" style="margin:0">بعد الحفظ يظهر رابط دخول ترسله للمنافس، فيفتحه ويبدأ مباشرة.</p>'}
  <p class="warn" id="aderr" hidden></p><div class="row"><button class="btn grow" type="submit">حفظ</button><button type="button" class="btn plain grow" data-act="adCancel">إلغاء</button></div></form>`}
 function adRow(s){if(A.edit===s.id)return adForm(s.id);const l=A.links[s.id];
  return `<div class="card stack"><div class="row"><span class="av ${s.gender}">${esc((s.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(s.name)}</b><br><span class="note">${GRADES[s.grade]} · ${TERMS[s.term]||''} · ${s.score} نقطة · ${s.answers} سؤال${s.last?' · آخر تدريب '+s.last:''}</span></span></div>
  ${l?`<div class="tklink" dir="ltr">${esc(l)}</div><div class="row"><button class="btn plain grow" data-copy="${esc(l)}">نسخ الرابط</button><a class="btn grow" href="${esc(wa('رابط دخولك إلى مِران يا '+s.name+':\n'+l))}" target="_blank" rel="noopener">واتساب</a></div>`:''}
  ${A.del===s.id?`<div class="warn stack">حذف ${esc(s.name)} يمسح حسابه وكل تقدّمه نهائياً.<div class="row"><button class="btn danger" data-addelok="${s.id}">نعم، احذف</button><button class="btn plain" data-act="adCancel">إلغاء</button></div></div>`
- :`<div class="row" style="flex-wrap:wrap"><button class="x" style="font-weight:700" data-adas="${s.id}">دخول كطالب</button><button class="x" data-adedit="${s.id}">تعديل</button><button class="x" data-adlink="${s.id}">رابط دخول</button><button class="x" style="color:var(--bad)" data-addel="${s.id}">حذف</button></div>`}</div>`}
+ :`<div class="row" style="flex-wrap:wrap"><button class="x" style="font-weight:700" data-adas="${s.id}">دخول حسابه</button><button class="x" data-adedit="${s.id}">تعديل</button><button class="x" data-adlink="${s.id}">رابط دخول</button><button class="x" style="color:var(--bad)" data-addel="${s.id}">حذف</button></div>`}</div>`}
 function adFiltered(){const q=(view.q||'').trim().toLowerCase();return(A.list||[]).filter(s=>(A.st==='all'||stageOf(s.grade)===A.st)&&(!q||s.name.toLowerCase().includes(q)))}
 function vAdmin(){let body;
  if(A.err)body=`<div class="warn stack">${esc(A.err)}<span class="note">تأكد أنك نشرت قواعد الحماية الجديدة في Firebase.</span><button class="btn plain" data-act="adReload">إعادة المحاولة</button></div>`;
  else if(!A.list)body=`<div class="card">جارٍ التحميل…</div>`;
  else{const L=A.list,cnt=k=>L.filter(s=>stageOf(s.grade)===k).length;const sg=(k,l)=>`<button type="button" class="${A.st===k?'on':''}" data-adst="${k}">${l}</button>`;
-  body=`<div class="stats"><div class="stat" style="--c:var(--home)"><b>${L.length}</b><span>طالب</span></div><div class="stat" style="--c:var(--en)"><b>${cnt('p')}</b><span>ابتدائي</span></div><div class="stat" style="--c:var(--th)"><b>${cnt('m')+cnt('s')}</b><span>متوسط وثانوي</span></div></div>
+  body=`<div class="stats"><div class="stat" style="--c:var(--home)"><b>${L.length}</b><span>منافس</span></div><div class="stat" style="--c:var(--en)"><b>${cnt('p')}</b><span>ابتدائي</span></div><div class="stat" style="--c:var(--th)"><b>${cnt('m')+cnt('s')}</b><span>متوسط وثانوي</span></div></div>
   ${A.old?`<div class="card stack"><h3>بيانات النظام القديم</h3><p class="note" style="margin:0">${A.old>0?`يوجد ${A.old} طالب مسجّل عن طريق أولياء الأمور.`:'توجد بيانات عائلات قديمة.'} انقلهم للنظام الجديد مع تقدّمهم، ثم أرسل لكل واحد رابط الدخول.</p><button class="btn" data-act="adMigrate">نقل الطلاب للنظام الجديد</button></div>`:''}
   <button class="btn plain wide" data-act="adBoard">🏆 عرض الترتيب</button>
-  ${A.edit==='new'?adForm(null):`<button class="btn wide" data-act="adAdd">+ إضافة طالب</button>`}
+  ${A.edit==='new'?adForm(null):`<button class="btn wide" data-act="adAdd">+ إضافة منافس جديد</button>`}
   <label class="f" for="adq">بحث بالاسم<input type="text" id="adq" value="${esc(view.q||'')}" placeholder="ابحث…"></label>
   <div class="seg">${sg('all','الكل')}${sg('p','ابتدائي')}${sg('m','متوسط')}${sg('s','ثانوي')}</div>
-  <div class="stack" id="adlist">${adFiltered().map(adRow).join('')||'<div class="card">لا يوجد طلاب.</div>'}</div>
+  <div class="stack" id="adlist">${adFiltered().map(adRow).join('')||'<div class="card">لا يوجد منافسون بعد.</div>'}</div>
   <button class="btn plain wide" data-act="adReload">تحديث القائمة</button>`}
  return startTop()+band('إدارة النظام','كل الطلاب في التطبيق: إضافة وتعديل وحذف وروابط الدخول.')+`<div class="sec">${body}<p class="note" style="margin:0">${esc((C.user&&C.user.email)||'')}</p><button class="btn plain wide" data-act="logoutOk">تسجيل الخروج</button></div>`}
 function adAs(id){flushSave();stopSub();if(unsub){unsub();unsub=null}boardKey='';C.mode='student';C.asAdmin=true;C.sid=id;S={profiles:[],active:null};subStudent()}
@@ -825,10 +825,10 @@ function vAdBoard(){const sg=(k,l)=>`<button type="button" class="${AB.st===k?'o
  ${AB.rows==null?'<div class="card">جارٍ التحميل…</div>':rows.length?`<div class="list">${rows.map((r,i)=>`<div class="brd"><span class="n">${i+1}</span><span>${esc(r.nick)}<br><span class="note">${GRADES[r.grade]||''}</span> <span class="tier">${tierOf(r.total||0).name}</span></span><span class="sc">${r.total||0}</span></div>`).join('')}</div>`:'<div class="card">لا يوجد متنافسون بعد.</div>'}
  <button class="btn plain wide" data-act="adBoard">تحديث</button><button class="btn wide" data-act="adHome">رجوع لإدارة النظام</button></div>`}
 function adSync(){const n=$('#adn');if(A.form&&n)A.form.name=n.value}
-function bindAdmin(){const q=$('#adq');if(q)q.addEventListener('input',()=>{view.q=q.value;const l=$('#adlist');if(l)l.innerHTML=adFiltered().map(adRow).join('')||'<div class="card">لا يوجد طلاب.</div>'});
+function bindAdmin(){const q=$('#adq');if(q)q.addEventListener('input',()=>{view.q=q.value;const l=$('#adlist');if(l)l.innerHTML=adFiltered().map(adRow).join('')||'<div class="card">لا يوجد منافسون بعد.</div>'});
  const kf=$('#adkform');if(kf)kf.addEventListener('submit',e=>{e.preventDefault();adSync();const v=A.form,er=$('#aderr');
   if(!v.name.trim()){er.textContent='اكتب الاسم.';er.hidden=false;return}if(!v.grade){er.textContent='اختر الصف.';er.hidden=false;return}
-  const id=A.edit==='new'?null:A.edit;v.name=v.name.trim();adBusy(()=>adminSave(id,v),id?'تم الحفظ':'أُضيف الطالب. أرسل له رابط الدخول.').then(()=>{A.edit=null;A.form=null;render()})})}
+  const id=A.edit==='new'?null:A.edit;v.name=v.name.trim();adBusy(()=>adminSave(id,v),id?'تم الحفظ':'انضم منافس جديد! أرسل له رابط الدخول.').then(()=>{A.edit=null;A.form=null;render()})})}
 function cloudAct(a){if(!CLOUD)return false;switch(a){
  case 'pLogin':go('plogin');return true;
  case 'toStart':go('start');return true;
