@@ -75,6 +75,11 @@ h1{font-size:28px;font-weight:800}h2{font-size:21px;font-weight:700}h3{font-size
 .plan .n{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-family:var(--fd);font-weight:700;border:2px solid currentColor;flex:none}
 .plan button.done .n{background:var(--onacc)}.plan button.done .n i{color:var(--acc);font-style:normal}
 .plan .m2{font-size:12px;opacity:.85}
+.seccard{display:flex;align-items:center;gap:16px;width:100%;text-align:start;border:none;border-radius:20px;padding:20px;color:#fff;background:linear-gradient(135deg,var(--c),var(--c2));box-shadow:0 14px 30px -14px var(--c);cursor:pointer}
+.seccard b{display:block;font-family:var(--fd);font-size:24px;line-height:1.2}.seccard span span{display:block;font-size:13px;opacity:.92;margin-top:3px}
+.seccard .scst{display:inline-block!important;margin-top:8px!important;background:rgba(255,255,255,.22);border-radius:99px;padding:3px 10px;font-weight:700;opacity:1!important}
+.seccard .sci{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.25);font-family:var(--fd);font-weight:800;font-size:26px;flex:none}
+.seccard .go{font-size:30px;line-height:1}
 .plan .n.mic svg{width:15px;height:15px}.plan .n.mic{border-color:var(--c)}
 .tile.pri{border-color:transparent;background:linear-gradient(135deg,var(--acc),var(--acc2));color:var(--onacc);box-shadow:0 10px 24px -14px var(--acc)}
 .tile.pri h3,.tile.pri .meta,.tile.pri .go{color:var(--onacc)}.tile.pri .meta{opacity:.9}
@@ -1225,30 +1230,29 @@ function vWho(){if(CLOUD&&C.mode==='student')return vStudentWho();return header(
  <button class="btn ghost wide" data-act="add">إضافة مستخدم جديد</button>
  <button class="btn plain wide" data-act="parentFromWho">لوحة ولي الأمر</button></div>`}
 
-function vHome(){const p=cur();const today=dkey();const mins=Math.round((p.daySecs[today]||0)/60);const sc=lifetime(p);const pl=planOf(p);const st=planStep(p);
- const board=CLOUD?[1,2]:S.profiles.slice().sort((a,b)=>lifetime(b)-lifetime(a));const bs=view.bs||'all';
- return header()+`<h1>أهلاً يا ${esc(p.name)}</h1><p class="sub">${GRADES[p.grade]} · ${TERMS[p.term]}</p>
- <div class="${board.length>1?'homegrid':''}"><div class="sec"><div class="stats"><div class="stat" style="--c:var(--cp)"><b>${sc}</b><span>رصيدك</span></div><div class="stat" style="--c:var(--pink)"><b>${p.streak}</b><span>أيام متتالية</span></div><div class="stat" style="--c:var(--en)"><b>${mins}</b><span>دقيقة اليوم</span></div></div>
- <button class="talkcard" data-act="talk"><span class="tcmic">${MICSVG}</span><span class="grow"><b>المحادثة الصوتية</b><span>${g('تكلّم','تكلّمي')} بالإنجليزي، والتطبيق يسمع${g('ك','كِ')} ويصحّح ل${g('ك','كِ')}</span></span><span class="go">‹</span></button>
- <div class="hero"><h2>تدريب اليوم</h2><p class="sub">${st<0?g('أنهيت','أنهيتِ')+' الأربعة اليوم، وحصلت على 30 نقطة إضافية.':g('اختر','اختاري')+' ما تريد. إكمال الأربعة في يوم واحد يعطي 30 نقطة إضافية.'}</p>
- <ul class="plan">${PLAN.map(x=>`<li><button type="button" class="${pl[x.k]?'done':''}" data-act="${x.k}" style="--c:var(--${x.c})"><span class="n${x.i==='mic'?' mic':''}">${pl[x.k]?'<i>✓</i>':x.i==='mic'?MICSVG:x.i}</span><span class="grow"><b>${x.t}</b><br><span class="m2">${pl[x.k]?'تم اليوم · اضغط للتدريب مرة أخرى':x.m}</span></span><span class="go" aria-hidden="true">‹</span></button></li>`).join('')}</ul></div>
- ${T('تدريب إنجليزي إضافي','10 أسئلة جديدة: مفردات وقواعد واستماع وقراءة','enTrain')}${Object.keys(p.hard).length?T('الكلمات الصعبة',Object.keys(p.hard).length+' كلمات أخطأت فيها تحتاج مراجعة','hard'):''}
- <button class="tile" data-go="qd"><span class="grow"><h3>القدرات والتحصيلي</h3><span class="meta">اختبارات محاكية لقياس ودفتر الأخطاء</span></span><span class="go" aria-hidden="true">‹</span></button></div>
- <div>${CLOUD?`<div class="sec"><div class="row between"><h2>🏆 الترتيب</h2><button class="x" data-go="comp">عرض الكل</button></div><div class="card"><div class="seg">${['all','st','gr'].map(k=>`<button type="button" class="${bs===k?'on':''}" data-bs="${k}">${k==='all'?'الجميع':k==='st'?STAGES[stageOf(p.grade)]:'صفّي'}</button>`).join('')}</div><div id="board" style="margin-top:10px"></div></div></div>`:board.length>1?`<div class="sec"><div class="row between"><h2>الترتيب</h2><button class="x" data-go="comp">المنافسة</button></div><div class="card"><div class="list">${board.map((q,i)=>`<div class="li"><b style="width:18px">${i+1}</b><span class="av ${q.gender}">${esc(q.name.trim()[0]||'؟')}</span><span class="grow">${esc(q.name)}</span><span style="text-align:left"><b>${lifetime(q)}</b><br><span class="note">${tierOf(lifetime(q)).name}</span></span></div>`).join('')}</div></div></div>`:''}
- ${CLOUD&&C.mode==='student'?'':'<div class="sec"><button class="btn plain wide" data-go="parent">لوحة ولي الأمر</button></div>'}</div></div>`}
+const SECS=[{k:'en',go:'en',c:'en',c2:'pink',i:'E',t:'الإنجليزي',items:['enDay','talk'],m:'كلمات اليوم · المحادثة الصوتية · تدريب إضافي · الكلمات الصعبة'},{k:'q',go:'goQ',c:'qd',c2:'home',i:'ق',t:'القدرات',items:['qTrain'],m:'كمي ولفظي · اختبار محاكي · دفتر الأخطاء'},{k:'t',go:'goT',c:'th',c2:'en',i:'ت',t:'التحصيلي',items:['tTrain'],m:'رياضيات وعلوم · اختبار محاكي · دفتر الأخطاء'}];
+function vHome(){const p=cur();const pl=planOf(p);const st=planStep(p);const done=PLAN.filter(x=>pl[x.k]).length;const bs=view.bs||'all';
+ const card=x=>{const d=x.items.filter(k=>pl[k]).length,all=d===x.items.length;return `<button class="seccard" ${x.go==='en'?'data-go="en"':`data-act="${x.go}"`} style="--c:var(--${x.c});--c2:var(--${x.c2})"><span class="sci">${all?'✓':x.i}</span><span class="grow"><b>${x.t}</b><span>${x.m}</span><span class="scst">${all?'تم تدريب اليوم ✓':x.items.length>1?`تدريب اليوم: ${d} من ${x.items.length}`:'تدريب اليوم لم يكتمل بعد'}</span></span><span class="go">‹</span></button>`};
+ return header()+`<h1>أهلاً يا ${esc(p.name)}</h1><p class="sub">${st<0?g('أنهيت','أنهيتِ')+' تدريب اليوم كاملاً وحصلت على 30 نقطة إضافية.':`تدريب اليوم: ${done} من ${PLAN.length} · إكمال الأربعة يعطي 30 نقطة إضافية.`}</p>
+ <div class="homegrid"><div class="sec">${SECS.map(card).join('')}</div>
+ <div>${CLOUD?`<div class="sec"><div class="row between"><h2>🏆 الترتيب</h2><button class="x" data-go="comp">عرض الكل</button></div><div class="card"><div class="seg">${['all','st','gr'].map(k=>`<button type="button" class="${bs===k?'on':''}" data-bs="${k}">${k==='all'?'الجميع':k==='st'?STAGES[stageOf(p.grade)]:'صفّي'}</button>`).join('')}</div><div id="board" style="margin-top:10px"></div></div></div>`:`<div class="sec"><button class="btn plain wide" data-go="comp">🏆 الترتيب</button><button class="btn plain wide" data-go="parent">لوحة ولي الأمر</button></div>`}</div></div>`}
 
-function vEn(){const p=cur();const hc=Object.keys(p.hard).length;
+function vEn(){const p=cur();const hc=Object.keys(p.hard).length;const pl=planOf(p);
  return header()+band('الإنجليزي',`${GRADES[p.grade]} · ${TERMS[p.term]}`)+`
- <div class="sec"><button class="talkcard" data-act="talk"><span class="tcmic">${MICSVG}</span><span class="grow"><b>المحادثة الصوتية</b><span>${g('تكلّم','تكلّمي')} بالإنجليزي، والتطبيق يسمع${g('ك','كِ')} ويصحّح ل${g('ك','كِ')}</span></span><span class="go">‹</span></button>${T('تدريب إضافي','10 أسئلة جديدة: مفردات وقواعد واستماع وقراءة','enTrain')}
- ${hc?T('الكلمات الصعبة',hc+' كلمات أخطأت فيها تحتاج مراجعة','hard'):''}</div>`}
+ <div class="sec"><button class="talkcard" data-act="talk"><span class="tcmic">${pl.talk?'✓':MICSVG}</span><span class="grow"><b>المحادثة الصوتية</b><span>${pl.talk?'تم اليوم ✓ · اضغط لمحادثة أخرى':g('تكلّم','تكلّمي')+' بالإنجليزي، والتطبيق يسمع'+g('ك','كِ')+' ويصحّح ل'+g('ك','كِ')}</span></span><span class="go">‹</span></button>
+ ${T('كلمات اليوم'+(pl.enDay?' ✓':''),pl.enDay?'تم اليوم · اضغط للتدريب مرة أخرى':'5 كلمات جديدة، ثم 10 أسئلة عليها وعلى القواعد والقراءة','enDay',!pl.enDay)}
+ ${T('تدريب إضافي','10 أسئلة جديدة: مفردات وقواعد واستماع وقراءة','enTrain')}
+ ${hc?T('الكلمات الصعبة',hc+' كلمات أخطأت فيها تحتاج مراجعة','hard'):''}
+ <p class="note" style="margin:0">تدريب اليوم في الإنجليزي: المحادثة الصوتية وكلمات اليوم.</p></div>`}
 
-function vQd(){const p=cur();const tab=(lastQtab==='t'||lastQtab==='thl')?'t':'q';
+const isThM=x=>TCAT[x.cat]!=null;
+const mistOf=p=>p.mist.filter(x=>((lastQtab==='t'||lastQtab==='thl')?isThM(x):!isThM(x)));
+function vQd(){const p=cur();const tab=(lastQtab==='t'||lastQtab==='thl')?'t':'q';const pl=planOf(p);const ms=mistOf(p);
  const wk=tab==='q'?weakOf(p,[...Object.keys(QCAT),...Object.keys(VCAT)],'qd'):weakOf(p,Object.keys(TCAT),'th');
- const body=tab==='q'?T('تدريب إضافي','12 سؤالاً كمي ولفظي مع شرح الحل، ويركّز على نقاط ضعفك','qTrain',true)+T('اختبار قدرات محاكي','مثل قياس: 4 أقسام لفظي وكمي بالتناوب · 12 دقيقة لكل قسم','exam')
-  :T('تدريب إضافي','10 أسئلة رياضيات وفيزياء وكيمياء وأحياء من منهجك مع الشرح','tTrain',true)+T('اختبار تحصيلي محاكي','مثل قياس: 5 أقسام بالتساوي بين المواد الأربع · 5 دقائق لكل قسم','thExam');
- return header()+band('القدرات والتحصيلي','تدريب واختبارات محاكية لقياس، بأسئلة تناسب '+GRADES[p.grade]+'.')+`
- <div class="seg" style="margin-top:14px"><button type="button" class="${tab==='q'?'on':''}" data-qtab="q">القدرات</button><button type="button" class="${tab==='t'?'on':''}" data-qtab="t">التحصيلي</button></div>
- <div class="sec">${body}${p.mist.length?T('دفتر الأخطاء',p.mist.length+' أسئلة لإعادة حلّها','mist'):''}
+ const body=tab==='q'?T('تدريب اليوم'+(pl.qTrain?' ✓':''),(pl.qTrain?'تم اليوم · اضغط للتدريب مرة أخرى · ':'')+'12 سؤالاً كمي ولفظي مع شرح الحل، ويركّز على نقاط ضعفك','qTrain',!pl.qTrain)+T('اختبار قدرات محاكي','مثل قياس: 4 أقسام لفظي وكمي بالتناوب · 12 دقيقة لكل قسم','exam')
+  :T('تدريب اليوم'+(pl.tTrain?' ✓':''),(pl.tTrain?'تم اليوم · اضغط للتدريب مرة أخرى · ':'')+'10 أسئلة رياضيات وفيزياء وكيمياء وأحياء من منهجك مع الشرح','tTrain',!pl.tTrain)+T('اختبار تحصيلي محاكي','مثل قياس: 5 أقسام بالتساوي بين المواد الأربع · 5 دقائق لكل قسم','thExam');
+ return header()+band(tab==='q'?'القدرات':'التحصيلي',(tab==='q'?'كمي ولفظي':'رياضيات وعلوم')+' بأسئلة تناسب '+GRADES[p.grade]+'.')+`
+ <div class="sec">${body}${ms.length?T('دفتر الأخطاء',ms.length+' أسئلة لإعادة حلّها','mist'):''}
  ${wk?`<p class="note" style="margin:0">يحتاج تركيزاً: <b>${catName(wk[0])}</b> (${Math.round(wk[1]*100)}%). التدريب يعطيه أسئلة أكثر تلقائياً.</p>`:''}</div>`}
 
 function vFlash(){const p=cur();const ws=view.words;const i=view.i;const w=ws[i];
@@ -1265,10 +1269,10 @@ function vHard(){const p=cur();const ws=gradeWords(p).filter(x=>p.hard[x.w]);
  <div class="sec">${ws.length?`<div class="card"><div class="list">${ws.map(w=>`<div class="li"><span class="grow"><b class="en" dir="ltr">${esc(w.w)}</b><br><span class="note">${esc(w.m)}</span></span>${canSpeak?`<button class="speak" data-say="${esc(w.w)}" aria-label="استمع">${ICON.spk}</button>`:''}</div>`).join('')}</div></div>
  <button class="btn wide" data-act="hardQuiz">راجع هذه الكلمات الآن</button><p class="note">تخرج الكلمة من الدفتر بعد إجابتها صحيحة مرتين.</p>`:`<div class="card"><p style="margin:0">لا توجد كلمات صعبة الآن. أي كلمة ${g('تخطئ','تخطئين')} فيها تُضاف هنا تلقائياً.</p></div>`}</div>`}
 
-function vMist(){const p=cur();return header()+`<div class="qhead"><h2>دفتر الأخطاء</h2><button class="x" data-go="qd">رجوع</button></div>
- <div class="sec">${p.mist.length?`<button class="btn wide" data-act="mistQuiz">أعد حل ${Math.min(10,p.mist.length)} أسئلة</button>
+function vMist(){const p=cur();const M=mistOf(p);return header()+`<div class="qhead"><h2>دفتر الأخطاء</h2><button class="x" data-go="qd">رجوع</button></div>
+ <div class="sec">${M.length?`<button class="btn wide" data-act="mistQuiz">أعد حل ${Math.min(10,M.length)} أسئلة</button>
  <p class="note">يخرج السؤال من الدفتر عندما ${g('تحلّه','تحلّينه')} صحيحاً.</p>
- ${p.mist.slice(0,15).map(x=>`<div class="card"><span class="chip">${catName(x.cat)}</span><div style="margin-top:8px">${x.q}</div><p class="note" style="margin:8px 0 0">الإجابة الصحيحة: ${x.c[x.a]}</p></div>`).join('')}`:`<div class="card"><p style="margin:0">لا توجد أخطاء محفوظة. الأسئلة التي ${g('تخطئ','تخطئين')} فيها تُحفظ هنا لتعيد حلّها لاحقاً.</p></div>`}</div>`}
+ ${M.slice(0,15).map(x=>`<div class="card"><span class="chip">${catName(x.cat)}</span><div style="margin-top:8px">${x.q}</div><p class="note" style="margin:8px 0 0">الإجابة الصحيحة: ${x.c[x.a]}</p></div>`).join('')}`:`<div class="card"><p style="margin:0">لا توجد أخطاء محفوظة. الأسئلة التي ${g('تخطئ','تخطئين')} فيها تُحفظ هنا لتعيد حلّها لاحقاً.</p></div>`}</div>`}
 
 function vQuiz(){const Q=view.q;if(Q.pause){const sc=Q.sections[Q.secIdx];return header()+`<div class="qhead"><h2>${Q.title}</h2><button class="x" data-act="quit">إنهاء</button></div>
  <div class="sec"><div class="card stack pop" style="align-items:center;text-align:center"><span class="chip">انتهى القسم ${Q.secIdx} من ${Q.sections.length}</span><h2>القسم التالي: ${sc.name}</h2><p style="margin:0">${sc.end-sc.start} أسئلة · ${Math.round(sc.secs/60)} دقائق</p><p class="note" style="margin:0">كما في الاختبار الرسمي: لكل قسم وقت مستقل، ولا يمكن الرجوع إلى قسم سابق بعد انتهائه.</p><button class="btn" data-act="nextSec">ابدأ القسم ${Q.secIdx+1}</button></div></div>`}
@@ -1303,7 +1307,7 @@ function vComp(){const p=cur();const sc=scoreAll(p);const t=tierOf(sc.total);con
  <div class="card"><h3>الترتيب</h3><div class="seg" style="margin-top:10px">${sg('bs','all','الجميع',bs)}${sg('bs','st','المرحلة '+STAGES[stageOf(p.grade)],bs)}${sg('bs','gr','صفّي',bs)}</div><div id="board" style="margin-top:10px"></div></div>
  <details class="card"><summary>كيف تُحسب النقاط؟</summary><ul>
  <li>كل يوم تدريب: 20 نقطة.</li><li>كل سؤال محلول: نقطة، وكل دقيقة تدريب: نقطة.</li><li>كل إجابة صحيحة: نقطتان إضافيتان.</li>
- <li>إكمال الإنجليزي والقدرات والتحصيلي في يوم واحد 30، كلمات اليوم 15، اختبار محاكي 20، تصحيح سؤال من دفتر الأخطاء 5، إتقان كلمة صعبة 3.</li>
+ <li>إكمال تدريب اليوم الأربعة (كلمات اليوم، المحادثة الصوتية، القدرات، التحصيلي) في يوم واحد 30، كلمات اليوم 15، اختبار محاكي 20، تصحيح سؤال من دفتر الأخطاء 5، إتقان كلمة صعبة 3.</li>
  <li>تمرين السرعة: نقطة لكل إجابة صحيحة، بحد أقصى 30 في اليوم.</li><li>مكافأة 50 نقطة عن كل أسبوع تتحسّن فيه الدقة 5% أو أكثر عن الأسبوع الذي قبله.</li>
  <li>المجموع يُضرب في معامل الدقة العام: من 0.7 عند دقة 0% إلى 1.3 عند دقة 100%.</li><li>الرصيد تراكمي ويُحدَّث في الترتيب خلال ثوانٍ من كل إجابة.</li><li>لا سقف للنقاط: كلما تدرّبت أكثر ارتفع رصيدك.</li>
  <li>الإجابة في أقل من ثانيتين لا تُحسب، حتى لا يُضغط عشوائياً.</li><li>الأسئلة تتكيّف مع صف كل طالب ومستواه، فالدقة تُقاس على أسئلة مناسبة له، ويمكن عرض الترتيب حسب المرحلة أو الصف.</li>
@@ -1413,7 +1417,9 @@ function act(a){const p=cur();if(cloudAct(a))return;
  case 'tkNext':tkNext();break;
  case 'tkShow':tkShow();break;
  case 'enTrain':startQuiz({title:'تدريب الإنجليزي',kind:'enTrain',back:'en',items:enTrainItems(p)});break;
- case 'qTrain':startQuiz({title:'تدريب القدرات',kind:'qTrain',back:'qd',items:qTrainItems(p)});break;
+ case 'goQ':lastQtab='q';go('qd');break;
+ case 'goT':lastQtab='t';go('qd');break;
+ case 'qTrain':lastQtab='q';startQuiz({title:'تدريب القدرات',kind:'qTrain',back:'qd',items:qTrainItems(p)});break;
  case 'tTrain':lastQtab='t';startQuiz({title:'تدريب التحصيلي',kind:'tTrain',back:'qd',items:tTrainItems(p)});break;
  case 'daily':go('flash',{words:dailyWords(p),i:0});break;
  case 'fnext':if(view.i<view.words.length-1){view.i++;render()}else startQuiz({title:'الإنجليزي',kind:'enDay',back:'home',items:enDayItems(p,view.words)});break;
@@ -1427,7 +1433,7 @@ function act(a){const p=cur();if(cloudAct(a))return;
  case 'hard':go('hard');break;
  case 'hardQuiz':{const ws=gradeWords(p).filter(x=>p.hard[x.w]);startQuiz({title:'مراجعة الكلمات الصعبة',kind:'hardQuiz',back:'hard',items:shuf(ws).slice(0,8).map((w,j)=>vocabItem(w,p,j%2))});break}
  case 'mist':go('mist');break;
- case 'mistQuiz':startQuiz({title:'إعادة حل الأخطاء',kind:'mistQuiz',mode:'mist',back:'mist',items:p.mist.slice(0,10).map(x=>Object.assign({sec:'qd'},x))});break;
+ case 'mistQuiz':startQuiz({title:'إعادة حل الأخطاء',kind:'mistQuiz',mode:'mist',back:'mist',items:mistOf(p).slice(0,10).map(x=>Object.assign({sec:isThM(x)?'th':'qd'},x))});break;
  case 'exam':lastQtab='q';startQuiz(Object.assign({title:'اختبار القدرات المحاكي',kind:'exam',mode:'exam',back:'qd'},buildQudurat(p,4,12)));break;
  case 'examMini':startQuiz(Object.assign({title:'نموذج قدرات مصغّر',kind:'examMini',mode:'exam',back:'qd'},buildQudurat(p,2,8)));break;
  case 'nextSec':{const Q=view.q;Q.pause=false;Q.secStart=Date.now();Q.endAt=Date.now()+Q.sections[Q.secIdx].secs*1000;render();break}
