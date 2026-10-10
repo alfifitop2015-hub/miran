@@ -401,8 +401,9 @@ function renderBoard(){const el=$('#board');if(!el)return;let rows,note='';const
  if(!fb){rows=S.profiles.filter(p=>p.online&&(bs==='all'||(bs==='st'?stageOf(p.grade)===stageOf(me.grade):p.grade===me.grade))).map(p=>({nick:p.nick||p.name,grade:p.grade,total:lifetime(p),me:p.id===S.active})).sort((a,b)=>b.total-a.total);
   note=FB?'جارٍ الاتصال بالترتيب الأونلاين…':'هذه نسخة تجريبية: الترتيب هنا لملفات هذا الجهاز فقط. الترتيب الأونلاين للجميع يعمل في النسخة المنشورة على الإنترنت.'}
  else if(boardRows==null){el.innerHTML='<p class="note">جارٍ تحميل الترتيب…</p>';return}
- else{rows=boardRows.map(r=>Object.assign({},r,{me:r.id===C.sid}));if(!rows.length)note='لا يوجد متنافسون بعد في هذه القائمة. كن أول من يبدأ.'}
- el.innerHTML=(rows.length?`<div class="list">${rows.map((r,i)=>`<div class="brd ${r.me?'me':''}"><span class="n">${i+1}</span><span>${esc(r.nick)}${r.me?' <span class="note">(أنت)</span>':''}<br><span class="note">${GRADES[r.grade]||''}</span> <span class="tier">${tierOf(r.total||0).name}</span></span><span class="sc">${r.total||0}</span></div>`).join('')}</div>`:'')+(note?`<p class="note" style="margin:8px 0 0">${note}</p>`:'')}
+ else{rows=boardRows.map((r,i)=>Object.assign({},r,{me:r.id===C.sid,rk:i+1}));if(!rows.length)note='لا يوجد متنافسون بعد في هذه القائمة. كن أول من يبدأ.';
+  else if(view.name==='home'&&rows.length>10){const mi=rows.findIndex(r=>r.me);rows=rows.slice(0,10).concat(mi>=10?[rows[mi]]:[])}}
+ el.innerHTML=(rows.length?`<div class="list">${rows.map((r,i)=>`<div class="brd ${r.me?'me':''}"><span class="n">${r.rk||i+1}</span><span>${esc(r.nick)}${r.me?' <span class="note">(أنت)</span>':''}<br><span class="note">${GRADES[r.grade]||''}</span> <span class="tier">${tierOf(r.total||0).name}</span></span><span class="sc">${r.total||0}</span></div>`).join('')}</div>`:'')+(note?`<p class="note" style="margin:8px 0 0">${note}</p>`:'')}
 
 function sumSt(o){let c=0,t=0;Object.values(o||{}).forEach(s=>{c+=s.c;t+=s.t});return{c,t}}
 
@@ -1224,12 +1225,12 @@ function vWho(){if(CLOUD&&C.mode==='student')return vStudentWho();return header(
  <button class="btn plain wide" data-act="parentFromWho">لوحة ولي الأمر</button></div>`}
 
 function vHome(){const p=cur();const today=dkey();const mins=Math.round((p.daySecs[today]||0)/60);const sc=lifetime(p);const pl=planOf(p);const st=planStep(p);
- const board=S.profiles.slice().sort((a,b)=>lifetime(b)-lifetime(a));
+ const board=CLOUD?[1,2]:S.profiles.slice().sort((a,b)=>lifetime(b)-lifetime(a));const bs=view.bs||'all';
  return header()+`<h1>أهلاً يا ${esc(p.name)}</h1><p class="sub">${GRADES[p.grade]} · ${TERMS[p.term]}</p>
  <div class="${board.length>1?'homegrid':''}"><div class="sec"><div class="stats"><div class="stat" style="--c:var(--cp)"><b>${sc}</b><span>رصيدك</span></div><div class="stat" style="--c:var(--pink)"><b>${p.streak}</b><span>أيام متتالية</span></div><div class="stat" style="--c:var(--en)"><b>${mins}</b><span>دقيقة اليوم</span></div></div>
  <div class="hero"><h2>تدريب اليوم</h2><p class="sub">${st<0?g('أنهيت','أنهيتِ')+' الثلاثة اليوم، وحصلت على 30 نقطة إضافية.':g('اختر','اختاري')+' ما تريد. إكمال الثلاثة في يوم واحد يعطي 30 نقطة إضافية.'}</p>
  <ul class="plan">${PLAN.map(x=>`<li><button type="button" class="${pl[x.k]?'done':''}" data-act="${x.k}" style="--c:var(--${x.c})"><span class="n">${pl[x.k]?'<i>✓</i>':x.i}</span><span class="grow"><b>${x.t}</b><br><span class="m2">${pl[x.k]?'تم اليوم · اضغط للتدريب مرة أخرى':x.m}</span></span><span class="go" aria-hidden="true">‹</span></button></li>`).join('')}</ul></div></div>
- <div>${board.length>1?`<div class="sec"><div class="row between"><h2>الترتيب</h2><button class="x" data-go="comp">المنافسة</button></div><div class="card"><div class="list">${board.map((q,i)=>`<div class="li"><b style="width:18px">${i+1}</b><span class="av ${q.gender}">${esc(q.name.trim()[0]||'؟')}</span><span class="grow">${esc(q.name)}</span><span style="text-align:left"><b>${lifetime(q)}</b><br><span class="note">${tierOf(lifetime(q)).name}</span></span></div>`).join('')}</div></div></div>`:''}
+ <div>${CLOUD?`<div class="sec"><div class="row between"><h2>🏆 الترتيب</h2><button class="x" data-go="comp">عرض الكل</button></div><div class="card"><div class="seg">${['all','st','gr'].map(k=>`<button type="button" class="${bs===k?'on':''}" data-bs="${k}">${k==='all'?'الجميع':k==='st'?STAGES[stageOf(p.grade)]:'صفّي'}</button>`).join('')}</div><div id="board" style="margin-top:10px"></div></div></div>`:board.length>1?`<div class="sec"><div class="row between"><h2>الترتيب</h2><button class="x" data-go="comp">المنافسة</button></div><div class="card"><div class="list">${board.map((q,i)=>`<div class="li"><b style="width:18px">${i+1}</b><span class="av ${q.gender}">${esc(q.name.trim()[0]||'؟')}</span><span class="grow">${esc(q.name)}</span><span style="text-align:left"><b>${lifetime(q)}</b><br><span class="note">${tierOf(lifetime(q)).name}</span></span></div>`).join('')}</div></div></div>`:''}
  ${CLOUD&&C.mode==='student'?'':'<div class="sec"><button class="btn plain wide" data-go="parent">لوحة ولي الأمر</button></div>'}</div></div>`}
 
 function vEn(){const p=cur();const hc=Object.keys(p.hard).length;
@@ -1361,6 +1362,7 @@ function render(){if(CLOUD){if(!C.ready&&view.name!=='loading')view={name:'loadi
  const nav=$('#nav');nav.hidden=!p||['who','form','quiz','setup','talkRun',...AUTHV,...ADMV].includes(view.name);document.body.classList.toggle('has-nav',!nav.hidden);
  nav.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.go===view.name||(b.dataset.go==='en'&&['flash','readList','hard','talkList','talkRun'].includes(view.name))||(b.dataset.go==='qd'&&view.name==='mist')));
  if(view.name==='quiz'){const it=view.q.items[view.q.i];if(!it.shownAt)it.shownAt=Date.now();if(it.autoSpeak&&view.q.res[view.q.i]==null&&!it._spoken){it._spoken=true;setTimeout(()=>speak(it.speak),250)}tickTimer()}
+ if(view.name==='home'&&CLOUD&&p){subscribeBoard();renderBoard()}
  if(view.name==='comp'){subscribeBoard();renderBoard();const of=$('#oform');of.addEventListener('submit',e=>{e.preventDefault();const p=cur();p.nick=$('#onick').value.trim()||p.name;save();pushAll(true);boardKey='';render();const sv=$('#osaved');if(sv)sv.hidden=false})}
  bindAuthForms();const tkf=$('#tkform');if(tkf)tkf.addEventListener('submit',e=>{e.preventDefault();const v=$('#tkin').value.trim();if(!v)return;tkEval([v])});bindAdmin();if(view.name==='admin'&&C.user&&!A.list&&!A.loading&&!A.err)adminLoad();
  const sf=$('#sform');if(sf)sf.addEventListener('submit',e=>{e.preventDefault();syncRows();if(view.rows.some(r=>!r.name.trim())){$('#serr').hidden=false;return}
