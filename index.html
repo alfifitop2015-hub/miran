@@ -83,6 +83,7 @@ h1{font-size:28px;font-weight:800}h2{font-size:21px;font-weight:700}h3{font-size
 .plan .n{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-family:var(--fd);font-weight:700;border:2px solid currentColor;flex:none}
 .plan button.done .n{background:var(--onacc)}.plan button.done .n i{color:var(--acc);font-style:normal}
 .plan .m2{font-size:12px;opacity:.85}
+.motto{margin:6px 0 14px;text-align:center;font-family:var(--fd);font-weight:800;font-size:clamp(20px,5.4vw,24px);line-height:1.4;background:linear-gradient(90deg,#FF7A18,#E8468A 55%,#8B3FE0);-webkit-background-clip:text;background-clip:text;color:transparent}
 .ivcard{display:flex;align-items:center;gap:12px;width:100%;text-align:start;border:none;border-radius:16px;padding:10px 14px;background:linear-gradient(135deg,#1F1A4A,#2F2475);box-shadow:0 10px 22px -14px #1F1A4A;cursor:pointer;margin:6px 0 4px}
 .ivcard,.ivcard *{color:#fff!important}.ivcard b{flex:1;font-family:var(--fd);font-size:19px}.ivcard.big{padding:13px 16px}.ivcard.big b{font-size:21px}
 .ivplay{width:40px;height:40px;border-radius:50%;background:#FFCB5C;display:grid;place-items:center;flex:none;box-shadow:0 0 0 6px rgba(255,203,92,.18);animation:ivpulse 2.2s infinite}
@@ -1346,9 +1347,9 @@ function vWho(){if(CLOUD&&C.mode==='student')return vStudentWho();return header(
 const SECS=[{k:'en',go:'en',c:'en',c2:'pink',i:'E',t:'الإنجليزي',items:['enDay','talk'],m:'كلمات اليوم · المحادثة الصوتية · تدريب إضافي · الكلمات الصعبة'},{k:'q',go:'goQ',c:'qd',c2:'home',i:'ق',t:'القدرات',items:['qTrain'],m:'كمي ولفظي · اختبار محاكي · دفتر الأخطاء'},{k:'t',go:'goT',c:'th',c2:'en',i:'ت',t:'التحصيلي',items:['tTrain'],m:'رياضيات وعلوم · اختبار محاكي · دفتر الأخطاء'}];
 function vHome(){const p=cur();const pl=planOf(p);const st=planStep(p);const done=PLAN.filter(x=>pl[x.k]).length;const bs=view.bs||'all';
  const card=x=>{const d=x.items.filter(k=>pl[k]).length,all=d===x.items.length;return `<button class="seccard" ${x.go==='en'?'data-go="en"':`data-act="${x.go}"`} style="--c:var(--${x.c});--c2:var(--${x.c2})"><span class="sci">${x.i}</span><span class="grow"><b>${x.t}</b><span>${x.m}</span>${d?`<span class="scst">✓ ${g('تدرّبت','تدرّبتِ')} اليوم</span>`:''}</span><span class="go">‹</span></button>`};
- return header()+`<h1>أهلاً يا ${esc(p.name)}</h1><p class="sub">${g('كلما تدرّبت أكثر زادت نقاطك.','كلما تدرّبتِ أكثر زادت نقاطكِ.')}</p>
+ return header()+`<h1>أهلاً يا ${esc(p.name)}</h1>
  ${introCard(false)}<div class="homegrid"><div class="sec">${SECS.map(card).join('')}</div>
- <div>${CLOUD?`<div class="sec"><div class="row between"><h2>🏆 الترتيب</h2><button class="x" data-go="comp">عرض الكل</button></div><div class="card"><div class="seg">${['all','st','gr'].map(k=>`<button type="button" class="${bs===k?'on':''}" data-bs="${k}">${k==='all'?'الجميع':k==='st'?STAGES[stageOf(p.grade)]:'صفّي'}</button>`).join('')}</div><div id="board" style="margin-top:10px"></div></div></div>`:`<div class="sec"><button class="btn plain wide" data-go="comp">🏆 الترتيب</button><button class="btn plain wide" data-go="parent">لوحة ولي الأمر</button></div>`}</div></div>`}
+ <div><p class="motto">${g('كلما تدرّبت أكثر زادت نقاطك','كلما تدرّبتِ أكثر زادت نقاطكِ')}</p>${CLOUD?`<div class="sec"><div class="row between"><h2>🏆 الترتيب</h2><button class="x" data-go="comp">عرض الكل</button></div><div class="card"><div class="seg">${['all','st','gr'].map(k=>`<button type="button" class="${bs===k?'on':''}" data-bs="${k}">${k==='all'?'الجميع':k==='st'?STAGES[stageOf(p.grade)]:'صفّي'}</button>`).join('')}</div><div id="board" style="margin-top:10px"></div></div></div>`:`<div class="sec"><button class="btn plain wide" data-go="comp">🏆 الترتيب</button><button class="btn plain wide" data-go="parent">لوحة ولي الأمر</button></div>`}</div></div>`}
 
 function vEn(){const p=cur();const hc=Object.keys(p.hard).length;const pl=planOf(p);
  return header()+band('الإنجليزي',`${GRADES[p.grade]} · ${TERMS[p.term]}`)+`
