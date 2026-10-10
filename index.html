@@ -357,7 +357,7 @@ const KEY='miran-v1';let S=null;
 function newP(name,gender,grade,term){return{gv:2,online:true,nick:name,group:'',log:{},id:'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),name,gender,grade,term,points:0,streak:0,lastDay:null,days:{},daySecs:{},secs:0,stats:{en:{},qd:{},th:{}},hard:{},learned:{},mist:[],daily:{},exams:0,speedBest:0}}
 function load(){if(CLOUD){S={profiles:[],active:null};return}try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
  if(!S||!Array.isArray(S.profiles)){S={profiles:[],active:null}}
- S.profiles.forEach(p=>{if(!p.gv){p.grade=Math.min(12,(+p.grade||1)+6);p.gv=2}if(p.term>2)p.term=2;p.log=p.log||{};p.stats.th=p.stats.th||{};p.online=true;if(!p.nick)p.nick=p.name;if(p.group==null)p.group=''});
+ S.profiles.forEach(p=>{if(!p.gv){p.grade=Math.min(12,(+p.grade||1)+6);p.gv=2}if(p.term>2)p.term=2;p.log=p.log||{};p.stats.th=p.stats.th||{};p.online=true;p.nick=p.name;if(p.group==null)p.group=''});
  S.profiles=S.profiles.filter(p=>!((p.name==='الابن'||p.name==='الابنة')&&!p.points&&!Object.keys(p.days).length));if(!cur())S.active=null}
 function save(){if(CLOUD){cloudSave();pushAll(false);return}try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}pushAll(false)}
 const cur=()=>S.profiles.find(p=>p.id===S.active)||null;
@@ -390,8 +390,8 @@ function fbStart(){if(!FB)return;const b='https://www.gstatic.com/firebasejs/10.
  loadScript(b+'firebase-app-compat.js').then(()=>Promise.all([loadScript(b+'firebase-auth-compat.js'),loadScript(b+'firebase-firestore-compat.js')])).then(()=>{
   firebase.initializeApp(FB);fb=firebase.firestore();try{fb.enablePersistence({synchronizeTabs:true}).catch(()=>{})}catch(e){}firebase.auth().onAuthStateChanged(u=>{onAuth(u)})}).catch(()=>{fb=null;C.ready=true;app.innerHTML=startTop()+'<div class="warn">تعذّر تحميل الخدمة. تحقّق من الإنترنت ثم أعد فتح الصفحة.</div>'})}
 function pushAll(force){if(!fb||!C.sid||C.mode!=='student')return;if(!force&&Date.now()-lastPush<30000){clearTimeout(pushAll.t);pushAll.t=setTimeout(()=>pushAll(true),30000);return}lastPush=Date.now();
- const p=cur();if(!p)return;const ref=fb.collection('players').doc(p.id);if(!p.nick){ref.delete().catch(()=>{});return}
- const sc=scoreAll(p);ref.set({sid:p.id,nick:p.nick.slice(0,20),grade:p.grade,stage:stageOf(p.grade),total:sc.total,days:sc.days,acc:Math.round(sc.accv*100),answers:sc.a,updated:Date.now()}).catch(()=>{})}
+ const p=cur();if(!p)return;const ref=fb.collection('players').doc(p.id);if(!p.name){ref.delete().catch(()=>{});return}
+ const sc=scoreAll(p);ref.set({sid:p.id,nick:p.name.slice(0,20),grade:p.grade,stage:stageOf(p.grade),total:sc.total,days:sc.days,acc:Math.round(sc.accv*100),answers:sc.a,updated:Date.now()}).catch(()=>{})}
 document.addEventListener('visibilitychange',()=>{if(document.hidden){pushAll(true);if(CLOUD)flushSave()}});
 function subscribeBoard(){const p=cur();const bs=view.bs||'all';const key=bs+'|'+p.grade+'|'+(C.sid||'');if(key===boardKey)return;boardKey=key;if(unsub){unsub();unsub=null}boardRows=null;if(!fb)return;
  let q=fb.collection('players');
@@ -691,7 +691,7 @@ const BASE=()=>location.origin+location.pathname;
 const wa=t=>'https://wa.me/?text='+encodeURIComponent(t);
 function rndCode(n){const a='ABCDEFGHJKMNPQRSTUVWXYZ23456789';let s='';const r=(window.crypto&&crypto.getRandomValues)?crypto.getRandomValues(new Uint32Array(n||8)):Array.from({length:n||8},()=>Math.floor(Math.random()*1e9));for(let i=0;i<(n||8);i++)s+=a[r[i]%a.length];return s}
 const stuRef=id=>fb.collection('students').doc(id);
-function normP(p){if(!p.gv){p.grade=Math.min(12,(+p.grade||1)+6);p.gv=2}if(p.term>2)p.term=2;p.log=p.log||{};p.stats=p.stats||{en:{},qd:{},th:{}};['en','qd','th'].forEach(k=>p.stats[k]=p.stats[k]||{});['hard','learned','daily','days','daySecs','plan','talk'].forEach(k=>p[k]=p[k]||{});p.mist=p.mist||[];p.online=true;if(!p.nick)p.nick=p.name;return p}
+function normP(p){if(!p.gv){p.grade=Math.min(12,(+p.grade||1)+6);p.gv=2}if(p.term>2)p.term=2;p.log=p.log||{};p.stats=p.stats||{en:{},qd:{},th:{}};['en','qd','th'].forEach(k=>p.stats[k]=p.stats[k]||{});['hard','learned','daily','days','daySecs','plan','talk'].forEach(k=>p[k]=p[k]||{});p.mist=p.mist||[];p.online=true;p.nick=p.name;return p}
 function authErr(e){const c=(e&&e.code)||'';
  if(/invalid-credential|wrong-password|user-not-found|invalid-login/.test(c))return 'البريد أو كلمة المرور غير صحيحة.';
  if(/invalid-email/.test(c))return 'اكتب بريداً إلكترونياً صحيحاً.';
@@ -772,7 +772,7 @@ async function adminLoad(){A.loading=true;render();
   A.err=null}catch(e){A.err=authErr(e)}
  A.loading=false;render()}
 async function adminSave(id,v){if(!id){const ref=fb.collection('students').doc();const p=newP(v.name,v.gender,v.grade,v.term);const d=stuDoc(p);d.created=Date.now();d.byAdmin=true;await ref.set(d);A.links[ref.id]=await makeTransfer(ref.id);return ref.id}
- const ref=stuRef(id);const s=await ref.get();const d=s.data()||{};const old=d.name;d.name=v.name;d.gender=v.gender;d.grade=v.grade;d.term=v.term;d.gv=2;if(!d.nick||d.nick===old)d.nick=v.name;d.daily={};await ref.set(d);
+ const ref=stuRef(id);const s=await ref.get();const d=s.data()||{};const old=d.name;d.name=v.name;d.gender=v.gender;d.grade=v.grade;d.term=v.term;d.gv=2;d.nick=v.name;d.daily={};await ref.set(d);
  const pl=fb.collection('players').doc(id);const ps=await pl.get();if(ps.exists)await pl.set(Object.assign(ps.data(),{grade:v.grade,stage:stageOf(v.grade)}));return id}
 async function adminDel(id){await stuRef(id).delete();await fb.collection('studentSecrets').doc(id).delete().catch(()=>{});await fb.collection('players').doc(id).delete().catch(()=>{});
  const dv=await fb.collection('devices').where('sid','==',id).get();for(const d of dv.docs)await fb.collection('devices').doc(d.id).delete().catch(()=>{})}
@@ -780,7 +780,7 @@ async function adminMigrate(){const fams=await fb.collection('families').get();l
  for(const f of fams.docs){const r=fb.collection('families').doc(f.id);
   const [k,s,m]=await Promise.all([r.collection('kids').get(),r.collection('secrets').get(),r.collection('members').get()]);
   for(const d of k.docs){const ex=await stuRef(d.id).get();if(!ex.exists){const p=normP(Object.assign({},d.data(),{id:d.id}));const x=stuDoc(p);x.created=Date.now();x.migrated=true;await stuRef(d.id).set(x);n++;
-    if(p.nick){const sc=scoreAll(p);await fb.collection('players').doc(d.id).set({sid:d.id,nick:p.nick.slice(0,20),grade:p.grade,stage:stageOf(p.grade),total:sc.total,days:sc.days,acc:Math.round(sc.accv*100),answers:sc.a,updated:Date.now()}).catch(()=>{})}}
+    if(p.nick){const sc=scoreAll(p);await fb.collection('players').doc(d.id).set({sid:d.id,nick:p.name.slice(0,20),grade:p.grade,stage:stageOf(p.grade),total:sc.total,days:sc.days,acc:Math.round(sc.accv*100),answers:sc.a,updated:Date.now()}).catch(()=>{})}}
    await fb.collection('players').doc(f.id+'_'+d.id).delete().catch(()=>{});await r.collection('kids').doc(d.id).delete()}
   for(const d of s.docs)await r.collection('secrets').doc(d.id).delete();
   for(const d of m.docs){if(d.data().role==='parent')await fb.collection('users').doc(d.id).delete().catch(()=>{});await r.collection('members').doc(d.id).delete()}
@@ -1297,11 +1297,6 @@ function vComp(){const p=cur();const sc=scoreAll(p);const t=tierOf(sc.total);con
  <div class="sec"><div class="hero"><div class="row between"><div><p class="sub" style="margin:0">رصيدك${tg?` · اليوم +${tg}`:''}</p><div style="font-family:var(--fd);font-size:46px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums">${sc.total}</div></div><span class="chip" style="background:var(--onacc);color:var(--acc);font-size:14px;padding:4px 14px">${t.name}</span></div>
  ${t.next?`<div class="bar" style="background:color-mix(in srgb,var(--onacc) 25%,transparent)"><i style="background:var(--onacc);width:${t.pct}%"></i></div><p class="sub" style="margin:0">باقٍ ${t.next-sc.total} نقطة للوصول إلى ${t.nextName}</p>`:`<p class="sub" style="margin:0">وصلت إلى أعلى لقب.</p>`}</div>
  <div class="card"><h3>الترتيب</h3><div class="seg" style="margin-top:10px">${sg('bs','all','الجميع',bs)}${sg('bs','st','المرحلة '+STAGES[stageOf(p.grade)],bs)}${sg('bs','gr','صفّي',bs)}</div><div id="board" style="margin-top:10px"></div></div>
- <details class="card"><summary>اسمك في الترتيب</summary><form class="stack" id="oform" style="margin-top:12px">
- <label class="f" for="onick">الاسم الظاهر للآخرين<input type="text" id="onick" maxlength="20" value="${esc(p.nick||'')}" placeholder="مثال: بطل الأرقام"></label>
- <span class="note">يُفضَّل اسم مستعار أو الاسم الأول فقط. لا يظهر للآخرين إلا هذا الاسم والصف والنقاط.</span>
- <p class="note" id="osaved" hidden style="color:var(--ok);margin:0">تم الحفظ.</p>
- <button class="btn" type="submit">حفظ</button></form></details>
  <details class="card"><summary>كيف تُحسب النقاط؟</summary><ul>
  <li>كل يوم تدريب: 20 نقطة.</li><li>كل سؤال محلول: نقطة، وكل دقيقة تدريب: نقطة.</li><li>كل إجابة صحيحة: نقطتان إضافيتان.</li>
  <li>إكمال الإنجليزي والقدرات والتحصيلي في يوم واحد 30، كلمات اليوم 15، اختبار محاكي 20، تصحيح سؤال من دفتر الأخطاء 5، إتقان كلمة صعبة 3.</li>
@@ -1363,7 +1358,7 @@ function render(){if(CLOUD){if(!C.ready&&view.name!=='loading')view={name:'loadi
  nav.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.go===view.name||(b.dataset.go==='en'&&['flash','readList','hard','talkList','talkRun'].includes(view.name))||(b.dataset.go==='qd'&&view.name==='mist')));
  if(view.name==='quiz'){const it=view.q.items[view.q.i];if(!it.shownAt)it.shownAt=Date.now();if(it.autoSpeak&&view.q.res[view.q.i]==null&&!it._spoken){it._spoken=true;setTimeout(()=>speak(it.speak),250)}tickTimer()}
  if(view.name==='home'&&CLOUD&&p){subscribeBoard();renderBoard()}
- if(view.name==='comp'){subscribeBoard();renderBoard();const of=$('#oform');of.addEventListener('submit',e=>{e.preventDefault();const p=cur();p.nick=$('#onick').value.trim()||p.name;save();pushAll(true);boardKey='';render();const sv=$('#osaved');if(sv)sv.hidden=false})}
+ if(view.name==='comp'){subscribeBoard();renderBoard();}
  bindAuthForms();const tkf=$('#tkform');if(tkf)tkf.addEventListener('submit',e=>{e.preventDefault();const v=$('#tkin').value.trim();if(!v)return;tkEval([v])});bindAdmin();if(view.name==='admin'&&C.user&&!A.list&&!A.loading&&!A.err)adminLoad();
  const sf=$('#sform');if(sf)sf.addEventListener('submit',e=>{e.preventDefault();syncRows();if(view.rows.some(r=>!r.name.trim())){$('#serr').hidden=false;return}
   view.rows.forEach(r=>S.profiles.push(newP(r.name.trim(),r.gender,r.grade,r.term)));save();go('who')});
@@ -1454,13 +1449,13 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
  if(d.ch!=null){const Q=view.q,it=Q&&Q.items[Q.i];if(it&&Q.mode!=='speed'&&it.sec==='en'){const t=b.querySelector('.t');if(it.chLtr&&t)speak(t.textContent);else if(it.word)speak(it.word.w)}answer(+d.ch);return}
  if(d.read!=null){startRead(+d.read);return}
  if(d.bs){view.bs=d.bs;render();return}
- if(d.on!=null){const p=cur();p.nick=$('#onick').value.trim()||p.nick;p.online=true;save();pushAll(true);boardKey='';render();return}
+
  if(d.rset){syncRows();const r=view.rows[+d.i];r[d.rset]=d.rset==='gender'?d.v:+d.v;render();return}
  if(d.rdel!=null){syncRows();view.rows.splice(+d.rdel,1);render();return}
  if(d.set){const v=d.set==='gender'?d.v:+d.v;view.f[d.set]=v;const nm=$('#pname');if(nm)view.f.name=nm.value;render();return}
  if(d.edit){const q=S.profiles.find(x=>x.id===d.edit);go('form',{f:{name:q.name,gender:q.gender,grade:q.grade,term:q.term},editId:q.id,back:'parent'});return}
  if(d.del){view.del=d.del;render();return}
- if(d.delok){S.profiles.forEach(p=>{if(!p.gv){p.grade=Math.min(12,(+p.grade||1)+6);p.gv=2}if(p.term>2)p.term=2;p.log=p.log||{};p.stats.th=p.stats.th||{};p.online=true;if(!p.nick)p.nick=p.name;if(p.group==null)p.group=''});
+ if(d.delok){S.profiles.forEach(p=>{if(!p.gv){p.grade=Math.min(12,(+p.grade||1)+6);p.gv=2}if(p.term>2)p.term=2;p.log=p.log||{};p.stats.th=p.stats.th||{};p.online=true;p.nick=p.name;if(p.group==null)p.group=''});
  S.profiles=S.profiles.filter(x=>x.id!==d.delok);if(S.active===d.delok)S.active=null;save();view.del=null;go(cur()?'parent':(S.profiles.length?'who':'setup'),S.profiles.length?{}:{rows:[{name:'',gender:'m',grade:1,term:1}]});return}
  if(d.act)act(d.act)});
 
