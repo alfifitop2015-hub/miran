@@ -83,6 +83,48 @@ h1{font-size:28px;font-weight:800}h2{font-size:21px;font-weight:700}h3{font-size
 .plan .n{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-family:var(--fd);font-weight:700;border:2px solid currentColor;flex:none}
 .plan button.done .n{background:var(--onacc)}.plan button.done .n i{color:var(--acc);font-style:normal}
 .plan .m2{font-size:12px;opacity:.85}
+.ivcard{display:flex;align-items:center;gap:14px;width:100%;text-align:start;border:none;border-radius:18px;padding:12px 14px;color:#fff;background:linear-gradient(135deg,#4F5BF0,#7B3FE0 55%,#E8468A);box-shadow:0 12px 26px -14px #7B3FE0;cursor:pointer;margin:6px 0 4px}
+.ivcard,.ivcard *{color:#fff!important}.ivcard b{display:block;font-family:var(--fd);font-size:18px}.ivcard span span{display:block;font-size:12.5px;opacity:.92}
+.ivcard.big{padding:18px}.ivcard.big b{font-size:22px}
+.ivplay{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.25);display:grid;place-items:center;font-size:18px;flex:none;padding-inline-start:3px}
+.iv-ov{position:fixed;inset:0;z-index:100;background:rgba(14,10,40,.78);display:grid;place-items:center;padding:14px;animation:ivfade .3s}
+.iv-box{width:min(560px,100%);display:flex;flex-direction:column;gap:10px}
+.iv-stage{position:relative;aspect-ratio:4/3.4;border-radius:22px;overflow:hidden;background:linear-gradient(135deg,#4F5BF0,#7B3FE0 50%,#E8468A);color:#fff;box-shadow:0 30px 60px -20px #000}
+.iv-stage:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 25% 18%,rgba(255,255,255,.25),transparent 50%)}
+.iv-sc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:18px;text-align:center;animation:ivin .55s ease both}
+.iv-sc h2{margin:0;font-family:var(--fd);font-size:clamp(22px,5.5vw,30px);text-shadow:0 4px 14px rgba(30,10,80,.35)}
+.iv-vis{width:100%;display:flex;flex-direction:column;align-items:center;gap:10px}
+.iv-cap{min-height:58px;background:var(--card);color:var(--ink);border-radius:14px;padding:10px 14px;font-size:16px;line-height:1.7;text-align:center;font-weight:600}
+.iv-bar{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.iv-dots{display:flex;gap:6px}.iv-dots i{width:22px;height:6px;border-radius:3px;background:rgba(255,255,255,.3)}.iv-dots i.on{background:#FFCB5C}.iv-dots i.done{background:#fff}
+.iv-ctl{display:flex;gap:6px}.iv-ctl button{width:42px;height:42px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:16px;cursor:pointer}
+.iv-note{margin:0;color:#fff;opacity:.85;font-size:13px;text-align:center}
+.iv-logo{position:relative;width:110px;height:110px;border-radius:28px;background:rgba(255,255,255,.18);display:grid;place-items:center;animation:ivpop .6s .1s both}
+.iv-logo span{font-family:var(--fd);font-weight:800;font-size:72px;line-height:1}.iv-logo i{position:absolute;top:10px;left:12px;color:#FFCB5C;font-style:normal;font-size:24px;animation:ivtw 1.6s infinite}
+.iv-big{font-family:var(--fd);font-weight:800;font-size:clamp(34px,9vw,48px);animation:ivup .6s .25s both}
+.iv-sub{font-size:16px;opacity:.9;animation:ivup .6s .45s both}
+.iv-chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.iv-chips b{background:rgba(255,255,255,.22);border-radius:99px;padding:4px 14px;animation:ivup .5s both}.iv-chips b:nth-child(2){animation-delay:.5s}.iv-chips b:nth-child(3){animation-delay:.8s}.iv-chips b:first-child{animation-delay:.2s}
+.iv-cards{display:flex;flex-direction:column;gap:9px;width:min(320px,100%)}
+.iv-cards div{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:16px;background:linear-gradient(135deg,var(--c),var(--c2));font-family:var(--fd);font-size:20px;font-weight:700;box-shadow:0 10px 20px -10px rgba(0,0,0,.5);animation:ivside .5s both}
+.iv-cards div:nth-child(1){animation-delay:.3s}.iv-cards div:nth-child(2){animation-delay:1.6s}.iv-cards div:nth-child(3){animation-delay:3s}
+.iv-cards span{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.28);display:grid;place-items:center}
+.iv-q{background:#fff;color:#1d1640;border-radius:18px;padding:14px;width:min(300px,100%);display:flex;flex-direction:column;gap:7px;animation:ivpop .5s .2s both}
+.iv-q p{margin:0 0 4px;font-weight:700;font-size:18px}.iv-q div{border:2px solid #e3e0f5;border-radius:12px;padding:6px}.iv-q div.ok{border-color:#0E9F77;background:#e3f7ef;color:#0b7a5c;font-weight:700;animation:ivok .5s 1.4s both}
+.iv-q em{font-style:normal;font-size:13px;color:#0b7a5c;animation:ivup .5s 2.2s both}
+.iv-steps{display:flex;flex-direction:column;gap:8px;width:min(300px,100%)}
+.iv-steps div{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.95);color:#1d1640;border-radius:14px;padding:9px 12px;font-weight:700;animation:ivside .45s both}
+.iv-steps b{width:28px;height:28px;border-radius:50%;background:#7B3FE0;color:#fff;display:grid;place-items:center;flex:none}
+.iv-steps div:nth-child(1){animation-delay:.6s}.iv-steps div:nth-child(2){animation-delay:2s}.iv-steps div:nth-child(3){animation-delay:3.4s}
+.iv-steps .go{justify-content:center;background:#FFCB5C;color:#4a2a00;animation:ivside .45s 5s both,ivpulse 1.2s 5.6s infinite}
+.iv-board{display:flex;flex-direction:column;gap:8px;width:min(320px,100%)}
+.iv-board div{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.95);color:#1d1640;border-radius:14px;padding:9px 12px;font-weight:700;animation:ivside .45s both}
+.iv-board b{width:26px;text-align:center}.iv-board span{margin-inline-start:auto;font-family:var(--fd);font-size:18px}
+.iv-board .r1{animation-delay:2.4s;background:#FFF1C4}.iv-board .r2{animation-delay:1.5s}.iv-board .r3{animation-delay:.6s}
+@keyframes ivfade{from{opacity:0}}@keyframes ivin{from{opacity:0;transform:scale(.96)}}@keyframes ivpop{from{opacity:0;transform:scale(.6)}}
+@keyframes ivup{from{opacity:0;transform:translateY(14px)}}@keyframes ivside{from{opacity:0;transform:translateX(-30px)}}
+@keyframes ivok{50%{transform:scale(1.06)}}@keyframes ivtw{50%{opacity:.35;transform:scale(.8)}}@keyframes ivpulse{50%{transform:scale(1.05)}}
+@media (prefers-reduced-motion:reduce){.iv-ov *,.iv-ov{animation:none!important}}
+
 .credit{text-align:center;font-size:12px;color:var(--muted);padding:18px 16px 26px;line-height:1.7}.credit b{font-weight:700}
 .rkt{display:inline-block;font-size:12px;font-weight:700;border-radius:99px;padding:1px 9px;margin-inline-start:4px;vertical-align:middle;white-space:nowrap}
 .rkt.r1{background:#FFE9A8;color:#7A5200}.rkt.r2{background:#E6E9F0;color:#3E4658}.rkt.r3{background:#F6D9C2;color:#7A3E12}.rkt.r4{background:color-mix(in srgb,var(--pink) 16%,transparent);color:var(--pink)}
@@ -760,7 +802,7 @@ function vLoading(){return startTop()+`<div class="sec"><div class="card" style=
 const ORDN=['الأول','الثاني','الثالث','الرابع','الخامس','السادس'];
 function gradeSeg(attr,val,extra){return `<div class="gsel">${[['p','ابتدائي',1,6],['m','متوسط',7,9],['s','ثانوي',10,12]].map(([k,l,a,b])=>`<div class="gsrow"><span class="gl">${l}</span><div class="seg">${Array.from({length:b-a+1},(_,i)=>a+i).map(v=>`<button type="button" class="${val===v?'on':''}" ${attr}="grade" data-v="${v}" ${extra||''} aria-label="${GRADES[v]}">${v-a+1}</button>`).join('')}</div></div>`).join('')}</div>`}
 function vStart(){const r=view.reg||(view.reg={name:'',gender:'m',grade:0,term:1});const sg=(k,o)=>`<div class="seg">${o.map(([v,l])=>`<button type="button" class="${r[k]===v?'on':''}" data-regset="${k}" data-v="${v}">${l}</button>`).join('')}</div>`;
- return startTop()+band('أهلاً بك في مِران','تدرّب على الإنجليزي والقدرات والتحصيلي بأسئلة تناسب صفّك.')+`
+ return startTop()+band('أهلاً بك في مِران','تدرّب على الإنجليزي والقدرات والتحصيلي بأسئلة تناسب صفّك.')+`<div class="sec">${introCard(true)}</div>
  <form class="sec" id="regform"><label class="f" for="regn">اسمك<input type="text" id="regn" maxlength="20" value="${esc(r.name)}" placeholder="اكتب اسمك" autocomplete="given-name"></label>
  <div class="f stack"><b style="font-size:14px">أنا</b>${sg('gender',[['m','طالب'],['f','طالبة']])}</div>
  <div class="f stack"><b style="font-size:14px">صفّي</b>${gradeSeg('data-regset',r.grade)}${r.grade?`<span class="note">${GRADES[r.grade]}</span>`:''}</div>
@@ -852,7 +894,7 @@ function bindAdmin(){const q=$('#adq');if(q)q.addEventListener('input',()=>{view
  const kf=$('#adkform');if(kf)kf.addEventListener('submit',e=>{e.preventDefault();adSync();const v=A.form,er=$('#aderr');
   if(!v.name.trim()){er.textContent='اكتب الاسم.';er.hidden=false;return}if(!v.grade){er.textContent='اختر الصف.';er.hidden=false;return}
   const id=A.edit==='new'?null:A.edit;v.name=v.name.trim();adBusy(()=>adminSave(id,v),id?'تم الحفظ':'انضم منافس جديد! أرسل له رابط الدخول.').then(()=>{A.edit=null;A.form=null;render()})})}
-function cloudAct(a){if(!CLOUD)return false;switch(a){
+function cloudAct(a){if(a==='intro'){openIntro();return true}if(!CLOUD)return false;switch(a){
  case 'pLogin':go('plogin');return true;
  case 'toStart':go('start');return true;
  case 'reset':{const em=($('#lem')||{}).value||'';if(!em){const el=$('#lerr');el.textContent='اكتب بريدك أولاً ثم اضغط «نسيت كلمة المرور».';el.hidden=false;return true}firebase.auth().sendPasswordResetEmail(em.trim()).then(()=>toast('أرسلنا رابط إعادة التعيين إلى بريدك.')).catch(er=>toast(authErr(er)));return true}
@@ -1011,6 +1053,50 @@ function tkEval(alts){const t=tkTurn();let ok=false,best=alts[0];
  render();tkScroll()}
 function tkNext(){TK.i++;if(TK.i>=TK.sc.turns.length){TK.done=true;const p=cur();p.talk=p.talk||{};const pct=Math.round(100*TK.first/TK.sc.turns.length);p.talk[TK.sc.id]=Math.max(p.talk[TK.sc.id]||0,pct);{const pl=planOf(p);if(!pl.talk){pl.talk=1;if(planStep(p)<0){lg(p).pl=1;TK.allDone=true}}}save();render();tkScroll();return}tkBot()}
 function tkShow(){const t=tkTurn();if(TK.attempts<2){TK.attempts=2;TK.log.push({w:'me',t:'…'});tkSys(`الإجابة المتوقعة:<div class="tkmodel" dir="ltr">${esc(t[3])}</div>${g('استمع إليها ثم كرّرها بصوتك.','استمعي إليها ثم كرّريها بصوتكِ.')}`,{say:t[3]});render();tkScroll();setTimeout(()=>speak(t[3]),400)}}
+/* ============ مقطع التعريف بالتطبيق (صورة متحركة + صوت عربي) ============ */
+const INTRO_SC=[
+ {t:'مرحباً بك في مِران',s:['مرحباً بك في مِران.','تطبيقك للتدريب على الإنجليزي والقدرات والتحصيلي،','من الصف الأول الابتدائي حتى الثالث الثانوي.'],
+  v:`<div class="iv-logo"><span>م</span><i>✦</i></div><div class="iv-big">مِران</div><div class="iv-chips"><b>ابتدائي</b><b>متوسط</b><b>ثانوي</b></div>`},
+ {t:'ثلاثة أقسام للتدريب',s:['تدرّب كل يوم في ثلاثة أقسام:','الإنجليزي، بكلمات يومية ومحادثة صوتية تسمعك وتصحّح لك،','والقدرات بأسئلة كمية ولفظية واختبارات محاكية لقياس،','والتحصيلي في الرياضيات والعلوم.'],
+  v:`<div class="iv-cards"><div style="--c:var(--en);--c2:var(--pink)"><span>E</span>الإنجليزي</div><div style="--c:var(--qd);--c2:var(--home)"><span>ق</span>القدرات</div><div style="--c:var(--th);--c2:var(--en)"><span>ت</span>التحصيلي</div></div>`},
+ {t:'أسئلة تناسب مستواك',s:['الأسئلة تناسب صفّك ومستواك.','بعد كل إجابة ترى الشرح،','وأخطاؤك تُحفظ لتراجعها حتى تتقنها.'],
+  v:`<div class="iv-q"><p>ما ناتج ٣ × ٤ ؟</p><div class="ok">١٢ ✓</div><div>٧</div><div>١٤</div><em>✓ أحسنت! ٣ × ٤ = ١٢</em></div>`},
+ {t:'التسجيل في ثوانٍ',s:['التسجيل سهل جداً:','اكتب اسمك، واختر طالب أو طالبة،','ثم صفّك وفصلك الدراسي، واضغط: ابدأ التدريب.','لا تحتاج بريداً ولا كلمة مرور.'],
+  v:`<div class="iv-steps"><div><b>١</b>اكتب اسمك</div><div><b>٢</b>طالب أو طالبة</div><div><b>٣</b>الصف والفصل</div><div class="go">ابدأ التدريب ‹</div></div>`},
+ {t:'المنافسة',s:['وفي المنافسة يزيد رصيدك مع كل تدريب وكل إجابة صحيحة.','وكلما تحسّنت دقتك زادت نقاطك أكثر.','ترتيبك يتحدّث لحظياً،','فنافس زملاءك على لقب: فارس المنافسة!'],
+  v:`<div class="iv-board"><div class="r1"><b>١</b>🥇 فارس المنافسة<span>٥٢٠</span></div><div class="r2"><b>٢</b>🥈 منافس شرس<span>٣٨٠</span></div><div class="r3"><b>٣</b>🥉 منافس قوي<span>٢٤٠</span></div></div>`},
+ {t:'ابدأ الآن',s:['ابدأ الآن،','وكن من الأوائل!'],
+  v:`<div class="iv-logo"><span>م</span><i>✦</i></div><div class="iv-big">ابدأ الآن!</div><div class="iv-sub">تدرّب · تحسّن · نافس</div>`}];
+const IV={on:false,i:0,j:0,muted:false,paused:false,tm:null,voice:null};
+function ivVoice(){if(!canSynth)return null;const vs=(speechSynthesis.getVoices()||[]).filter(v=>/^ar/i.test(v.lang));return vs.find(v=>/google/i.test(v.name))||vs.find(v=>/SA/i.test(v.lang))||vs[0]||null}
+function openIntro(){closeIntro();IV.on=true;IV.i=0;IV.j=0;IV.paused=false;IV.voice=ivVoice();
+ const el=document.createElement('div');el.id='intro';el.className='iv-ov';el.setAttribute('dir','rtl');el.setAttribute('lang','ar');el.setAttribute('role','dialog');el.setAttribute('aria-label','تعريف بتطبيق مِران');
+ el.innerHTML=`<div class="iv-box"><div class="iv-stage" id="ivst"></div><div class="iv-cap" id="ivcap" aria-live="polite"></div>
+ <div class="iv-bar"><div class="iv-dots" id="ivdots">${INTRO_SC.map(()=>'<i></i>').join('')}</div>
+ <div class="iv-ctl"><button type="button" data-iv="pp" id="ivpp" aria-label="إيقاف مؤقت">❚❚</button><button type="button" data-iv="mute" id="ivmu" aria-label="كتم الصوت">🔊</button><button type="button" data-iv="re" aria-label="إعادة">↻</button><button type="button" data-iv="x" aria-label="إغلاق">✕</button></div></div>
+ ${IV.voice||!canSynth?'':'<p class="iv-note">لا يوجد صوت عربي على هذا الجهاز، فيُعرض التعريف بالكتابة.</p>'}</div>`;
+ document.body.appendChild(el);document.body.style.overflow='hidden';
+ el.addEventListener('click',e=>{const b=e.target.closest('[data-iv]');if(b)ivCtl(b.dataset.iv);else if(e.target===el)closeIntro()});
+ if(canSynth&&!IV.voice){try{speechSynthesis.getVoices();setTimeout(()=>{IV.voice=ivVoice();ivScene()},350)}catch(e){ivScene()}}else ivScene()}
+function closeIntro(){IV.on=false;clearTimeout(IV.tm);try{if(canSynth)speechSynthesis.cancel()}catch(e){}const el=$('#intro');if(el)el.remove();document.body.style.overflow=''}
+function ivScene(){if(!IV.on)return;const sc=INTRO_SC[IV.i];const st=$('#ivst');if(!st)return;
+ st.innerHTML=`<div class="iv-sc" style="--k:${IV.i}"><h2>${sc.t}</h2><div class="iv-vis">${sc.v}</div></div>`;
+ document.querySelectorAll('#ivdots i').forEach((d,k)=>d.className=k<IV.i?'done':k===IV.i?'on':'');IV.j=0;ivLine()}
+function ivLine(){if(!IV.on||IV.paused)return;const sc=INTRO_SC[IV.i];const txt=sc.s[IV.j];const cap=$('#ivcap');if(cap)cap.textContent=txt;clearTimeout(IV.tm);
+ const next=()=>{if(!IV.on||IV.paused)return;IV.j++;if(IV.j<sc.s.length)return ivLine();if(IV.i<INTRO_SC.length-1){IV.i++;IV.tm=setTimeout(ivScene,450)}else ivEnd()};
+ const est=900+txt.length*75;
+ if(canSynth&&IV.voice&&!IV.muted){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(txt);try{u.voice=IV.voice}catch(e){}u.lang=IV.voice.lang||'ar-SA';u.rate=.95;let done=false;const fin=()=>{if(done)return;done=true;clearTimeout(IV.tm);IV.tm=setTimeout(next,250)};u.onend=fin;u.onerror=fin;IV.tm=setTimeout(fin,est*2.2+2500);speechSynthesis.speak(u);return}catch(e){}}
+ IV.tm=setTimeout(next,est)}
+function ivEnd(){const pp=$('#ivpp');if(pp){pp.textContent='▶';pp.setAttribute('aria-label','تشغيل')}IV.paused=true;IV.ended=true}
+function ivCtl(a){const pp=$('#ivpp');
+ if(a==='x')return closeIntro();
+ if(a==='re'){IV.ended=false;IV.paused=false;IV.i=0;try{speechSynthesis.cancel()}catch(e){}if(pp){pp.textContent='❚❚'}return ivScene()}
+ if(a==='mute'){IV.muted=!IV.muted;const m=$('#ivmu');if(m)m.textContent=IV.muted?'🔇':'🔊';if(IV.muted){try{speechSynthesis.cancel()}catch(e){}}if(!IV.paused){clearTimeout(IV.tm);ivLine()}return}
+ if(a==='pp'){if(IV.ended){return ivCtl('re')}IV.paused=!IV.paused;if(pp){pp.textContent=IV.paused?'▶':'❚❚';pp.setAttribute('aria-label',IV.paused?'تشغيل':'إيقاف مؤقت')}
+  if(IV.paused){clearTimeout(IV.tm);try{speechSynthesis.cancel()}catch(e){}}else ivLine()}}
+document.addEventListener('keydown',e=>{if(IV.on&&e.key==='Escape')closeIntro()});
+const introCard=(big)=>`<button type="button" class="ivcard${big?' big':''}" data-act="intro"><span class="ivplay">▶</span><span class="grow"><b>تعرّف على مِران</b><span>مقطع قصير بالصوت والصورة: فائدة التطبيق، وطريقة التسجيل، والمنافسة</span></span></button>`;
+
 const MICSVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3M9 21h6"/></svg>';
 function vTalkList(){const p=cur();const srt=nearSort(TALKS,p.grade,x=>x.g);let own=srt.filter(x=>Math.abs(x.g-p.grade)<=1);if(own.length<2)own=srt.slice(0,3);const rest=srt.filter(x=>!own.includes(x));
  const tile=s=>{const b=(p.talk||{})[s.id];return `<button class="tile" data-talk="${s.id}"><span class="grow"><h3>${s.t}</h3><span class="meta"><span class="en" dir="ltr">${s.e}</span> · ${s.turns.length} جمل${b!=null?' · أفضل نتيجة '+b+'%':''}</span></span><span class="go">‹</span></button>`};
@@ -1253,7 +1339,7 @@ const SECS=[{k:'en',go:'en',c:'en',c2:'pink',i:'E',t:'الإنجليزي',items:
 function vHome(){const p=cur();const pl=planOf(p);const st=planStep(p);const done=PLAN.filter(x=>pl[x.k]).length;const bs=view.bs||'all';
  const card=x=>{const d=x.items.filter(k=>pl[k]).length,all=d===x.items.length;return `<button class="seccard" ${x.go==='en'?'data-go="en"':`data-act="${x.go}"`} style="--c:var(--${x.c});--c2:var(--${x.c2})"><span class="sci">${x.i}</span><span class="grow"><b>${x.t}</b><span>${x.m}</span>${d?`<span class="scst">✓ ${g('تدرّبت','تدرّبتِ')} اليوم</span>`:''}</span><span class="go">‹</span></button>`};
  return header()+`<h1>أهلاً يا ${esc(p.name)}</h1><p class="sub">${g('كلما تدرّبت أكثر زادت نقاطك.','كلما تدرّبتِ أكثر زادت نقاطكِ.')}</p>
- <div class="homegrid"><div class="sec">${SECS.map(card).join('')}</div>
+ ${introCard(false)}<div class="homegrid"><div class="sec">${SECS.map(card).join('')}</div>
  <div>${CLOUD?`<div class="sec"><div class="row between"><h2>🏆 الترتيب</h2><button class="x" data-go="comp">عرض الكل</button></div><div class="card"><div class="seg">${['all','st','gr'].map(k=>`<button type="button" class="${bs===k?'on':''}" data-bs="${k}">${k==='all'?'الجميع':k==='st'?STAGES[stageOf(p.grade)]:'صفّي'}</button>`).join('')}</div><div id="board" style="margin-top:10px"></div></div></div>`:`<div class="sec"><button class="btn plain wide" data-go="comp">🏆 الترتيب</button><button class="btn plain wide" data-go="parent">لوحة ولي الأمر</button></div>`}</div></div>`}
 
 function vEn(){const p=cur();const hc=Object.keys(p.hard).length;const pl=planOf(p);
