@@ -88,7 +88,7 @@ h1{font-size:28px;font-weight:800}h2{font-size:21px;font-weight:700}h3{font-size
 .ivcard.big{padding:18px}.ivcard.big b{font-size:22px}
 .ivplay{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.25);display:grid;place-items:center;font-size:18px;flex:none;padding-inline-start:3px}
 .iv-ov{position:fixed;inset:0;z-index:100;background:rgba(14,10,40,.78);display:grid;place-items:center;padding:14px;animation:ivfade .3s}
-.iv-box{width:min(560px,100%);display:flex;flex-direction:column;gap:10px}
+.iv-box{width:min(560px,100%,calc(100vh - 110px));display:flex;flex-direction:column;gap:10px}
 .iv-stage{position:relative;aspect-ratio:4/3.4;border-radius:22px;overflow:hidden;background:linear-gradient(135deg,#4F5BF0,#7B3FE0 50%,#E8468A);color:#fff;box-shadow:0 30px 60px -20px #000}
 .iv-stage:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 25% 18%,rgba(255,255,255,.25),transparent 50%)}
 .iv-sc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:18px;text-align:center;animation:ivin .55s ease both}
@@ -98,6 +98,7 @@ h1{font-size:28px;font-weight:800}h2{font-size:21px;font-weight:700}h3{font-size
 .iv-bar{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .iv-dots{display:flex;gap:6px}.iv-dots i{width:22px;height:6px;border-radius:3px;background:rgba(255,255,255,.3)}.iv-dots i.on{background:#FFCB5C}.iv-dots i.done{background:#fff}
 .iv-ctl{display:flex;gap:6px}.iv-ctl button{width:42px;height:42px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;font-size:16px;cursor:pointer}
+.iv-video{width:100%;aspect-ratio:1/1;border-radius:22px;background:#120d33;box-shadow:0 30px 60px -20px #000;display:block}.iv-close{border:none;border-radius:99px;padding:9px 18px;background:rgba(255,255,255,.18);color:#fff;font-weight:700;font-size:15px;cursor:pointer}
 .iv-note{margin:0;color:#fff;opacity:.85;font-size:13px;text-align:center}
 .iv-logo{position:relative;width:110px;height:110px;border-radius:28px;background:rgba(255,255,255,.18);display:grid;place-items:center;animation:ivpop .6s .1s both}
 .iv-logo span{font-family:var(--fd);font-weight:800;font-size:72px;line-height:1}.iv-logo i{position:absolute;top:10px;left:12px;color:#FFCB5C;font-style:normal;font-size:24px;animation:ivtw 1.6s infinite}
@@ -1069,7 +1070,13 @@ const INTRO_SC=[
   v:`<div class="iv-logo"><span>م</span><i>✦</i></div><div class="iv-big">ابدأ الآن!</div><div class="iv-sub">تدرّب · تحسّن · نافس</div>`}];
 const IV={on:false,i:0,j:0,muted:false,paused:false,tm:null,voice:null};
 function ivVoice(){if(!canSynth)return null;const vs=(speechSynthesis.getVoices()||[]).filter(v=>/^ar/i.test(v.lang));return vs.find(v=>/google/i.test(v.name))||vs.find(v=>/SA/i.test(v.lang))||vs[0]||null}
-function openIntro(){closeIntro();IV.on=true;IV.i=0;IV.j=0;IV.paused=false;IV.voice=ivVoice();
+function openIntro(){if(location.protocol==='file:'||!FB)return openIntroAnim();closeIntro();IV.on=true;
+ const el=document.createElement('div');el.id='intro';el.className='iv-ov';el.setAttribute('dir','rtl');el.setAttribute('role','dialog');el.setAttribute('aria-label','تعريف بتطبيق مِران');
+ el.innerHTML=`<div class="iv-box"><video id="ivvid" class="iv-video" src="intro.mp4?v=1" poster="intro-poster.jpg" controls playsinline autoplay preload="auto"></video><div class="iv-bar" style="justify-content:flex-end"><button type="button" class="iv-close" data-iv="x">إغلاق ✕</button></div></div>`;
+ document.body.appendChild(el);document.body.style.overflow='hidden';
+ el.addEventListener('click',e=>{if(e.target.closest('[data-iv="x"]')||e.target===el)closeIntro()});
+ const v=el.querySelector('video');v.addEventListener('error',()=>{if(IV.on)openIntroAnim()});const pr=v.play();if(pr&&pr.catch)pr.catch(()=>{})}
+function openIntroAnim(){closeIntro();IV.on=true;IV.i=0;IV.j=0;IV.paused=false;IV.voice=ivVoice();
  const el=document.createElement('div');el.id='intro';el.className='iv-ov';el.setAttribute('dir','rtl');el.setAttribute('lang','ar');el.setAttribute('role','dialog');el.setAttribute('aria-label','تعريف بتطبيق مِران');
  el.innerHTML=`<div class="iv-box"><div class="iv-stage" id="ivst"></div><div class="iv-cap" id="ivcap" aria-live="polite"></div>
  <div class="iv-bar"><div class="iv-dots" id="ivdots">${INTRO_SC.map(()=>'<i></i>').join('')}</div>
@@ -1078,7 +1085,7 @@ function openIntro(){closeIntro();IV.on=true;IV.i=0;IV.j=0;IV.paused=false;IV.vo
  document.body.appendChild(el);document.body.style.overflow='hidden';
  el.addEventListener('click',e=>{const b=e.target.closest('[data-iv]');if(b)ivCtl(b.dataset.iv);else if(e.target===el)closeIntro()});
  if(canSynth&&!IV.voice){try{speechSynthesis.getVoices();setTimeout(()=>{IV.voice=ivVoice();ivScene()},350)}catch(e){ivScene()}}else ivScene()}
-function closeIntro(){IV.on=false;clearTimeout(IV.tm);try{if(canSynth)speechSynthesis.cancel()}catch(e){}const el=$('#intro');if(el)el.remove();document.body.style.overflow=''}
+function closeIntro(){IV.on=false;clearTimeout(IV.tm);const vv=$('#ivvid');if(vv){try{vv.pause()}catch(e){}}try{if(canSynth)speechSynthesis.cancel()}catch(e){}const el=$('#intro');if(el)el.remove();document.body.style.overflow=''}
 function ivScene(){if(!IV.on)return;const sc=INTRO_SC[IV.i];const st=$('#ivst');if(!st)return;
  st.innerHTML=`<div class="iv-sc" style="--k:${IV.i}"><h2>${sc.t}</h2><div class="iv-vis">${sc.v}</div></div>`;
  document.querySelectorAll('#ivdots i').forEach((d,k)=>d.className=k<IV.i?'done':k===IV.i?'on':'');IV.j=0;ivLine()}
