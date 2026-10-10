@@ -480,7 +480,7 @@ function speedQ(p){const L=Math.min(3,baseL(p.grade));const v=ri(0,3);let q,a;
 
 /* ============ توليد أسئلة الإنجليزي ============ */
 const parseW=(s,t)=>{const[w,mn,e]=s.split('|');return{w,m:mn,e,t}};
-function gradeWords(p){const G=VOC[nearKey(VOC,p.grade)];let a=[];[1,2,3].forEach(u=>a=a.concat((G[u]||[]).map((s,i)=>parseW(s,G[3]?(u===1?1:u===3?2:(i<5?1:2)):u))));return a}
+function gradeWords(p){const G=VOC[nearKey(VOC,p.grade)];let a=[];[1,2,3].forEach(u=>a=a.concat((G[u]||[]).map((s,i)=>parseW(s,G[3]?(u===1?1:u===3?2:(i<5?1:2)):u))));const X=VOCX[p.grade];if(X)[1,2].forEach(t=>a=a.concat((X[t]||[]).map(s=>parseW(s,t))));const seen=new Set();return a.filter(w=>{const k=w.w.toLowerCase();if(seen.has(k))return false;seen.add(k);return true})}
 function reachWords(p){return gradeWords(p).filter(x=>x.t<=p.term)}
 function dailyWords(p){const k=dkey();if(p.daily[k]&&p.daily[k].words)return p.daily[k].words.map(w=>gradeWords(p).find(x=>x.w===w)).filter(Boolean);
  const termW=gradeWords(p).filter(x=>x.t===p.term),rest=reachWords(p);let pick=termW.filter(x=>!p.learned[x.w]);if(pick.length<5)pick=pick.concat(shuf(rest.filter(x=>!pick.includes(x))));pick=pick.slice(0,5);
@@ -1148,6 +1148,21 @@ function genBasic(G){const v=G<=1?pk(['add','sub','wadd']):G<=2?pk(['add','sub',
  else{const x=ri(1,9)+pk([0.5,0.25,0.75]),y=ri(1,9)+pk([0.5,0.25]);a=+(x+y).toFixed(2);q=`ما ناتج ${m(`${x} + ${y}`)}؟`;w=[+(a+1).toFixed(2),+(a-0.5).toFixed(2),Math.floor(a)];st=['نرتّب الفواصل العشرية تحت بعضها ثم نجمع',m(`${x} + ${y} = ${a}`)]}
  return{q,a,w,st}}
 
+/* ============ حزمة المحتوى الخارجية (تُحدَّث دورياً) ============ */
+const VOCX={};let PACKV='';
+function applyPack(pk){if(!pk||typeof pk!=='object')return;let n=0;
+ const has=(arr,f,v)=>arr.some(x=>f(x)===v);
+ Object.entries(pk.vocab||{}).forEach(([g,terms])=>{g=+g;VOCX[g]=VOCX[g]||{1:[],2:[]};Object.entries(terms).forEach(([t,list])=>{(list||[]).forEach(w=>{const k=String(w).split('|')[0].toLowerCase();if(!VOCX[g][t].some(x=>x.split('|')[0].toLowerCase()===k)){VOCX[g][t].push(w);n++}})})});
+ (pk.grammar||[]).forEach(x=>{if(x&&x.q&&!has(GR,y=>y.q,x.q)){GR.push(x);n++}});
+ (pk.reading||[]).forEach(x=>{if(x&&x.t&&!has(RD,y=>y.t,x.t)){RD.push(x);n++}});
+ (pk.science||[]).forEach(x=>{if(Array.isArray(x)&&!has(SC,y=>y[2],x[2])){SC.push(x);n++}});
+ (pk.talks||[]).forEach(x=>{if(x&&x.id&&!has(TALKS,y=>y.id,x.id)){TALKS.push(x);n++}});
+ Object.entries(pk.verbal||{}).forEach(([k,rows])=>{if(VB[k])(rows||[]).forEach(r=>{if(!has(VB[k],y=>y[1]+'|'+y[2].join(),r[1]+'|'+r[2].join())){VB[k].push(r);n++}})});
+ (pk.rc||[]).forEach(x=>{if(x&&x.t&&!has(VRC,y=>y.t,x.t)){VRC.push(x);n++}});
+ PACKV=pk.version||'';return n}
+function loadPack(){if(location.protocol==='file:'||!FB)return;const d=new Date();const v=d.getFullYear()+''+d.getMonth()+d.getDate();
+ fetch('content.json?v='+v,{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(pk=>{if(pk)applyPack(pk)}).catch(()=>{})}
+
 /* ============ الحالة والتنقل ============ */
 let view={name:'who'};
 function go(name,extra){view=Object.assign({name},extra||{});render();window.scrollTo(0,0)}
@@ -1438,6 +1453,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});
 
 document.documentElement.lang='ar';
 load();
+loadPack();
 fbStart();
 go(cur()?'home':'who');
 </script>

@@ -1,0 +1,2782 @@
+{
+"version": "2026-10-10",
+"vocab": {
+"1": {
+"1": [
+"hello|مرحباً|Hello, teacher!",
+"boy|ولد|The boy is happy.",
+"girl|بنت|The girl has a doll.",
+"three|ثلاثة|I have three pens.",
+"four|أربعة|A cat has four legs.",
+"five|خمسة|I have five fingers.",
+"eye|عين|I see with my eyes.",
+"ear|أذن|I hear with my ears."
+],
+"2": [
+"hand|يد|Raise your hand.",
+"nose|أنف|My nose is small.",
+"mouth|فم|Open your mouth.",
+"car|سيارة|The car is red.",
+"bus|حافلة|I go by bus.",
+"tree|شجرة|The tree is tall.",
+"star|نجمة|I see a star.",
+"moon|قمر|The moon is white."
+]
+},
+"2": {
+"1": [
+"banana|موزة|I like bananas.",
+"orange|برتقالة|The orange is sweet.",
+"juice|عصير|I drink orange juice.",
+"cake|كعكة|We eat cake.",
+"table|طاولة|The book is on the table.",
+"bed|سرير|I sleep in my bed.",
+"kitchen|مطبخ|Mom is in the kitchen.",
+"bathroom|حمام|Wash your hands in the bathroom."
+],
+"2": [
+"hat|قبعة|I wear a hat.",
+"shoes|حذاء|My shoes are black.",
+"shirt|قميص|This is a white shirt.",
+"dress|فستان|She has a pink dress.",
+"play|يلعب|We play in the garden.",
+"read|يقرأ|I read a book.",
+"write|يكتب|Write your name.",
+"draw|يرسم|I draw a sun."
+]
+},
+"3": {
+"1": [
+"Tuesday|الثلاثاء|We have art on Tuesday.",
+"Friday|الجمعة|We pray on Friday.",
+"week|أسبوع|A week has seven days.",
+"today|اليوم|Today is Sunday.",
+"tomorrow|غداً|See you tomorrow.",
+"breakfast|فطور|I eat breakfast at home.",
+"lunch|غداء|Lunch is ready.",
+"dinner|عشاء|We have dinner at eight."
+],
+"2": [
+"horse|حصان|The horse runs fast.",
+"camel|جمل|The camel lives in the desert.",
+"sheep|خروف|The sheep is white.",
+"goat|ماعز|The goat eats grass.",
+"duck|بطة|The duck can swim.",
+"chicken|دجاجة|The chicken lays eggs.",
+"rabbit|أرنب|The rabbit has long ears.",
+"farm|مزرعة|My uncle has a farm."
+]
+},
+"4": {
+"1": [
+"classroom|فصل دراسي|Our classroom is big.",
+"library|مكتبة|I read in the library.",
+"playground|ساحة اللعب|We play in the playground.",
+"lesson|درس|The lesson is easy.",
+"question|سؤال|Ask a question.",
+"answer|إجابة|Write the answer.",
+"ruler|مسطرة|Use a ruler.",
+"eraser|ممحاة|I need an eraser."
+],
+"2": [
+"cook|يطبخ|My mother cooks rice.",
+"clean|ينظف|I clean my room.",
+"wash|يغسل|Wash the dishes.",
+"help|يساعد|I help my father.",
+"visit|يزور|We visit our grandmother.",
+"buy|يشتري|We buy fruit.",
+"sell|يبيع|He sells dates.",
+"carry|يحمل|Carry your bag."
+]
+},
+"5": {
+"1": [
+"spring|الربيع|Flowers grow in spring.",
+"autumn|الخريف|Leaves fall in autumn.",
+"warm|دافئ|The weather is warm.",
+"storm|عاصفة|There is a storm tonight.",
+"sand|رمل|The desert has sand.",
+"sea|بحر|The sea is blue.",
+"mountain|جبل|Abha has high mountains.",
+"river|نهر|The Nile is a long river."
+],
+"2": [
+"festival|مهرجان|We went to a festival.",
+"holiday|إجازة|The holiday starts on Sunday.",
+"travel|يسافر|We travel by plane.",
+"ticket|تذكرة|I have a ticket.",
+"hotel|فندق|We stayed in a hotel.",
+"photo|صورة فوتوغرافية|Take a photo.",
+"beach|شاطئ|We swam at the beach.",
+"souvenir|تذكار|I bought a souvenir."
+]
+},
+"6": {
+"1": [
+"breakfast|فطور|Breakfast is the most important meal.",
+"protein|بروتين|Eggs have protein.",
+"sugar|سكر|Too much sugar is bad.",
+"fruit|فاكهة|Eat fruit every day.",
+"water|ماء|Drink eight glasses of water.",
+"fit|لائق بدنياً|Exercise keeps you fit.",
+"sleep|نوم|Children need ten hours of sleep.",
+"energy|طاقة|Food gives us energy."
+],
+"2": [
+"invent|يخترع|Who invented the phone?",
+"machine|آلة|This machine makes juice.",
+"robot|روبوت|The robot can talk.",
+"computer|حاسوب|I use the computer for homework.",
+"internet|الإنترنت|The internet is fast.",
+"screen|شاشة|Don't sit close to the screen.",
+"battery|بطارية|The battery is low.",
+"charge|يشحن|Charge your tablet."
+]
+},
+"7": {
+"1": [
+"neighbor|جار|Our neighbor is friendly.",
+"polite|مؤدب|Be polite to others.",
+"share|يشارك|Share your toys.",
+"borrow|يستعير|Can I borrow your pen?",
+"lend|يُقرض|Lend me your book.",
+"promise|وعد|I promise to help.",
+"proud|فخور|I am proud of you.",
+"honest|صادق|An honest person tells the truth."
+],
+"2": [
+"journey|رحلة|The journey was long.",
+"passenger|راكب|The passenger is waiting.",
+"luggage|أمتعة|My luggage is heavy.",
+"arrive|يصل|We arrive at noon.",
+"depart|يغادر|The train departs at six.",
+"delay|تأخير|There is a delay.",
+"map|خريطة|Check the map.",
+"guide|مرشد|The guide showed us the city."
+]
+},
+"8": {
+"1": [
+"habit|عادة|Reading is a good habit.",
+"diet|نظام غذائي|He follows a healthy diet.",
+"balanced|متوازن|Eat a balanced meal.",
+"calories|سعرات حرارية|Fast food has many calories.",
+"muscle|عضلة|Exercise builds muscle.",
+"injury|إصابة|He has a knee injury.",
+"recover|يتعافى|She recovered quickly.",
+"prevent|يمنع|Washing hands prevents illness."
+],
+"2": [
+"volcano|بركان|The volcano erupted.",
+"earthquake|زلزال|The earthquake shook the city.",
+"flood|فيضان|The flood damaged houses.",
+"desert|صحراء|The Empty Quarter is a huge desert.",
+"oasis|واحة|Al-Ahsa is a famous oasis.",
+"climate|مناخ|The climate is hot and dry.",
+"temperature|درجة حرارة|The temperature is 45 degrees.",
+"forecast|توقعات الطقس|Check the weather forecast."
+]
+},
+"9": {
+"1": [
+"pollution|تلوث|Air pollution is dangerous.",
+"recycle|يعيد التدوير|Recycle plastic bottles.",
+"wildlife|الحياة البرية|Protect the wildlife.",
+"endangered|مهدد بالانقراض|The Arabian leopard is endangered.",
+"extinct|منقرض|Dinosaurs are extinct.",
+"habitat|موطن|The forest is the bear's habitat.",
+"solar|شمسي|Solar energy is clean.",
+"waste|نفايات|Reduce your waste."
+],
+"2": [
+"career|مهنة|She chose a career in law.",
+"salary|راتب|He earns a good salary.",
+"employee|موظف|The company has 50 employees.",
+"manager|مدير|The manager is in a meeting.",
+"skill|مهارة|Communication is an important skill.",
+"experience|خبرة|She has five years of experience.",
+"goal|هدف|Set a clear goal.",
+"succeed|ينجح|Work hard to succeed."
+]
+},
+"10": {
+"1": [
+"environment|البيئة|We must protect the environment.",
+"renewable|متجدد|Wind is a renewable source.",
+"consume|يستهلك|We consume too much energy.",
+"emission|انبعاث|Cars produce emissions.",
+"conserve|يحافظ على|Conserve water at home.",
+"impact|أثر|Plastic has a bad impact on the sea.",
+"awareness|وعي|Raise awareness about recycling.",
+"campaign|حملة|We started a clean-up campaign."
+],
+"2": [
+"communicate|يتواصل|We communicate online.",
+"privacy|خصوصية|Protect your privacy.",
+"password|كلمة مرور|Use a strong password.",
+"digital|رقمي|We live in a digital age.",
+"device|جهاز|Turn off your device.",
+"online|عبر الإنترنت|I study online.",
+"update|يحدّث|Update the app.",
+"security|أمان|Online security is important."
+]
+},
+"11": {
+"1": [
+"entrepreneur|رائد أعمال|She is a young entrepreneur.",
+"invest|يستثمر|He invested in a startup.",
+"profit|ربح|The company made a profit.",
+"loss|خسارة|They had a big loss.",
+"customer|عميل|The customer is always right.",
+"market|سوق|The market is growing.",
+"budget|ميزانية|Plan your budget.",
+"negotiate|يتفاوض|We negotiated a better price."
+],
+"2": [
+"ancient|قديم|Hegra is an ancient city.",
+"civilization|حضارة|Islamic civilization was advanced.",
+"archaeology|علم الآثار|She studies archaeology.",
+"monument|نُصب أثري|The monument is famous.",
+"century|قرن|It was built in the 7th century.",
+"empire|إمبراطورية|The empire was huge.",
+"preserve|يحافظ على|We must preserve our heritage.",
+"document|وثيقة|This document is old."
+]
+},
+"12": {
+"1": [
+"hypothesis|فرضية|Test your hypothesis.",
+"experiment|تجربة|The experiment failed.",
+"variable|متغير|Change one variable at a time.",
+"data|بيانات|Collect the data.",
+"result|نتيجة|The result was surprising.",
+"theory|نظرية|Einstein's theory changed physics.",
+"method|طريقة|Use a scientific method.",
+"accurate|دقيق|The measurement was accurate."
+],
+"2": [
+"leadership|قيادة|She showed great leadership.",
+"teamwork|عمل جماعي|Teamwork makes success possible.",
+"deadline|موعد نهائي|We met the deadline.",
+"priority|أولوية|Health is my priority.",
+"efficient|كفء|Be efficient with your time.",
+"motivate|يحفّز|Good teachers motivate students.",
+"feedback|تغذية راجعة|Thank you for your feedback.",
+"initiative|مبادرة|He took the initiative."
+]
+}
+},
+"grammar": [
+{
+"g": 1,
+"q": "I ___ a cat.",
+"c": [
+"have",
+"has",
+"am",
+"is"
+],
+"a": 0,
+"ex": "مع I نستخدم have."
+},
+{
+"g": 1,
+"q": "It ___ red.",
+"c": [
+"is",
+"am",
+"are",
+"have"
+],
+"a": 0,
+"ex": "مع it نستخدم is."
+},
+{
+"g": 1,
+"q": "This is ___ apple.",
+"c": [
+"an",
+"a",
+"two",
+"the a"
+],
+"a": 0,
+"ex": "قبل الكلمة التي تبدأ بحرف علّة مثل apple نستخدم an."
+},
+{
+"g": 1,
+"q": "I see three ___.",
+"c": [
+"birds",
+"bird",
+"a bird",
+"birdes"
+],
+"a": 0,
+"ex": "بعد three يأتي الجمع بإضافة s."
+},
+{
+"g": 2,
+"q": "___ is your name?",
+"c": [
+"What",
+"Where",
+"Who",
+"How"
+],
+"a": 0,
+"ex": "نسأل عن الاسم بـ What."
+},
+{
+"g": 2,
+"q": "They ___ my friends.",
+"c": [
+"are",
+"is",
+"am",
+"be"
+],
+"a": 0,
+"ex": "مع they نستخدم are."
+},
+{
+"g": 2,
+"q": "The ball is ___ the box.",
+"c": [
+"in",
+"on the",
+"at the",
+"under the a"
+],
+"a": 0,
+"ex": "in تعني داخل."
+},
+{
+"g": 2,
+"q": "I ___ two hands.",
+"c": [
+"have",
+"has",
+"am",
+"is"
+],
+"a": 0,
+"ex": "مع I نستخدم have."
+},
+{
+"g": 3,
+"q": "___ you swim?",
+"c": [
+"Can",
+"Are",
+"Is",
+"Does"
+],
+"a": 0,
+"ex": "للسؤال عن القدرة نبدأ بـ Can."
+},
+{
+"g": 3,
+"q": "She ___ a new bag.",
+"c": [
+"has",
+"have",
+"is",
+"are"
+],
+"a": 0,
+"ex": "مع she نستخدم has."
+},
+{
+"g": 3,
+"q": "___ are your shoes.",
+"c": [
+"These",
+"This",
+"That",
+"It"
+],
+"a": 0,
+"ex": "These للجمع القريب."
+},
+{
+"g": 3,
+"q": "How ___ are you?",
+"c": [
+"old",
+"many",
+"much",
+"age"
+],
+"a": 0,
+"ex": "للسؤال عن العمر: How old are you?"
+},
+{
+"g": 4,
+"q": "I ___ my teeth every morning.",
+"c": [
+"brush",
+"brushes",
+"brushing",
+"am brush"
+],
+"a": 0,
+"ex": "مع I في المضارع البسيط لا نضيف s."
+},
+{
+"g": 4,
+"q": "My brother ___ TV now.",
+"c": [
+"is watching",
+"watch",
+"watches",
+"watching"
+],
+"a": 0,
+"ex": "now: المضارع المستمر is + ing."
+},
+{
+"g": 4,
+"q": "Where ___ she live?",
+"c": [
+"does",
+"do",
+"is",
+"are"
+],
+"a": 0,
+"ex": "السؤال مع she في المضارع البسيط يبدأ بـ does."
+},
+{
+"g": 4,
+"q": "There ___ a book on the desk.",
+"c": [
+"is",
+"are",
+"am",
+"be"
+],
+"a": 0,
+"ex": "There is مع المفرد."
+},
+{
+"g": 5,
+"q": "Yesterday I ___ my grandmother.",
+"c": [
+"visited",
+"visit",
+"visits",
+"visiting"
+],
+"a": 0,
+"ex": "yesterday: الماضي البسيط بإضافة ed."
+},
+{
+"g": 5,
+"q": "Did you ___ football last week?",
+"c": [
+"play",
+"played",
+"plays",
+"playing"
+],
+"a": 0,
+"ex": "بعد Did يأتي الفعل المجرد."
+},
+{
+"g": 5,
+"q": "Riyadh is ___ city in Saudi Arabia.",
+"c": [
+"the biggest",
+"bigger",
+"the big",
+"most big"
+],
+"a": 0,
+"ex": "التفضيل على الجميع: the + est."
+},
+{
+"g": 5,
+"q": "We ___ at home last night.",
+"c": [
+"were",
+"was",
+"are",
+"is"
+],
+"a": 0,
+"ex": "مع we في الماضي نستخدم were."
+},
+{
+"g": 6,
+"q": "I will ___ you tomorrow.",
+"c": [
+"call",
+"called",
+"calling",
+"calls"
+],
+"a": 0,
+"ex": "بعد will يأتي الفعل المجرد."
+},
+{
+"g": 6,
+"q": "There isn't ___ milk in the fridge.",
+"c": [
+"any",
+"some",
+"many",
+"a"
+],
+"a": 0,
+"ex": "في النفي نستخدم any."
+},
+{
+"g": 6,
+"q": "You ___ wear a seatbelt.",
+"c": [
+"must",
+"musts",
+"must to",
+"are must"
+],
+"a": 0,
+"ex": "must للإلزام، وبعدها فعل مجرد."
+},
+{
+"g": 6,
+"q": "This bag is ___ than that one.",
+"c": [
+"heavier",
+"heavyer",
+"more heavy",
+"heaviest"
+],
+"a": 0,
+"ex": "heavy ← heavier (y تتحول إلى i)."
+},
+{
+"g": 7,
+"q": "She ___ English for three years.",
+"c": [
+"has studied",
+"studied",
+"studies",
+"is studying"
+],
+"a": 0,
+"ex": "مدة مستمرة حتى الآن: المضارع التام has + التصريف الثالث."
+},
+{
+"g": 7,
+"q": "I didn't go out ___ it was raining.",
+"c": [
+"because",
+"but",
+"so",
+"although"
+],
+"a": 0,
+"ex": "because للسبب."
+},
+{
+"g": 7,
+"q": "He is good ___ math.",
+"c": [
+"at",
+"in",
+"on",
+"for"
+],
+"a": 0,
+"ex": "good at: ماهر في."
+},
+{
+"g": 7,
+"q": "Have you ever ___ a camel?",
+"c": [
+"ridden",
+"rode",
+"ride",
+"riding"
+],
+"a": 0,
+"ex": "بعد have ever نستخدم التصريف الثالث: ridden."
+},
+{
+"g": 8,
+"q": "While I ___ , the phone rang.",
+"c": [
+"was studying",
+"studied",
+"am studying",
+"study"
+],
+"a": 0,
+"ex": "حدث مستمر في الماضي قطعه حدث آخر: الماضي المستمر."
+},
+{
+"g": 8,
+"q": "Arabic ___ in many countries.",
+"c": [
+"is spoken",
+"speaks",
+"is speaking",
+"spoke"
+],
+"a": 0,
+"ex": "المبني للمجهول في المضارع: is + التصريف الثالث."
+},
+{
+"g": 8,
+"q": "If you heat ice, it ___.",
+"c": [
+"melts",
+"will melted",
+"melted",
+"melting"
+],
+"a": 0,
+"ex": "الشرط الصفري للحقائق: مضارع في الطرفين."
+},
+{
+"g": 8,
+"q": "I'm not used to ___ up early.",
+"c": [
+"getting",
+"get",
+"got",
+"gets"
+],
+"a": 0,
+"ex": "be used to + ing."
+},
+{
+"g": 9,
+"q": "The book ___ I borrowed is great.",
+"c": [
+"that",
+"who",
+"where",
+"whose"
+],
+"a": 0,
+"ex": "that / which لغير العاقل."
+},
+{
+"g": 9,
+"q": "If it rains tomorrow, we ___ stay home.",
+"c": [
+"will",
+"would",
+"are",
+"had"
+],
+"a": 0,
+"ex": "الشرط الأول: will + الفعل."
+},
+{
+"g": 9,
+"q": "She asked me where I ___.",
+"c": [
+"lived",
+"live",
+"do live",
+"living"
+],
+"a": 0,
+"ex": "السؤال المنقول: يتحول الفعل للماضي ولا نستخدم do."
+},
+{
+"g": 9,
+"q": "He is ___ tall to sit in the front.",
+"c": [
+"too",
+"enough",
+"very much",
+"so much"
+],
+"a": 0,
+"ex": "too + صفة: أكثر من اللازم."
+},
+{
+"g": 10,
+"q": "By the time we arrived, the movie ___.",
+"c": [
+"had started",
+"started",
+"has started",
+"starts"
+],
+"a": 0,
+"ex": "الماضي التام لحدث سبق حدثاً ماضياً."
+},
+{
+"g": 10,
+"q": "I wish I ___ more free time.",
+"c": [
+"had",
+"have",
+"will have",
+"having"
+],
+"a": 0,
+"ex": "wish عن الحاضر: ماضٍ بسيط."
+},
+{
+"g": 10,
+"q": "The bridge ___ next year.",
+"c": [
+"will be built",
+"will build",
+"is building",
+"builds"
+],
+"a": 0,
+"ex": "المبني للمجهول في المستقبل: will be + التصريف الثالث."
+},
+{
+"g": 10,
+"q": "Neither Ali ___ Omar came.",
+"c": [
+"nor",
+"or",
+"and",
+"but"
+],
+"a": 0,
+"ex": "Neither ... nor."
+},
+{
+"g": 11,
+"q": "He denied ___ the window.",
+"c": [
+"breaking",
+"to break",
+"break",
+"broke"
+],
+"a": 0,
+"ex": "deny + ing."
+},
+{
+"g": 11,
+"q": "She suggested that he ___ a doctor.",
+"c": [
+"see",
+"sees",
+"saw",
+"seeing"
+],
+"a": 0,
+"ex": "بعد suggest that نستخدم الفعل المجرد (subjunctive)."
+},
+{
+"g": 11,
+"q": "It's high time we ___ .",
+"c": [
+"left",
+"leave",
+"leaving",
+"have left"
+],
+"a": 0,
+"ex": "It's high time + ماضٍ بسيط."
+},
+{
+"g": 11,
+"q": "Had I known, I ___ you.",
+"c": [
+"would have told",
+"will tell",
+"told",
+"would tell"
+],
+"a": 0,
+"ex": "شرط ثالث مقلوب: Had + فاعل + التصريف الثالث."
+},
+{
+"g": 12,
+"q": "Rarely ___ such a beautiful view.",
+"c": [
+"have I seen",
+"I have seen",
+"I saw",
+"seen I have"
+],
+"a": 0,
+"ex": "بعد Rarely في أول الجملة نقلب الفعل المساعد والفاعل."
+},
+{
+"g": 12,
+"q": "The more you practice, ___ you become.",
+"c": [
+"the better",
+"better",
+"the best",
+"more better"
+],
+"a": 0,
+"ex": "The + مقارنة ..., the + مقارنة."
+},
+{
+"g": 12,
+"q": "He must ___ the bus; he's not here.",
+"c": [
+"have missed",
+"miss",
+"missed",
+"missing"
+],
+"a": 0,
+"ex": "must have + التصريف الثالث للاستنتاج عن الماضي."
+},
+{
+"g": 12,
+"q": "Provided that you study, you ___ pass.",
+"c": [
+"will",
+"would have",
+"had",
+"were"
+],
+"a": 0,
+"ex": "Provided that بمعنى If: الشرط الأول."
+}
+],
+"reading": [
+{
+"g": 1,
+"t": "My Ball",
+"p": "I have a ball. It is red. I play with my ball in the garden.",
+"qs": [
+[
+"What color is the ball?",
+[
+"red",
+"blue",
+"green",
+"black"
+],
+0
+],
+[
+"Where does he play?",
+[
+"in the garden",
+"in the kitchen",
+"at school",
+"in the car"
+],
+0
+],
+[
+"What does he have?",
+[
+"a ball",
+"a cat",
+"a book",
+"a car"
+],
+0
+]
+]
+},
+{
+"g": 3,
+"t": "At the Farm",
+"p": "My uncle has a farm. There are cows, sheep and chickens. The chickens lay eggs every day. I help my uncle feed the animals on Fridays.",
+"qs": [
+[
+"Who has a farm?",
+[
+"his uncle",
+"his teacher",
+"his friend",
+"his sister"
+],
+0
+],
+[
+"Which animals lay eggs?",
+[
+"chickens",
+"cows",
+"sheep",
+"camels"
+],
+0
+],
+[
+"When does he help his uncle?",
+[
+"on Fridays",
+"on Mondays",
+"every night",
+"in the morning only"
+],
+0
+]
+]
+},
+{
+"g": 5,
+"t": "A Trip to Abha",
+"p": "Last summer, my family traveled to Abha. The weather was cool and rainy. We visited the mountains and rode the cable car. My little sister was scared at first, but then she loved it. We stayed for five days.",
+"qs": [
+[
+"When did they travel?",
+[
+"last summer",
+"last winter",
+"yesterday",
+"next year"
+],
+0
+],
+[
+"What was the weather like?",
+[
+"cool and rainy",
+"hot and dry",
+"snowy",
+"windy and hot"
+],
+0
+],
+[
+"How long did they stay?",
+[
+"five days",
+"two days",
+"a month",
+"one week and a day"
+],
+0
+]
+]
+},
+{
+"g": 7,
+"t": "The Honey Bee",
+"p": "Honey bees live in large groups called colonies. Each colony has one queen, thousands of workers and some drones. Worker bees collect nectar from flowers and turn it into honey. Bees are very important because they help plants grow by carrying pollen from one flower to another.",
+"qs": [
+[
+"What is a group of bees called?",
+[
+"a colony",
+"a herd",
+"a flock",
+"a team"
+],
+0
+],
+[
+"What do worker bees collect?",
+[
+"nectar",
+"water",
+"leaves",
+"sand"
+],
+0
+],
+[
+"Why are bees important?",
+[
+"They help plants grow.",
+"They make sugar.",
+"They eat insects.",
+"They clean flowers."
+],
+0
+]
+]
+},
+{
+"g": 8,
+"t": "Ibn Battuta",
+"p": "Ibn Battuta was a famous traveler from Morocco. In 1325 he left home to perform Hajj, but he continued traveling for almost thirty years. He visited Africa, the Middle East, India and China. Later, he described his journeys in a book called 'The Rihla', which is still read today.",
+"qs": [
+[
+"Where was Ibn Battuta from?",
+[
+"Morocco",
+"Egypt",
+"India",
+"China"
+],
+0
+],
+[
+"Why did he first leave home?",
+[
+"to perform Hajj",
+"to study medicine",
+"to find a job",
+"to buy spices"
+],
+0
+],
+[
+"What is 'The Rihla'?",
+[
+"a book about his travels",
+"a ship",
+"a city in China",
+"a type of food"
+],
+0
+]
+]
+},
+{
+"g": 10,
+"t": "Saudi Vision 2030",
+"p": "Saudi Vision 2030 is a plan to build a strong economy that depends less on oil. It focuses on areas such as tourism, technology, entertainment and renewable energy. Projects like NEOM and the Red Sea Project aim to create new jobs and attract visitors from around the world. Young Saudis are expected to play a key role in achieving these goals.",
+"qs": [
+[
+"What is the main aim of Vision 2030?",
+[
+"to depend less on oil",
+"to build more oil wells",
+"to close schools",
+"to stop tourism"
+],
+0
+],
+[
+"Which of these is a Vision 2030 project?",
+[
+"NEOM",
+"The Nile Project",
+"The Great Wall",
+"Silicon Valley"
+],
+0
+],
+[
+"Who is expected to play a key role?",
+[
+"young Saudis",
+"only foreign companies",
+"old people only",
+"tourists"
+],
+0
+]
+]
+},
+{
+"g": 12,
+"t": "The Science of Sleep",
+"p": "Scientists now understand that sleep is not simply a time when the brain switches off. During deep sleep, the brain organizes memories and removes waste products that build up during the day. Teenagers who regularly sleep less than eight hours tend to have weaker concentration and lower exam results. Consequently, many experts argue that schools should start later in the morning.",
+"qs": [
+[
+"According to the passage, what does the brain do during deep sleep?",
+[
+"organizes memories and removes waste",
+"switches off completely",
+"grows new bones",
+"digests food"
+],
+0
+],
+[
+"What happens to teenagers who sleep too little?",
+[
+"weaker concentration",
+"better exam results",
+"more energy",
+"faster growth"
+],
+0
+],
+[
+"The word \"Consequently\" is closest in meaning to:",
+[
+"as a result",
+"however",
+"for example",
+"in addition"
+],
+0
+]
+]
+}
+],
+"science": [
+[
+1,
+"bio",
+"أي مما يلي كائن حي؟",
+[
+"القطة",
+"الحجر",
+"الكرسي",
+"الكرة"
+],
+0,
+"الكائن الحي يتغذى وينمو ويتكاثر."
+],
+[
+1,
+"phy",
+"أي هذه الأشياء يطفو على الماء؟",
+[
+"قطعة الخشب",
+"المسمار",
+"الحجر",
+"المفتاح"
+],
+0,
+"الخشب أخف من الماء فيطفو."
+],
+[
+1,
+"earth",
+"ماذا نرى في السماء ليلاً؟",
+[
+"القمر والنجوم",
+"الشمس فقط",
+"قوس المطر دائماً",
+"السحب الحمراء فقط"
+],
+0,
+"القمر والنجوم تظهر في الليل."
+],
+[
+1,
+"bio",
+"بأي عضو نرى؟",
+[
+"العين",
+"الأذن",
+"الأنف",
+"اللسان"
+],
+0,
+"العين عضو البصر."
+],
+[
+1,
+"chem",
+"الماء الذي نشربه يكون في الحالة:",
+[
+"السائلة",
+"الصلبة",
+"الغازية",
+"الرملية"
+],
+0,
+"الماء يجري ويأخذ شكل الإناء فهو سائل."
+],
+[
+2,
+"bio",
+"صغير الدجاجة يُسمّى:",
+[
+"كتكوت",
+"عجل",
+"حمل",
+"جرو"
+],
+0,
+"صغير الدجاجة كتكوت."
+],
+[
+2,
+"phy",
+"أي الأشياء التالية مصدر للضوء؟",
+[
+"الشمس",
+"المرآة",
+"القمر بذاته",
+"الكرسي"
+],
+0,
+"الشمس تصدر الضوء، والقمر يعكس ضوءها."
+],
+[
+2,
+"earth",
+"الماء الذي يسقط من السحب يُسمّى:",
+[
+"المطر",
+"الرمل",
+"الرياح",
+"الضباب"
+],
+0,
+"المطر يسقط من السحب."
+],
+[
+2,
+"bio",
+"النبات يمتص الماء بواسطة:",
+[
+"الجذور",
+"الأزهار",
+"الثمار",
+"الأشواك"
+],
+0,
+"الجذور في التربة تمتص الماء."
+],
+[
+2,
+"chem",
+"عند وضع الثلج في الشمس فإنه:",
+[
+"ينصهر",
+"يتجمد أكثر",
+"يصبح حجراً",
+"يكبر"
+],
+0,
+"حرارة الشمس تحول الثلج إلى ماء."
+],
+[
+3,
+"bio",
+"الحيوانات التي تأكل اللحوم تُسمّى:",
+[
+"آكلات اللحوم",
+"آكلات الأعشاب",
+"المنتجات",
+"النباتات"
+],
+0,
+"مثل الأسد والنمر."
+],
+[
+3,
+"phy",
+"دفع عربة إلى الأمام مثال على:",
+[
+"القوة",
+"الضوء",
+"الصوت",
+"الحرارة"
+],
+0,
+"الدفع والسحب قوى تحرك الأجسام."
+],
+[
+3,
+"earth",
+"الصخور الكبيرة تتفتت إلى رمل بفعل:",
+[
+"الرياح والماء على مدى طويل",
+"ضوء القمر",
+"صوت الرعد",
+"النباتات الصغيرة فقط"
+],
+0,
+"هذه العملية تُسمّى التجوية."
+],
+[
+3,
+"chem",
+"أي المواد التالية تذوب في الماء؟",
+[
+"السكر",
+"الرمل",
+"الحجر",
+"الحديد"
+],
+0,
+"السكر يذوب ويختفي في الماء."
+],
+[
+3,
+"bio",
+"دورة حياة الفراشة تبدأ بـ:",
+[
+"البيضة",
+"الفراشة الكبيرة",
+"الشرنقة",
+"الزهرة"
+],
+0,
+"بيضة ثم يرقة ثم عذراء ثم فراشة."
+],
+[
+4,
+"bio",
+"الهيكل العظمي في جسم الإنسان وظيفته:",
+[
+"دعم الجسم وحماية الأعضاء",
+"هضم الطعام",
+"ضخ الدم",
+"تبادل الغازات"
+],
+0,
+"العظام تعطي الجسم شكله وتحمي القلب والدماغ."
+],
+[
+4,
+"phy",
+"الأجسام تسقط إلى الأرض بسبب:",
+[
+"الجاذبية",
+"المغناطيسية",
+"الاحتكاك",
+"الضوء"
+],
+0,
+"الأرض تجذب الأجسام نحوها."
+],
+[
+4,
+"earth",
+"الطبقة الخارجية للأرض التي نعيش عليها:",
+[
+"القشرة",
+"اللب",
+"الوشاح",
+"الغلاف الجوي"
+],
+0,
+"القشرة هي الطبقة الصلبة الخارجية."
+],
+[
+4,
+"chem",
+"المادة التي لها شكل ثابت وحجم ثابت:",
+[
+"الصلبة",
+"السائلة",
+"الغازية",
+"البخار"
+],
+0,
+"الصلب له شكل وحجم ثابتان."
+],
+[
+4,
+"bio",
+"الطيور تتميز بوجود:",
+[
+"الريش",
+"القشور",
+"الشعر الكثيف",
+"الخياشيم"
+],
+0,
+"الريش صفة مميزة للطيور."
+],
+[
+5,
+"bio",
+"عملية صنع النبات لغذائه تُسمّى:",
+[
+"البناء الضوئي",
+"التنفس",
+"الهضم",
+"التكاثر"
+],
+0,
+"يستخدم النبات ضوء الشمس والماء وثاني أكسيد الكربون."
+],
+[
+5,
+"phy",
+"المواد التي تسمح بمرور الكهرباء تُسمّى:",
+[
+"موصلات",
+"عوازل",
+"مغناطيسات",
+"مرايا"
+],
+0,
+"مثل النحاس والألمنيوم."
+],
+[
+5,
+"earth",
+"السبب في حدوث فصول السنة:",
+[
+"ميل محور الأرض ودورانها حول الشمس",
+"دوران القمر",
+"قرب الأرض من المريخ",
+"حركة السحب"
+],
+0,
+"ميل المحور يغيّر زاوية سقوط أشعة الشمس."
+],
+[
+5,
+"chem",
+"الهواء الذي نتنفسه يتكوّن معظمه من غاز:",
+[
+"النيتروجين",
+"الأكسجين",
+"ثاني أكسيد الكربون",
+"الهيليوم"
+],
+0,
+"النيتروجين حوالي 78% من الهواء."
+],
+[
+5,
+"bio",
+"الكائنات التي تحلل بقايا النباتات والحيوانات:",
+[
+"المحلّلات",
+"المنتجات",
+"آكلات اللحوم",
+"آكلات الأعشاب"
+],
+0,
+"مثل البكتيريا والفطريات."
+],
+[
+6,
+"bio",
+"الجهاز المسؤول عن التنفس في الإنسان:",
+[
+"الجهاز التنفسي",
+"الجهاز الهضمي",
+"الجهاز العصبي",
+"الجهاز الهيكلي"
+],
+0,
+"يشمل الأنف والقصبة الهوائية والرئتين."
+],
+[
+6,
+"phy",
+"الصدى هو:",
+[
+"انعكاس الصوت",
+"انكسار الضوء",
+"امتصاص الحرارة",
+"حركة الهواء"
+],
+0,
+"نسمع الصدى عندما يرتد الصوت عن سطح بعيد."
+],
+[
+6,
+"earth",
+"الطبقة التي تحيط بالأرض وتحتوي على الهواء:",
+[
+"الغلاف الجوي",
+"القشرة",
+"اللب الداخلي",
+"المحيط"
+],
+0,
+"الغلاف الجوي يحمي الأرض."
+],
+[
+6,
+"chem",
+"الصدأ يتكوّن عند تفاعل الحديد مع:",
+[
+"الأكسجين والماء",
+"الرمل",
+"الملح فقط",
+"الضوء"
+],
+0,
+"الصدأ تغير كيميائي."
+],
+[
+6,
+"phy",
+"وحدة قياس درجة الحرارة الشائعة:",
+[
+"السيليزية",
+"المتر",
+"الكيلوجرام",
+"اللتر"
+],
+0,
+"تُقاس بالدرجة السيليزية °س."
+],
+[
+7,
+"bio",
+"العضيّة التي تتحكم في أنشطة الخلية:",
+[
+"النواة",
+"الجدار الخلوي",
+"الفجوة",
+"الغشاء"
+],
+0,
+"النواة مركز التحكم وتحتوي على المادة الوراثية."
+],
+[
+7,
+"phy",
+"تحويل الطاقة في الخلية الشمسية من:",
+[
+"ضوئية إلى كهربائية",
+"كهربائية إلى ضوئية",
+"حرارية إلى صوتية",
+"حركية إلى كيميائية"
+],
+0,
+"الخلايا الشمسية تولّد الكهرباء من الضوء."
+],
+[
+7,
+"chem",
+"أصغر جزء من العنصر يحمل خصائصه:",
+[
+"الذرة",
+"الجزيء",
+"المركّب",
+"المخلوط"
+],
+0,
+"العنصر يتكوّن من ذرات متشابهة."
+],
+[
+7,
+"earth",
+"المعادن تُعرَف بخصائص منها:",
+[
+"القساوة واللمعان",
+"الطول والوزن فقط",
+"العمر",
+"الرائحة فقط"
+],
+0,
+"من خصائص المعادن القساوة واللمعان والمخدش."
+],
+[
+7,
+"bio",
+"الفيروسات تُعتبر:",
+[
+"ليست خلايا ولا تتكاثر إلا داخل خلية حية",
+"خلايا نباتية",
+"حيوانات صغيرة",
+"فطريات"
+],
+0,
+"الفيروس يحتاج خلية عائلة ليتكاثر."
+],
+[
+8,
+"phy",
+"الكثافة = الكتلة ÷ ...",
+[
+"الحجم",
+"الوزن",
+"المساحة",
+"الزمن"
+],
+0,
+"الكثافة = الكتلة ÷ الحجم."
+],
+[
+8,
+"chem",
+"المخلوط الذي يمكن تمييز مكوّناته بالعين:",
+[
+"مخلوط غير متجانس",
+"محلول",
+"عنصر",
+"مركّب"
+],
+0,
+"مثل السلطة أو الرمل مع الحصى."
+],
+[
+8,
+"bio",
+"الجهاز الذي يخلّص الجسم من البول:",
+[
+"الجهاز البولي (الإخراجي)",
+"الجهاز الهضمي",
+"الجهاز التنفسي",
+"الجهاز العصبي"
+],
+0,
+"الكليتان تنقيان الدم وتكوّنان البول."
+],
+[
+8,
+"earth",
+"الزلازل تحدث غالباً عند:",
+[
+"حدود الصفائح الأرضية",
+"وسط المحيطات الهادئة دائماً",
+"قمم الجبال فقط",
+"الصحاري فقط"
+],
+0,
+"تتحرك الصفائح عند حدودها فتطلق طاقة."
+],
+[
+8,
+"bio",
+"المادة التي تنقل الأكسجين في الدم:",
+[
+"الهيموجلوبين",
+"الإنسولين",
+"الكالسيوم",
+"النشا"
+],
+0,
+"الهيموجلوبين في خلايا الدم الحمراء."
+],
+[
+9,
+"phy",
+"جسم كتلته 5 كجم وتسارعه 2 م/ث². القوة المؤثرة عليه:",
+[
+"10 نيوتن",
+"2.5 نيوتن",
+"7 نيوتن",
+"3 نيوتن"
+],
+0,
+"ق = ك × ت = 5 × 2 = 10 نيوتن."
+],
+[
+9,
+"chem",
+"الماء H₂O يتكوّن من:",
+[
+"ذرتي هيدروجين وذرة أكسجين",
+"ذرة هيدروجين وذرتي أكسجين",
+"ذرة هيدروجين واحدة فقط",
+"هيليوم وأكسجين"
+],
+0,
+"الرقم الصغير يدل على عدد الذرات."
+],
+[
+9,
+"bio",
+"الصفات التي تنتقل من الآباء للأبناء تُسمّى:",
+[
+"الصفات الوراثية",
+"الصفات المكتسبة",
+"العادات",
+"المهارات"
+],
+0,
+"تنتقل عبر الجينات."
+],
+[
+9,
+"earth",
+"الوحدة الفلكية تساوي تقريباً:",
+[
+"متوسط المسافة بين الأرض والشمس",
+"قطر الأرض",
+"المسافة إلى القمر",
+"سنة ضوئية"
+],
+0,
+"حوالي 150 مليون كم."
+],
+[
+9,
+"phy",
+"عند توصيل مصباحين على التوازي وإزالة أحدهما فإن الآخر:",
+[
+"يبقى مضيئاً",
+"ينطفئ",
+"يحترق",
+"يضيء أقل حتماً"
+],
+0,
+"في التوازي لكل مصباح مسار مستقل."
+],
+[
+10,
+"phy",
+"وحدة القدرة:",
+[
+"الواط",
+"الجول",
+"النيوتن",
+"الباسكال"
+],
+0,
+"القدرة = الشغل ÷ الزمن، ووحدتها الواط."
+],
+[
+10,
+"chem",
+"عدد أفوجادرو يساوي تقريباً:",
+[
+"6.02 × 10²³",
+"3 × 10⁸",
+"9.8",
+"1.6 × 10⁻¹⁹"
+],
+0,
+"عدد الجسيمات في مول واحد."
+],
+[
+10,
+"bio",
+"الغشاء البلازمي يتكوّن أساساً من:",
+[
+"طبقة مزدوجة من الدهون المفسفرة",
+"السليلوز",
+"الكيتين",
+"النشا"
+],
+0,
+"الدهون المفسفرة تشكّل طبقتين."
+],
+[
+10,
+"earth",
+"نوع الصخور التي تتكوّن من ترسب الفتات وتماسكه:",
+[
+"الرسوبية",
+"النارية",
+"المتحولة",
+"البركانية"
+],
+0,
+"مثل الحجر الرملي."
+],
+[
+10,
+"phy",
+"جسم يسقط سقوطاً حراً. تسارعه تقريباً:",
+[
+"9.8 م/ث²",
+"0 م/ث²",
+"1 م/ث²",
+"98 م/ث²"
+],
+0,
+"تسارع الجاذبية الأرضية g ≈ 9.8 م/ث²."
+],
+[
+11,
+"chem",
+"الرابطة التي تتشارك فيها الذرتان بزوج من الإلكترونات:",
+[
+"تساهمية",
+"أيونية",
+"فلزية",
+"هيدروجينية"
+],
+0,
+"مثل الرابطة في جزيء H₂."
+],
+[
+11,
+"phy",
+"الزخم (كمية الحركة) يساوي:",
+[
+"الكتلة × السرعة",
+"الكتلة × التسارع",
+"القوة × الزمن ÷ الكتلة",
+"الشغل ÷ الزمن"
+],
+0,
+"الزخم = ك × ع."
+],
+[
+11,
+"bio",
+"الوحدة البنائية للبروتينات:",
+[
+"الأحماض الأمينية",
+"النيوكليوتيدات",
+"الجلوكوز",
+"الأحماض الدهنية"
+],
+0,
+"تترابط الأحماض الأمينية بروابط ببتيدية."
+],
+[
+11,
+"chem",
+"المحلول الذي pH له يساوي 12:",
+[
+"قاعدي",
+"حمضي",
+"متعادل",
+"ملحي متعادل"
+],
+0,
+"أكبر من 7 يكون قاعدياً."
+],
+[
+11,
+"earth",
+"العصر الجيولوجي الذي انقرضت في نهايته الديناصورات:",
+[
+"الطباشيري",
+"الكمبري",
+"الرباعي",
+"الديفوني"
+],
+0,
+"نهاية العصر الطباشيري قبل نحو 66 مليون سنة."
+],
+[
+12,
+"phy",
+"قانون كولوم يصف القوة بين:",
+[
+"شحنتين كهربائيتين",
+"كتلتين",
+"مغناطيسين فقط",
+"موجتين"
+],
+0,
+"القوة تتناسب طردياً مع الشحنتين وعكسياً مع مربع المسافة."
+],
+[
+12,
+"chem",
+"الكحول الإيثيلي صيغته:",
+[
+"C₂H₅OH",
+"CH₄",
+"H₂SO₄",
+"NaCl"
+],
+0,
+"الإيثانول C₂H₅OH."
+],
+[
+12,
+"bio",
+"التنفس الخلوي الهوائي يحدث في:",
+[
+"الميتوكندريا",
+"البلاستيدات الخضراء",
+"النواة",
+"الريبوسوم"
+],
+0,
+"ينتج ATP باستخدام الأكسجين."
+],
+[
+12,
+"phy",
+"طاقة الفوتون تتناسب طردياً مع:",
+[
+"التردد",
+"الطول الموجي",
+"الكتلة",
+"الزمن"
+],
+0,
+"ط = هـ × التردد."
+],
+[
+12,
+"chem",
+"عملية الأكسدة تعني:",
+[
+"فقد إلكترونات",
+"كسب إلكترونات",
+"كسب بروتونات",
+"فقد نيوترونات"
+],
+0,
+"الأكسدة فقد إلكترونات، والاختزال كسبها."
+]
+],
+"talks": [
+{
+"id": "x1",
+"g": 1,
+"t": "ألواني",
+"e": "My colors",
+"turns": [
+[
+"Hi! Do you like colors?",
+"مرحباً! هل تحب الألوان؟",
+"Yes, I do",
+"Yes, I do.",
+"yes|no|i do|like"
+],
+[
+"What color is the sun?",
+"ما لون الشمس؟",
+"It is yellow",
+"It is yellow.",
+"yellow|orange"
+],
+[
+"What color is the sky?",
+"ما لون السماء؟",
+"It is blue",
+"It is blue.",
+"blue"
+],
+[
+"What color is grass?",
+"ما لون العشب؟",
+"It is green",
+"It is green.",
+"green"
+],
+[
+"Great job! Bye!",
+"أحسنت! مع السلامة!",
+"Bye!",
+"Bye!",
+"bye|thank"
+]
+]
+},
+{
+"id": "x2",
+"g": 2,
+"t": "عائلتي الصغيرة",
+"e": "My little family",
+"turns": [
+[
+"Who is this?",
+"من هذا؟",
+"This is my mother / my father",
+"This is my mother.",
+"this is|mother|father|brother|sister|mom|dad"
+],
+[
+"Do you have a brother?",
+"هل عندك أخ؟",
+"Yes, I do / No, I do not",
+"Yes, I do.",
+"yes|no"
+],
+[
+"How many people are in your family?",
+"كم عدد أفراد عائلتك؟",
+"اذكر رقماً: Five",
+"Five.",
+"two|three|four|five|six|seven|eight|nine|ten|1|2|3|4|5|6|7|8|9|10"
+],
+[
+"Do you love your family?",
+"هل تحب عائلتك؟",
+"Yes, I love my family",
+"Yes, I love my family.",
+"yes|love"
+],
+[
+"That is nice! Goodbye!",
+"هذا جميل! مع السلامة!",
+"Goodbye!",
+"Goodbye!",
+"bye|thank"
+]
+]
+},
+{
+"id": "x3",
+"g": 3,
+"t": "في السوق",
+"e": "At the market",
+"turns": [
+[
+"Hello! What do you want?",
+"مرحباً! ماذا تريد؟",
+"I want ..., please",
+"I want apples, please.",
+"i want|please|i would like|apple|banana|orange"
+],
+[
+"How many do you want?",
+"كم تريد؟",
+"اذكر رقماً: Three, please",
+"Three, please.",
+"one|two|three|four|five|six|please|1|2|3|4|5|6|7|8|9|10"
+],
+[
+"Here you are.",
+"تفضل.",
+"اشكره: Thank you",
+"Thank you.",
+"thank"
+],
+[
+"That is ten riyals.",
+"السعر عشرة ريالات.",
+"Here you are",
+"Here you are.",
+"here|ok|okay"
+],
+[
+"Have a nice day!",
+"يوماً سعيداً!",
+"You too",
+"You too!",
+"you too|thank|bye"
+]
+]
+},
+{
+"id": "x4",
+"g": 4,
+"t": "في المكتبة",
+"e": "At the library",
+"turns": [
+[
+"Hello! Can I help you?",
+"مرحباً! هل أساعدك؟",
+"Yes, I want a book about ...",
+"Yes, I want a book about animals.",
+"yes|i want|book|i need|looking for"
+],
+[
+"What do you like to read?",
+"ماذا تحب أن تقرأ؟",
+"I like stories / science books",
+"I like stories.",
+"i like|stories|story|books|science|comics"
+],
+[
+"This book is about lions. Do you like it?",
+"هذا الكتاب عن الأسود. هل يعجبك؟",
+"Yes, I like it",
+"Yes, I like it.",
+"yes|no|like"
+],
+[
+"Please bring it back next week.",
+"أرجعه الأسبوع القادم من فضلك.",
+"OK, I will",
+"OK, I will.",
+"ok|okay|i will|sure|yes"
+],
+[
+"Enjoy your book!",
+"استمتع بكتابك!",
+"Thank you",
+"Thank you!",
+"thank"
+]
+]
+},
+{
+"id": "x5",
+"g": 5,
+"t": "رياضتي المفضلة",
+"e": "My favorite sport",
+"turns": [
+[
+"Do you like sports?",
+"هل تحب الرياضة؟",
+"Yes, I do",
+"Yes, I do.",
+"yes|no|i do|like"
+],
+[
+"What is your favorite sport?",
+"ما رياضتك المفضلة؟",
+"My favorite sport is ...",
+"My favorite sport is football.",
+"favorite|favourite|football|swimming|basketball|tennis|running|i like"
+],
+[
+"When do you play it?",
+"متى تمارسها؟",
+"I play on ... / after school",
+"I play after school.",
+"after|on|every|weekend|evening|morning|at"
+],
+[
+"Who is your favorite player?",
+"من لاعبك المفضل؟",
+"My favorite player is ...",
+"My favorite player is Salem.",
+"favorite player|favourite player|my favorite|is|i like"
+],
+[
+"Cool! Keep playing!",
+"رائع! استمر في اللعب!",
+"Thanks!",
+"Thanks!",
+"thank|ok|okay|sure"
+]
+]
+},
+{
+"id": "x6",
+"g": 6,
+"t": "خطة الإجازة",
+"e": "Holiday plans",
+"turns": [
+[
+"The holiday is coming! Where will you go?",
+"الإجازة قادمة! إلى أين ستذهب؟",
+"I will go to ...",
+"I will go to Jeddah.",
+"i will|go to|going to|visit|travel"
+],
+[
+"Who will you go with?",
+"مع من ستذهب؟",
+"With my family",
+"With my family.",
+"with|family|friends|parents"
+],
+[
+"How will you travel?",
+"كيف ستسافر؟",
+"By car / By plane",
+"By plane.",
+"by car|by plane|by train|by bus|car|plane|train"
+],
+[
+"What will you do there?",
+"ماذا ستفعل هناك؟",
+"I will swim / visit ...",
+"I will swim in the sea.",
+"i will|swim|visit|play|go|see|shop"
+],
+[
+"Have a great holiday!",
+"إجازة سعيدة!",
+"Thank you!",
+"Thank you!",
+"thank"
+]
+]
+},
+{
+"id": "x7",
+"g": 7,
+"t": "دعوة صديق",
+"e": "Inviting a friend",
+"turns": [
+[
+"Are you free on Friday?",
+"هل أنت متفرغ يوم الجمعة؟",
+"Yes, I am / No, I am not",
+"Yes, I am.",
+"yes|no|i am|free|busy"
+],
+[
+"Would you like to come to my house?",
+"هل تحب أن تأتي إلى بيتي؟",
+"Yes, I would love to",
+"Yes, I would love to.",
+"would love|yes|sure|of course|ok|okay|sorry"
+],
+[
+"What time can you come?",
+"متى يمكنك المجيء؟",
+"At ... o'clock",
+"At five o'clock.",
+"at|o clock|after|evening|afternoon|1|2|3|4|5|6|7|8|9|10"
+],
+[
+"Do you know my address?",
+"هل تعرف عنواني؟",
+"No, can you send it?",
+"No, can you send it to me?",
+"no|yes|send|address|know"
+],
+[
+"Great! See you on Friday!",
+"رائع! أراك الجمعة!",
+"See you!",
+"See you!",
+"see you|bye|thank"
+]
+]
+},
+{
+"id": "x8",
+"g": 8,
+"t": "مشكلة في الطلب",
+"e": "A problem with an order",
+"turns": [
+[
+"Hello, how can I help you?",
+"مرحباً، كيف أساعدك؟",
+"I have a problem with my order",
+"I have a problem with my order.",
+"problem|order|i have|my"
+],
+[
+"What is wrong with it?",
+"ما المشكلة فيه؟",
+"It is broken / It is the wrong size",
+"It is broken.",
+"broken|wrong|size|color|late|damaged|missing"
+],
+[
+"Do you want a new one or your money back?",
+"تريد بديلاً أم استرجاع المبلغ؟",
+"I would like a new one / my money back",
+"I would like a new one, please.",
+"new one|money back|refund|would like|replace"
+],
+[
+"Can I have your order number?",
+"هل أحصل على رقم الطلب؟",
+"Yes, it is ...",
+"Yes, it is 4512.",
+"yes|it is|number|sure|1|2|3|4|5|6|7|8|9|10"
+],
+[
+"Done! Sorry for the trouble.",
+"تم! نعتذر عن الإزعاج.",
+"No problem, thank you",
+"No problem, thank you.",
+"no problem|thank|ok|okay"
+]
+]
+},
+{
+"id": "x9",
+"g": 9,
+"t": "الصحة النفسية والدراسة",
+"e": "Study stress",
+"turns": [
+[
+"You look tired. Are you OK?",
+"تبدو متعباً. هل أنت بخير؟",
+"I am stressed about exams",
+"I am a bit stressed about the exams.",
+"stressed|tired|worried|exam|i am|fine|ok"
+],
+[
+"How many hours do you study a day?",
+"كم ساعة تذاكر يومياً؟",
+"About ... hours",
+"About four hours.",
+"hour|about"
+],
+[
+"Do you take breaks?",
+"هل تأخذ استراحات؟",
+"Yes, I do / Not really",
+"Not really.",
+"yes|no|not really|sometimes"
+],
+[
+"You should rest every hour. What do you do to relax?",
+"يجب أن ترتاح كل ساعة. ماذا تفعل لتسترخي؟",
+"I walk / I read / I play ...",
+"I go for a walk.",
+"walk|read|play|sleep|talk|exercise|i"
+],
+[
+"Good luck in your exams!",
+"بالتوفيق في اختباراتك!",
+"Thank you very much",
+"Thank you very much.",
+"thank"
+]
+]
+},
+{
+"id": "x10",
+"g": 10,
+"t": "مشروع جماعي",
+"e": "A group project",
+"turns": [
+[
+"What topic should we choose for our project?",
+"ما الموضوع الذي نختاره لمشروعنا؟",
+"How about ...?",
+"How about renewable energy?",
+"how about|what about|i think|we should|let us|lets"
+],
+[
+"Good idea. Who will do the research?",
+"فكرة جيدة. من سيقوم بالبحث؟",
+"I can do the research",
+"I can do the research.",
+"i can|i will|me|research"
+],
+[
+"And who will make the slides?",
+"ومن سيصمم العرض؟",
+"Ahmed can make the slides",
+"Ahmed can make the slides.",
+"can|will|slides|make"
+],
+[
+"When should we finish?",
+"متى ننتهي؟",
+"By next Thursday",
+"By next Thursday.",
+"by|next|thursday|monday|sunday|week|tomorrow"
+],
+[
+"Perfect. Let us start!",
+"ممتاز. لنبدأ!",
+"OK, let us start",
+"OK, let us start!",
+"ok|okay|let us|lets|sure|great"
+]
+]
+},
+{
+"id": "x11",
+"g": 11,
+"t": "نقاش حول التقنية",
+"e": "Technology debate",
+"turns": [
+[
+"Do you think smartphones make us smarter?",
+"هل تعتقد أن الهواتف الذكية تجعلنا أذكى؟",
+"I think ... because ...",
+"I think they help us learn faster.",
+"i think|in my opinion|i believe|yes|no"
+],
+[
+"Can you give an example?",
+"هل تعطيني مثالاً؟",
+"For example, ...",
+"For example, we can use learning apps.",
+"for example|for instance|like|such as"
+],
+[
+"But some people say phones are addictive. What do you think?",
+"لكن البعض يقول إنها تسبب الإدمان. ما رأيك؟",
+"That is true, however ...",
+"That is true, however we can control our time.",
+"true|however|agree|disagree|but"
+],
+[
+"How can students use phones wisely?",
+"كيف يستخدم الطلاب الهواتف بحكمة؟",
+"They should ...",
+"They should set time limits.",
+"should|limit|time|use|turn off"
+],
+[
+"Thanks for sharing your ideas!",
+"شكراً لمشاركة أفكارك!",
+"You are welcome",
+"You are welcome.",
+"welcome|thank|pleasure"
+]
+]
+},
+{
+"id": "x12",
+"g": 12,
+"t": "مقابلة عمل صيفي",
+"e": "Summer job interview",
+"turns": [
+[
+"Why do you want this summer job?",
+"لماذا تريد هذا العمل الصيفي؟",
+"Because I want to gain experience",
+"Because I want to gain experience.",
+"because|experience|learn|skills|money"
+],
+[
+"Have you worked before?",
+"هل عملت من قبل؟",
+"Yes, I have / No, I have not",
+"No, I have not, but I learn quickly.",
+"yes|no|i have|have not|never|volunteer"
+],
+[
+"How would your friends describe you?",
+"كيف يصفك أصدقاؤك؟",
+"They say I am ...",
+"They say I am reliable and friendly.",
+"they say|i am|reliable|friendly|hardworking|honest|helpful"
+],
+[
+"How many hours can you work per week?",
+"كم ساعة تستطيع العمل أسبوعياً؟",
+"About ... hours",
+"About twenty hours.",
+"hour|about"
+],
+[
+"Do you have any questions for us?",
+"هل لديك أسئلة لنا؟",
+"Yes, when can I start?",
+"Yes, when can I start?",
+"yes|no|when|what|how|start|question"
+]
+]
+}
+],
+"verbal": {
+"anal": [
+[
+1,
+"قمح : خبز",
+[
+"عنب : زبيب",
+"ماء : نهر",
+"شجرة : ظل",
+"سماء : مطر"
+],
+0,
+"الخبز يُصنع من القمح، والزبيب يُصنع من العنب (مادة خام ومنتج)."
+],
+[
+1,
+"طائر : عش",
+[
+"نحلة : خلية",
+"سمكة : ماء",
+"أسد : زئير",
+"قطة : مواء"
+],
+0,
+"الطائر يسكن العش، والنحلة تسكن الخلية (كائن ومسكنه)."
+],
+[
+2,
+"نجّار : خشب",
+[
+"خيّاط : قماش",
+"معلّم : طالب",
+"طبيب : مريض",
+"سائق : طريق"
+],
+0,
+"النجار يعمل بالخشب، والخياط يعمل بالقماش (صانع ومادته)."
+],
+[
+2,
+"فرح : ابتسامة",
+[
+"حزن : دموع",
+"غضب : هدوء",
+"خوف : شجاعة",
+"تعب : راحة"
+],
+0,
+"الابتسامة تعبير عن الفرح، والدموع تعبير عن الحزن."
+],
+[
+3,
+"سفينة : ميناء",
+[
+"طائرة : مطار",
+"قطار : سكة",
+"سيارة : وقود",
+"حافلة : راكب"
+],
+0,
+"السفينة ترسو في الميناء، والطائرة تهبط في المطار."
+],
+[
+3,
+"جاهل : علم",
+[
+"فقير : مال",
+"قوي : عضلات",
+"غني : ذهب",
+"سعيد : فرح"
+],
+0,
+"الجاهل يفتقد العلم، والفقير يفتقد المال (صفة وما ينقصها)."
+]
+],
+"comp": [
+[
+1,
+"يغسل الطالب يديه قبل ...... الطعام.",
+[
+"تناول",
+"شراء",
+"طبخ",
+"بيع"
+],
+0,
+"غسل اليدين قبل تناول الطعام."
+],
+[
+1,
+"النظافة من ......",
+[
+"الإيمان",
+"الكسل",
+"التعب",
+"اللعب"
+],
+0,
+"القول المأثور: النظافة من الإيمان."
+],
+[
+2,
+"لم يذاكر جيداً ...... حصل على درجة منخفضة.",
+[
+"لذلك",
+"لكن",
+"رغم",
+"بينما"
+],
+0,
+"قلة المذاكرة سبب، والدرجة المنخفضة نتيجة: لذلك."
+],
+[
+2,
+"الوقت كالسيف إن لم تقطعه ......",
+[
+"قطعك",
+"نفعك",
+"تركك",
+"أسعدك"
+],
+0,
+"المثل: الوقت كالسيف إن لم تقطعه قطعك."
+],
+[
+3,
+"على الرغم من ...... الطريق، وصل المسافرون في الموعد.",
+[
+"وعورة",
+"سهولة",
+"قصر",
+"جمال"
+],
+0,
+"«على الرغم من» تحتاج صعوبة تقابل النتيجة الإيجابية."
+],
+[
+3,
+"العقل السليم في الجسم ......",
+[
+"السليم",
+"الضعيف",
+"الكبير",
+"المتعب"
+],
+0,
+"القول المشهور: العقل السليم في الجسم السليم."
+]
+],
+"err": [
+[
+1,
+"نشرب الحليب الحار في الصيف لنشعر بالبرودة.",
+[
+"نشرب",
+"الحار",
+"الصيف",
+"بالبرودة"
+],
+1,
+"الصواب: البارد، لأن الغرض الشعور بالبرودة."
+],
+[
+1,
+"الشمس تشرق في الليل وتضيء النهار.",
+[
+"الشمس",
+"تشرق",
+"الليل",
+"النهار"
+],
+2,
+"الصواب: الصباح، فالشمس لا تشرق ليلاً."
+],
+[
+2,
+"المسافر المتعب نام بعمق لأنه كان نشيطاً جداً.",
+[
+"المسافر",
+"المتعب",
+"بعمق",
+"نشيطاً"
+],
+3,
+"الصواب: مرهقاً، فالسبب يجب أن يتفق مع النوم العميق."
+],
+[
+2,
+"القراءة تضيّق آفاق الإنسان وتزيد معرفته.",
+[
+"القراءة",
+"تضيّق",
+"آفاق",
+"معرفته"
+],
+1,
+"الصواب: توسّع، لأن زيادة المعرفة توسيع للآفاق."
+],
+[
+3,
+"أُغلق المتجر بسبب كثرة الزبائن وارتفاع الأرباح.",
+[
+"أُغلق",
+"كثرة",
+"ارتفاع",
+"الأرباح"
+],
+0,
+"الصواب: ازدهر أو توسّع، فكثرة الزبائن لا تسبب الإغلاق."
+],
+[
+3,
+"التخطيط الجيد يزيد احتمال الفشل ويقلل الأخطاء.",
+[
+"التخطيط",
+"يزيد",
+"الفشل",
+"الأخطاء"
+],
+2,
+"الصواب: النجاح."
+]
+],
+"odd": [
+[
+1,
+"",
+[
+"قلم",
+"دفتر",
+"حقيبة",
+"وسادة"
+],
+3,
+"الوسادة ليست من الأدوات المدرسية."
+],
+[
+1,
+"",
+[
+"قطة",
+"كلب",
+"حصان",
+"وردة"
+],
+3,
+"الوردة نبات، والبقية حيوانات."
+],
+[
+2,
+"",
+[
+"الاثنين",
+"الخميس",
+"السبت",
+"مارس"
+],
+3,
+"مارس شهر، والبقية أيام."
+],
+[
+2,
+"",
+[
+"مسجد",
+"مدرسة",
+"مستشفى",
+"سيارة"
+],
+3,
+"السيارة وسيلة نقل، والبقية مبانٍ."
+],
+[
+3,
+"",
+[
+"المثلث",
+"المربع",
+"الخماسي",
+"الكرة"
+],
+3,
+"الكرة مجسم، والبقية مضلعات مستوية."
+],
+[
+3,
+"",
+[
+"الأكسجين",
+"الهيدروجين",
+"النيتروجين",
+"الماء"
+],
+3,
+"الماء مركّب، والبقية عناصر."
+]
+]
+},
+"rc": [
+{
+"d": 1,
+"t": "الصدق",
+"p": "الصدق من أجمل الصفات التي يتحلّى بها الإنسان. فالصادق يثق به الناس ويحبونه، ويطمئنون إلى كلامه. وقد كان النبي صلى الله عليه وسلم يُلقّب قبل البعثة بالصادق الأمين. ومن تعوّد الصدق في الصغر سهل عليه في الكبر.",
+"qs": [
+[
+"ما الفكرة الرئيسة للنص؟",
+[
+"فضل الصدق",
+"خطورة الكذب على الصحة",
+"قصة تاريخية",
+"طرق التعلم"
+],
+0
+],
+[
+"بماذا لُقّب النبي صلى الله عليه وسلم قبل البعثة؟",
+[
+"الصادق الأمين",
+"الكريم",
+"الشجاع",
+"الحكيم"
+],
+0
+],
+[
+"معنى «يطمئنون» في النص:",
+[
+"يرتاحون ويثقون",
+"يخافون",
+"يغضبون",
+"يتعجبون"
+],
+0
+]
+]
+},
+{
+"d": 3,
+"t": "الذكاء الاصطناعي",
+"p": "الذكاء الاصطناعي فرع من علوم الحاسب يهدف إلى بناء أنظمة قادرة على أداء مهام تتطلب عادة ذكاءً بشرياً، مثل فهم اللغة والتعرف على الصور واتخاذ القرارات. وقد أصبح حاضراً في حياتنا اليومية؛ في الهواتف ومحركات البحث والسيارات. ومع فوائده الكبيرة، يحذّر الخبراء من الاعتماد المفرط عليه، ويدعون إلى استخدامه بمسؤولية تحفظ الخصوصية وتراعي القيم.",
+"qs": [
+[
+"يهدف الذكاء الاصطناعي إلى:",
+[
+"بناء أنظمة تؤدي مهام تحتاج ذكاءً بشرياً",
+"صناعة الهواتف فقط",
+"إلغاء علوم الحاسب",
+"تعليم اللغات"
+],
+0
+],
+[
+"مما يحذّر منه الخبراء:",
+[
+"الاعتماد المفرط عليه",
+"استخدامه في السيارات",
+"تعلّمه في المدارس",
+"دراسة علوم الحاسب"
+],
+0
+],
+[
+"كلمة «المفرط» تعني:",
+[
+"الزائد عن الحد",
+"القليل",
+"المتوازن",
+"المفيد"
+],
+0
+]
+]
+}
+]
+}
