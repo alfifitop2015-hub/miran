@@ -83,10 +83,11 @@ h1{font-size:28px;font-weight:800}h2{font-size:21px;font-weight:700}h3{font-size
 .plan .n{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-family:var(--fd);font-weight:700;border:2px solid currentColor;flex:none}
 .plan button.done .n{background:var(--onacc)}.plan button.done .n i{color:var(--acc);font-style:normal}
 .plan .m2{font-size:12px;opacity:.85}
-.ivcard{display:flex;align-items:center;gap:14px;width:100%;text-align:start;border:none;border-radius:18px;padding:12px 14px;color:#fff;background:linear-gradient(135deg,#4F5BF0,#7B3FE0 55%,#E8468A);box-shadow:0 12px 26px -14px #7B3FE0;cursor:pointer;margin:6px 0 4px}
-.ivcard,.ivcard *{color:#fff!important}.ivcard b{display:block;font-family:var(--fd);font-size:18px}.ivcard span span{display:block;font-size:12.5px;opacity:.92}
-.ivcard.big{padding:18px}.ivcard.big b{font-size:22px}
-.ivplay{width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.25);display:grid;place-items:center;font-size:18px;flex:none;padding-inline-start:3px}
+.ivcard{display:flex;align-items:center;gap:12px;width:100%;text-align:start;border:none;border-radius:16px;padding:10px 14px;background:linear-gradient(135deg,#1F1A4A,#2F2475);box-shadow:0 10px 22px -14px #1F1A4A;cursor:pointer;margin:6px 0 4px}
+.ivcard,.ivcard *{color:#fff!important}.ivcard b{flex:1;font-family:var(--fd);font-size:19px}.ivcard.big{padding:13px 16px}.ivcard.big b{font-size:21px}
+.ivplay{width:40px;height:40px;border-radius:50%;background:#FFCB5C;display:grid;place-items:center;flex:none;box-shadow:0 0 0 6px rgba(255,203,92,.18);animation:ivpulse 2.2s infinite}
+.ivplay svg{width:20px;height:20px;margin-left:3px}.ivplay svg path{fill:#2F2475}
+.ivfilm svg{width:24px;height:24px;opacity:.55}
 .iv-ov{position:fixed;inset:0;z-index:100;background:rgba(14,10,40,.78);display:grid;place-items:center;padding:14px;animation:ivfade .3s}
 .iv-box{width:min(560px,100%,calc(100vh - 110px));display:flex;flex-direction:column;gap:10px}
 .iv-stage{position:relative;aspect-ratio:4/3.4;border-radius:22px;overflow:hidden;background:linear-gradient(135deg,#4F5BF0,#7B3FE0 50%,#E8468A);color:#fff;box-shadow:0 30px 60px -20px #000}
@@ -1102,7 +1103,7 @@ function ivCtl(a){const pp=$('#ivpp');
  if(a==='pp'){if(IV.ended){return ivCtl('re')}IV.paused=!IV.paused;if(pp){pp.textContent=IV.paused?'▶':'❚❚';pp.setAttribute('aria-label',IV.paused?'تشغيل':'إيقاف مؤقت')}
   if(IV.paused){clearTimeout(IV.tm);try{speechSynthesis.cancel()}catch(e){}}else ivLine()}}
 document.addEventListener('keydown',e=>{if(IV.on&&e.key==='Escape')closeIntro()});
-const introCard=(big)=>`<button type="button" class="ivcard${big?' big':''}" data-act="intro"><span class="ivplay">▶</span><span class="grow"><b>تعرّف على مِران</b><span>مقطع قصير بالصوت والصورة: فائدة التطبيق، وطريقة التسجيل، والمنافسة</span></span></button>`;
+const introCard=(big)=>`<button type="button" class="ivcard${big?' big':''}" data-act="intro"><span class="ivplay"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg></span><b>تعرّف على مِران</b><span class="ivfilm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></svg></span></button>`;
 
 const MICSVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3M9 21h6"/></svg>';
 function vTalkList(){const p=cur();const srt=nearSort(TALKS,p.grade,x=>x.g);let own=srt.filter(x=>Math.abs(x.g-p.grade)<=1);if(own.length<2)own=srt.slice(0,3);const rest=srt.filter(x=>!own.includes(x));
