@@ -1058,10 +1058,10 @@ function tkNext(){TK.i++;if(TK.i>=TK.sc.turns.length){TK.done=true;const p=cur()
 function tkShow(){const t=tkTurn();if(TK.attempts<2){TK.attempts=2;TK.log.push({w:'me',t:'…'});tkSys(`الإجابة المتوقعة:<div class="tkmodel" dir="ltr">${esc(t[3])}</div>${g('استمع إليها ثم كرّرها بصوتك.','استمعي إليها ثم كرّريها بصوتكِ.')}`,{say:t[3]});render();tkScroll();setTimeout(()=>speak(t[3]),400)}}
 /* ============ مقطع التعريف بالتطبيق (صورة متحركة + صوت عربي) ============ */
 const INTRO_SC=[
- {t:'مرحباً بك في مِران',s:['مرحباً بك في مِران.','تطبيقك للتدريب على الإنجليزي والقدرات والتحصيلي،','من الصف الأول الابتدائي حتى الثالث الثانوي.'],
+ {t:'مرحباً بك في مِران',s:['مرحباً بك في مِران.','تطبيقك للتدريب على الإنجليزية والقدرات والتحصيلي،','من الصف الأول الابتدائي حتى الثالث الثانوي.'],
   v:`<div class="iv-logo"><span>م</span><i>✦</i></div><div class="iv-big">مِران</div><div class="iv-chips"><b>ابتدائي</b><b>متوسط</b><b>ثانوي</b></div>`},
- {t:'ثلاثة أقسام للتدريب',s:['تدرّب كل يوم في ثلاثة أقسام:','الإنجليزي، بكلمات يومية ومحادثة صوتية تسمعك وتصحّح لك،','والقدرات بأسئلة كمية ولفظية واختبارات محاكية لقياس،','والتحصيلي في الرياضيات والعلوم.'],
-  v:`<div class="iv-cards"><div style="--c:var(--en);--c2:var(--pink)"><span>E</span>الإنجليزي</div><div style="--c:var(--qd);--c2:var(--home)"><span>ق</span>القدرات</div><div style="--c:var(--th);--c2:var(--en)"><span>ت</span>التحصيلي</div></div>`},
+ {t:'ثلاثة أقسام للتدريب',s:['تدرّب كل يوم في ثلاثة أقسام:','الإنجليزية، بكلمات يومية ومحادثة صوتية تسمعك وتصحّح لك،','والقدرات بأسئلة كمية ولفظية واختبارات محاكية لقياس،','والتحصيلي في الرياضيات والعلوم.'],
+  v:`<div class="iv-cards"><div style="--c:var(--en);--c2:var(--pink)"><span>E</span>الإنجليزية</div><div style="--c:var(--qd);--c2:var(--home)"><span>ق</span>القدرات</div><div style="--c:var(--th);--c2:var(--en)"><span>ت</span>التحصيلي</div></div>`},
  {t:'أسئلة تناسب مستواك',s:['الأسئلة تناسب صفّك ومستواك.','بعد كل إجابة ترى الشرح،','وأخطاؤك تُحفظ لتراجعها حتى تتقنها.'],
   v:`<div class="iv-q"><p>ما ناتج ٣ × ٤ ؟</p><div class="ok">١٢ ✓</div><div>٧</div><div>١٤</div><em>✓ أحسنت! ٣ × ٤ = ١٢</em></div>`},
  {t:'التسجيل في ثوانٍ',s:['التسجيل سهل جداً:','اكتب اسمك، واختر طالب أو طالبة،','ثم صفّك وفصلك الدراسي، واضغط: ابدأ التدريب.','لا تحتاج بريداً ولا كلمة مرور.'],
@@ -1074,7 +1074,7 @@ const IV={on:false,i:0,j:0,muted:false,paused:false,tm:null,voice:null};
 function ivVoice(){if(!canSynth)return null;const vs=(speechSynthesis.getVoices()||[]).filter(v=>/^ar/i.test(v.lang));return vs.find(v=>/google/i.test(v.name))||vs.find(v=>/SA/i.test(v.lang))||vs[0]||null}
 function openIntro(){if(location.protocol==='file:'||!FB)return openIntroAnim();closeIntro();IV.on=true;
  const el=document.createElement('div');el.id='intro';el.className='iv-ov';el.setAttribute('dir','rtl');el.setAttribute('role','dialog');el.setAttribute('aria-label','تعريف بتطبيق مِران');
- el.innerHTML=`<div class="iv-box"><video id="ivvid" class="iv-video" src="intro.mp4?v=2" poster="intro-poster.jpg" controls playsinline autoplay preload="auto"></video><div class="iv-bar" style="justify-content:flex-end"><button type="button" class="iv-close" data-iv="x">إغلاق ✕</button></div></div>`;
+ el.innerHTML=`<div class="iv-box"><video id="ivvid" class="iv-video" src="intro.mp4?v=3" poster="intro-poster.jpg" controls playsinline autoplay preload="auto"></video><div class="iv-bar" style="justify-content:flex-end"><button type="button" class="iv-close" data-iv="x">إغلاق ✕</button></div></div>`;
  document.body.appendChild(el);document.body.style.overflow='hidden';
  el.addEventListener('click',e=>{if(e.target.closest('[data-iv="x"]')||e.target===el)closeIntro()});
  const v=el.querySelector('video');v.addEventListener('error',()=>{if(IV.on)openIntroAnim()});const pr=v.play();if(pr&&pr.catch)pr.catch(()=>{})}
