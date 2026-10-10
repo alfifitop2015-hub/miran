@@ -186,6 +186,8 @@ a.btn{text-decoration:none}
 .talkcard b{display:block;font-family:var(--fd);font-size:22px;line-height:1.3}.talkcard span span,.talkcard .grow>span{display:block;font-size:14px;opacity:.92}
 .talkcard .go{font-size:30px;color:#fff}
 .tcmic{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.22);display:grid;place-items:center;flex:none}.tcmic svg{width:32px;height:32px}
+.gsel{display:flex;flex-direction:column;gap:6px}.gsrow{display:flex;align-items:center;gap:8px}.gsrow .gl{width:56px;font-size:13px;color:var(--muted);flex:none}.gsrow .seg{flex:1}.gsrow .seg button{min-width:0;padding:8px 0}
+.tklink{font-family:var(--fe);font-size:12px;word-break:break-all;background:var(--paper);border:1px dashed var(--line);border-radius:10px;padding:8px;text-align:left}
 .toast{position:fixed;inset-inline:16px;bottom:calc(84px + env(safe-area-inset-bottom,0px));margin-inline:auto;max-width:420px;background:var(--ink);color:var(--paper);padding:12px 16px;border-radius:12px;font-size:14px;text-align:center;z-index:20}
 .homegrid{display:grid;gap:22px}
 @media (min-width:720px){
@@ -312,9 +314,9 @@ const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const m=x=>`<span class="m">${x}</span>`;
 const LET=['أ','ب','ج','د'];
-const GRADES={1:'الأول المتوسط',2:'الثاني المتوسط',3:'الثالث المتوسط'};
+const GRADES={1:'الأول الابتدائي',2:'الثاني الابتدائي',3:'الثالث الابتدائي',4:'الرابع الابتدائي',5:'الخامس الابتدائي',6:'السادس الابتدائي',7:'الأول المتوسط',8:'الثاني المتوسط',9:'الثالث المتوسط',10:'الأول الثانوي',11:'الثاني الثانوي',12:'الثالث الثانوي'};
 const TERMS={1:'الفصل الأول',2:'الفصل الثاني'};
-const QCAT={arith:'الحساب',ratio:'النسب والتناسب',alg:'الجبر',geo:'الهندسة',cmp:'المقارنات',seq:'الأنماط والمتتابعات',stat:'الإحصاء'};
+const QCAT={basic:'العمليات الأساسية',arith:'الحساب',ratio:'النسب والتناسب',alg:'الجبر',geo:'الهندسة',cmp:'المقارنات',seq:'الأنماط والمتتابعات',stat:'الإحصاء'};
 const ECAT={vocab:'المفردات',grammar:'القواعد',reading:'القراءة',listen:'الاستماع',speak:'المحادثة'};
 const dkey=d=>{d=d||new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 const daysAgo=n=>{const d=new Date();d.setDate(d.getDate()-n);return dkey(d)};
@@ -351,10 +353,10 @@ const ICON={
 
 /* ============ الحفظ ============ */
 const KEY='miran-v1';let S=null;
-function newP(name,gender,grade,term){return{online:true,nick:name,group:'',log:{},id:'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),name,gender,grade,term,points:0,streak:0,lastDay:null,days:{},daySecs:{},secs:0,stats:{en:{},qd:{},th:{}},hard:{},learned:{},mist:[],daily:{},exams:0,speedBest:0}}
+function newP(name,gender,grade,term){return{gv:2,online:true,nick:name,group:'',log:{},id:'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),name,gender,grade,term,points:0,streak:0,lastDay:null,days:{},daySecs:{},secs:0,stats:{en:{},qd:{},th:{}},hard:{},learned:{},mist:[],daily:{},exams:0,speedBest:0}}
 function load(){if(CLOUD){S={profiles:[],active:null};return}try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
  if(!S||!Array.isArray(S.profiles)){S={profiles:[],active:null}}
- S.profiles.forEach(p=>{if(p.term>2)p.term=2;p.log=p.log||{};p.stats.th=p.stats.th||{};if(p.online===undefined)p.online=true;if(!p.nick)p.nick=p.name;if(p.group==null)p.group=''});
+ S.profiles.forEach(p=>{if(!p.gv){p.grade=Math.min(12,(+p.grade||1)+6);p.gv=2}if(p.term>2)p.term=2;p.log=p.log||{};p.stats.th=p.stats.th||{};if(p.online===undefined)p.online=true;if(!p.nick)p.nick=p.name;if(p.group==null)p.group=''});
  S.profiles=S.profiles.filter(p=>!((p.name==='الابن'||p.name==='الابنة')&&!p.points&&!Object.keys(p.days).length));if(!cur())S.active=null}
 function save(){if(CLOUD){cloudSave();pushAll(false);return}try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}pushAll(false)}
 const cur=()=>S.profiles.find(p=>p.id===S.active)||null;
@@ -386,20 +388,20 @@ function loadScript(src){return new Promise((res,rej)=>{const e=document.createE
 function fbStart(){if(!FB)return;const b='https://www.gstatic.com/firebasejs/10.12.2/';
  loadScript(b+'firebase-app-compat.js').then(()=>Promise.all([loadScript(b+'firebase-auth-compat.js'),loadScript(b+'firebase-firestore-compat.js')])).then(()=>{
   firebase.initializeApp(FB);fb=firebase.firestore();try{fb.enablePersistence({synchronizeTabs:true}).catch(()=>{})}catch(e){}firebase.auth().onAuthStateChanged(u=>{onAuth(u)})}).catch(()=>{fb=null;C.ready=true;app.innerHTML=startTop()+'<div class="warn">تعذّر تحميل الخدمة. تحقّق من الإنترنت ثم أعد فتح الصفحة.</div>'})}
-function pushAll(force){if(!fb||!C.fam)return;if(!force&&Date.now()-lastPush<30000){clearTimeout(pushAll.t);pushAll.t=setTimeout(()=>pushAll(true),30000);return}lastPush=Date.now();
- S.profiles.filter(p=>p.id===S.active).forEach(p=>{const id=C.fam+'_'+p.id;if(!p.online||!p.nick){fb.collection('players').doc(id).delete().catch(()=>{});return}
-  const sc=scoreAll(p);fb.collection('players').doc(id).set({famId:C.fam,kidId:p.id,nick:p.nick.slice(0,20),grade:p.grade,group:(p.group||'').trim().toUpperCase().slice(0,20),total:sc.total,days:sc.days,acc:Math.round(sc.accv*100),answers:sc.a,updated:Date.now()}).catch(()=>{})})}
+function pushAll(force){if(!fb||!C.sid||C.mode!=='student')return;if(!force&&Date.now()-lastPush<30000){clearTimeout(pushAll.t);pushAll.t=setTimeout(()=>pushAll(true),30000);return}lastPush=Date.now();
+ const p=cur();if(!p)return;const ref=fb.collection('players').doc(p.id);if(!p.online||!p.nick){ref.delete().catch(()=>{});return}
+ const sc=scoreAll(p);ref.set({sid:p.id,nick:p.nick.slice(0,20),grade:p.grade,stage:stageOf(p.grade),total:sc.total,days:sc.days,acc:Math.round(sc.accv*100),answers:sc.a,updated:Date.now()}).catch(()=>{})}
 document.addEventListener('visibilitychange',()=>{if(document.hidden){pushAll(true);if(CLOUD)flushSave()}});
-function subscribeBoard(){const p=cur();const G=(p.group||'').trim().toUpperCase();const key=(view.bs||'all')+'|'+G+'|'+(C.fam||'');if(key===boardKey)return;boardKey=key;if(unsub){unsub();unsub=null}boardRows=null;if(!fb)return;
+function subscribeBoard(){const p=cur();const bs=view.bs||'all';const key=bs+'|'+p.grade+'|'+(C.sid||'');if(key===boardKey)return;boardKey=key;if(unsub){unsub();unsub=null}boardRows=null;if(!fb)return;
  let q=fb.collection('players');
- if(view.bs==='g'){if(!G){boardRows=[];return}q=q.where('group','==',G)}else q=q.orderBy('total','desc').limit(100);
- unsub=q.onSnapshot(sn=>{boardRows=sn.docs.map(d=>Object.assign({id:d.id},d.data())).sort((a,b)=>b.total-a.total);renderBoard()},()=>{boardRows=[];renderBoard()})}
-function renderBoard(){const el=$('#board');if(!el)return;let rows,note='';
- if(!fb){rows=S.profiles.filter(p=>p.online).map(p=>({nick:p.nick||p.name,grade:p.grade,total:lifetime(p),me:p.id===S.active})).sort((a,b)=>b.total-a.total);
+ if(bs==='st')q=q.where('stage','==',stageOf(p.grade));else if(bs==='gr')q=q.where('grade','==',p.grade);else q=q.orderBy('total','desc').limit(100);
+ unsub=q.onSnapshot(sn=>{boardRows=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>r.sid).sort((a,b)=>b.total-a.total).slice(0,100);renderBoard()},()=>{boardRows=[];renderBoard()})}
+function renderBoard(){const el=$('#board');if(!el)return;let rows,note='';const bs=view.bs||'all',me=cur();
+ if(!fb){rows=S.profiles.filter(p=>p.online&&(bs==='all'||(bs==='st'?stageOf(p.grade)===stageOf(me.grade):p.grade===me.grade))).map(p=>({nick:p.nick||p.name,grade:p.grade,total:lifetime(p),me:p.id===S.active})).sort((a,b)=>b.total-a.total);
   note=FB?'جارٍ الاتصال بالترتيب الأونلاين…':'هذه نسخة تجريبية: الترتيب هنا لملفات هذا الجهاز فقط. الترتيب الأونلاين للجميع يعمل في النسخة المنشورة على الإنترنت.'}
  else if(boardRows==null){el.innerHTML='<p class="note">جارٍ تحميل الترتيب…</p>';return}
- else{rows=boardRows.map(r=>Object.assign({},r,{me:r.id===C.fam+'_'+S.active,mine:C.fam&&r.id.startsWith(C.fam+'_')}));if(view.bs==='g'&&!(cur().group||'').trim())note='اكتب رمز المجموعة في الأسفل لترى ترتيب مجموعتك.';else if(!rows.length)note='لا يوجد متنافسون بعد في هذه القائمة. كن أول من يبدأ.'}
- el.innerHTML=(rows.length?`<div class="list">${rows.map((r,i)=>{const v=r.total;return `<div class="brd ${r.me?'me':''}"><span class="n">${i+1}</span><span>${esc(r.nick)}${r.me?' <span class="note">(أنت)</span>':''}<br><span class="note">${GRADES[r.grade]||''}</span> <span class="tier">${tierOf(v||0).name}</span></span><span class="sc">${v||0}</span></div>`}).join('')}</div>`:'')+(note?`<p class="note" style="margin:8px 0 0">${note}</p>`:'')}
+ else{rows=boardRows.map(r=>Object.assign({},r,{me:r.id===C.sid}));if(!rows.length)note='لا يوجد متنافسون بعد في هذه القائمة. كن أول من يبدأ.'}
+ el.innerHTML=(rows.length?`<div class="list">${rows.map((r,i)=>`<div class="brd ${r.me?'me':''}"><span class="n">${i+1}</span><span>${esc(r.nick)}${r.me?' <span class="note">(أنت)</span>':''}<br><span class="note">${GRADES[r.grade]||''}</span> <span class="tier">${tierOf(r.total||0).name}</span></span><span class="sc">${r.total||0}</span></div>`).join('')}</div>`:'')+(note?`<p class="note" style="margin:8px 0 0">${note}</p>`:'')}
 
 function sumSt(o){let c=0,t=0;Object.values(o||{}).forEach(s=>{c+=s.c;t+=s.t});return{c,t}}
 
@@ -463,12 +465,13 @@ function genCmp(L){const v=ri(0,L>=2?3:1);let A,B,ans,st,cond='';
  else if(v===2){const pos=Math.random()<.5;cond=pos?`س عدد صحيح أكبر من ${m(2)}`:'س عدد موجب';A=m('س²');B=m('2س');ans=pos?0:3;st=pos?[`جرّب ${m('س = 3')}: ${m('9 > 6')}، وكلما زادت س يبقى س² أكبر`]:[`جرّب ${m('س = 1')}: ${m('1 < 2')}`,`جرّب ${m('س = 3')}: ${m('9 > 6')}`,'النتيجة تتغير حسب قيمة س، فالمعطيات غير كافية']}
  else{const n=ri(1,6);A=m(`2^${n}`).replace(`2^${n}`,`2<sup>${n}</sup>`);B=m(`${n}²`);ans=cmp(2**n,n*n);st=[`الأولى = ${m(2**n)}`,`الثانية = ${m(n*n)}`]}
  return{cat:'cmp',q:`قارن بين القيمتين:${cond?'<br><span class="note">'+cond+'</span>':''}<br>القيمة الأولى: ${A}<br>القيمة الثانية: ${B}`,c:CMPC.slice(),a:ans,ex:st,tip:'في المقارنات جرّب أعداداً مختلفة (1، 0، كسور، سالبة) قبل الحكم.'}}
-function genQ(cat,L){L=Math.max(1,Math.min(4,L));let it;
- if(cat==='cmp')it=genCmp(L);
+function genQ(cat,L){let it;
+ if(cat==='basic'){const r=genBasic(L);const ch=shuf([r.a,...nums(r.a,r.w)]);it={cat,q:r.q,c:ch.map(x=>m(x)),a:ch.indexOf(r.a),ex:r.st}}
+ else if((L=Math.max(1,Math.min(4,L)))&&cat==='cmp')it=genCmp(L);
  else{const r=GEN[cat](L);let wr=typeof r.a==='number'?nums(r.a,r.w):r.w.slice(0,3);const ch=shuf([r.a,...wr]);it={cat,q:r.q,c:ch.map(x=>typeof x==='number'?m(x):m(x)),a:ch.indexOf(r.a),ex:r.st,tip:r.tip}}
  it.sec='qd';it.id='q'+Math.random().toString(36).slice(2,9);return it}
-function level(p,cat){let L=p.grade;const s=p.stats.qd[cat];if(s&&s.t>=8){const a=s.c/s.t;if(a>=.85)L++;else if(a<.5)L--}return Math.max(1,Math.min(4,L))}
-function speedQ(p){const L=p.grade;const v=ri(0,3);let q,a;
+function level(p,cat){if(cat==='basic')return p.grade;let L=baseL(p.grade);const s=p.stats.qd[cat];if(s&&s.t>=8){const a=s.c/s.t;if(a>=.85)L++;else if(a<.5)L--}return Math.max(1,Math.min(4,L))}
+function speedQ(p){const L=Math.min(3,baseL(p.grade));const v=ri(0,3);let q,a;
  if(v===0){const x=ri(2,L>=3?12:9),y=ri(2,9);q=`${x} × ${y}`;a=x*y}
  else if(v===1){const x=ri(11,40+L*20),y=ri(5,40);q=`${x} + ${y}`;a=x+y}
  else if(v===2){const y=ri(2,9),a0=ri(2,L>=3?12:9);q=`${a0*y} ÷ ${y}`;a=a0}
@@ -477,7 +480,7 @@ function speedQ(p){const L=p.grade;const v=ri(0,3);let q,a;
 
 /* ============ توليد أسئلة الإنجليزي ============ */
 const parseW=(s,t)=>{const[w,mn,e]=s.split('|');return{w,m:mn,e,t}};
-function gradeWords(p){const G=VOC[p.grade];let a=[];[1,2,3].forEach(u=>a=a.concat(G[u].map((s,i)=>parseW(s,u===1?1:u===3?2:(i<5?1:2)))));return a}
+function gradeWords(p){const G=VOC[nearKey(VOC,p.grade)];let a=[];[1,2,3].forEach(u=>a=a.concat((G[u]||[]).map((s,i)=>parseW(s,G[3]?(u===1?1:u===3?2:(i<5?1:2)):u))));return a}
 function reachWords(p){return gradeWords(p).filter(x=>x.t<=p.term)}
 function dailyWords(p){const k=dkey();if(p.daily[k]&&p.daily[k].words)return p.daily[k].words.map(w=>gradeWords(p).find(x=>x.w===w)).filter(Boolean);
  const termW=gradeWords(p).filter(x=>x.t===p.term),rest=reachWords(p);let pick=termW.filter(x=>!p.learned[x.w]);if(pick.length<5)pick=pick.concat(shuf(rest.filter(x=>!pick.includes(x))));pick=pick.slice(0,5);
@@ -553,8 +556,8 @@ const VRC=[
 ];
 function mkItem(sec,cat,q,c,a,ex,extra){const ch=shuf(c.map((t,j)=>({t,j})));return Object.assign({sec,cat,q,c:ch.map(o=>esc(o.t)),a:ch.findIndex(o=>o.j===a),ex:ex?[ex]:[],id:'v'+Math.random().toString(36).slice(2,9)},extra||{})}
 function verbalItems(p,cat,n){
- if(cat==='rc'){let ps=VRC.filter(x=>x.d<=p.grade);const r=pk(ps);return r.qs.map(([q,c,a])=>mkItem('qd','rc',q,c,a,'ارجع إلى النص وابحث عن الجملة التي تحمل الإجابة.',{passage:{t:r.t,p:r.p,ar:true}}))}
- let pool=VB[cat].filter(x=>x[0]<=p.grade);if(pool.length<6)pool=VB[cat].slice(0,6);
+ if(cat==='rc'){let ps=VRC.filter(x=>x.d<=vt(p.grade));const r=pk(ps);return r.qs.map(([q,c,a])=>mkItem('qd','rc',q,c,a,'ارجع إلى النص وابحث عن الجملة التي تحمل الإجابة.',{passage:{t:r.t,p:r.p,ar:true}}))}
+ let pool=VB[cat].filter(x=>x[0]<=vt(p.grade));if(pool.length<6)pool=VB[cat].slice(0,6);
  return shuf(pool).slice(0,n).map(([d,q,c,a,ex])=>{
   const Q=cat==='anal'?`اختر الزوج الذي تشبه العلاقة بين كلمتيه العلاقة في: <b>${esc(q)}</b>`:cat==='comp'?`اختر ما يكمل الفراغ:<br><b>${esc(q)}</b>`:cat==='err'?`حدّد الكلمة التي لا تتفق مع معنى الجملة:<br><b>${esc(q)}</b>`:'اختر الكلمة المختلفة عن البقية:';
   return mkItem('qd',cat,Q,c,a,ex)})}
@@ -562,16 +565,16 @@ function verbalFromRow(cat,[d,q,c,a,ex]){const Q=cat==='anal'?`اختر الزو
 const rcItems=r=>r.qs.map(([q,c,a])=>mkItem('qd','rc',q,c,a,'ارجع إلى النص وابحث عن الجملة التي تحمل الإجابة.',{passage:{t:r.t,p:r.p,ar:true}}));
 function cyc(arr){const a=shuf(arr);let i=0;return()=>a.length?a[i++%a.length]:null}
 /* نموذج القدرات: أقسام لفظي وكمي بالتناوب، زمن مستقل لكل قسم ولا رجوع */
-function buildQudurat(p,nSec,per){const pools={};['anal','comp','err','odd'].forEach(k=>{let pl=VB[k].filter(x=>x[0]<=p.grade);if(pl.length<6)pl=VB[k].slice(0,6);pools[k]=cyc(pl)});
- const rcs=shuf(VRC.filter(x=>x.d<=p.grade)).concat(shuf(VRC.filter(x=>x.d>p.grade)));let rci=0,vn=0,qn=0;const items=[],sections=[];
+function buildQudurat(p,nSec,per){const pools={};['anal','comp','err','odd'].forEach(k=>{let pl=VB[k].filter(x=>x[0]<=vt(p.grade));if(pl.length<6)pl=VB[k].slice(0,6);pools[k]=cyc(pl)});
+ const rcs=shuf(VRC.filter(x=>x.d<=vt(p.grade))).concat(shuf(VRC.filter(x=>x.d>vt(p.grade))));let rci=0,vn=0,qn=0;const items=[],sections=[];
  for(let s0=0;s0<nSec;s0++){const verbal=s0%2===0;let its;
   if(verbal){vn++;const plan=per>=12?{anal:3,comp:2,err:2,odd:2}:{anal:2,comp:1,err:1,odd:1};its=[];Object.entries(plan).forEach(([k,n])=>{for(let j=0;j<n;j++)its.push(verbalFromRow(k,pools[k]()))});its=shuf(its).concat(rcItems(rcs[rci++%rcs.length]))}
   else{qn++;its=mixedQd(p,per)}
   sections.push({name:verbal?'لفظي':'كمي',start:items.length,end:items.length+its.length,secs:per*60});items.push(...its)}
  return{items,sections}}
 /* نموذج التحصيلي: أقسام متساوية بين الرياضيات والفيزياء والكيمياء والأحياء، ووزن أكبر لمنهج الصف الحالي */
-function gradeByWeight(gr){const w={1:[[1,1]],2:[[2,.6],[1,.4]],3:[[3,.5],[2,.3],[1,.2]]}[gr];let r=Math.random();for(const [g0,x] of w){if((r-=x)<=0)return g0}return gr}
-function buildTahsili(p,nSec){const pool=f=>{const by={};SC.filter(x=>f.includes(x[1])&&x[0]<=p.grade).forEach(x=>(by[x[0]]=by[x[0]]||[]).push(x));const c={};Object.keys(by).forEach(k=>c[k]=cyc(by[k]));return()=>{let g0=gradeByWeight(p.grade);while(!c[g0]&&g0>1)g0--;return(c[g0]||c[p.grade])()}};
+function gradeByWeight(gr){const w=[[gr,.5],[gr-1,.3],[gr-2,.2]].filter(x=>x[0]>=1);const t=w.reduce((a,x)=>a+x[1],0);let r=Math.random()*t;for(const [g0,x] of w){if((r-=x)<=0)return g0}return gr}
+function buildTahsili(p,nSec){const pool=f=>{const by={};nearSort(SC.filter(x=>f.includes(x[1])),p.grade,x=>x[0]).filter((x,i,arr)=>x[0]<=p.grade||i<6).forEach(x=>(by[x[0]]=by[x[0]]||[]).push(x));const c={};Object.keys(by).forEach(k=>c[k]=cyc(by[k]));const ks=Object.keys(c).map(Number);return()=>{let g0=gradeByWeight(p.grade);if(!c[g0])g0=ks.sort((a,b)=>Math.abs(a-g0)-Math.abs(b-g0))[0];return c[g0]()}};
  const P={phy:pool(['phy','earth']),chem:pool(['chem']),bio:pool(['bio'])};const items=[],sections=[],seen=new Set();
  const draw=k=>{let r,t=0;do{r=P[k]();t++}while(seen.has(r)&&t<12);seen.add(r);const[g0,f,q,c,a,ex,l]=r;return mkItem('th',f,esc(q),c,a,ex,l?{chLtr:true}:null)};
  for(let s0=0;s0<nSec;s0++){const its=shuf([genTM(gradeByWeight(p.grade),true),draw('phy'),draw('chem'),draw('bio')]);sections.push({name:'رياضيات وعلوم',start:items.length,end:items.length+its.length,secs:5*60});items.push(...its)}
@@ -639,13 +642,15 @@ const SC=[
 [3,'earth','الطبقة الجوية التي تحدث فيها معظم ظواهر الطقس:',['التروبوسفير','الستراتوسفير','الميزوسفير','الثيرموسفير'],0,'التروبوسفير هي الطبقة الأقرب إلى سطح الأرض.'],
 [3,'earth','تحمينا طبقة الأوزون من:',['الأشعة فوق البنفسجية','الأشعة تحت الحمراء','موجات الراديو','الضوء المرئي'],0,'الأوزون في الستراتوسفير يمتص معظم الأشعة فوق البنفسجية.']
 ];
-function sciItems(p,fields,n){const pool=SC.filter(x=>fields.includes(x[1])&&x[0]<=p.grade);const own=shuf(pool.filter(x=>x[0]===p.grade)),low=shuf(pool.filter(x=>x[0]<p.grade));
+function sciItems(p,fields,n){const G=p.grade;const srt=nearSort(SC.filter(x=>fields.includes(x[1])),G,x=>x[0]);let pool=srt.filter(x=>x[0]<=G);if(pool.length<n)pool=srt.slice(0,Math.max(n,6));const near=Math.max(...pool.map(x=>x[0]));const own=shuf(pool.filter(x=>x[0]>=near-1)),low=shuf(pool.filter(x=>x[0]<near-1&&x[0]>=near-4));
  const k=Math.ceil(n*.7);let pick=own.slice(0,k).concat(low.slice(0,n-Math.min(k,own.length)));if(pick.length<n)pick=pick.concat(own.slice(k)).slice(0,n);
  return shuf(pick).map(([g,f,q,c,a,ex,l])=>mkItem('th',f,esc(q),c,a,ex,l?{chLtr:true}:null))}
 const fmtN=x=>x<0?'−'+(-x):String(x);
 function chN(ans,cands){const s=[];const add=v=>{if(Number.isFinite(v)&&v!==ans&&!s.includes(v))s.push(v)};cands.forEach(add);let k=1;while(s.length<3){add(ans+k);if(s.length<3)add(ans-k);k++}return s.slice(0,3)}
-function genTM(gr,ownOnly){const own={1:[0,1,2,3],2:[4,5,6],3:[7,8,9,10]}[gr];const all=[0,1,2,3].concat(gr>=2?[4,5,6]:[],gr>=3?[7,8,9,10]:[]);
- const v=(ownOnly||Math.random()<.65)?pk(own):pk(all);let q,a,w,st,tip,str=false;
+const TMC={4:['b'],5:['b',1],6:[1,2,3],7:[0,1,2,3],8:[4,5,6],9:[7,8,9,10],10:[7,8,9,11,12],11:[9,10,11,12,13],12:[11,12,13,14]};
+function genTM(gr,ownOnly){if(gr<=3||(gr<=4&&!ownOnly&&Math.random()<.5)){const r=genBasic(gr);const ch=shuf([r.a,...nums(r.a,r.w)]);return{cat:'tmath',sec:'th',q:r.q,c:ch.map(x=>m(x)),a:ch.indexOf(r.a),ex:r.st,id:'t'+Math.random().toString(36).slice(2,9)}}
+ const own=TMC[Math.min(12,gr)]||TMC[12];let all=[];for(let k=4;k<=Math.min(12,gr);k++)all=all.concat(TMC[k]);
+ const v=(ownOnly||Math.random()<.65)?pk(own):pk(all);if(v==='b')return genTM(Math.min(gr,3));let q,a,w,st,tip,str=false;
  switch(v){
  case 0:{const x=ri(2,15),y=ri(2,15),k=ri(0,2);let e;
   if(k===0){e=`(${fmtN(-x)}) + ${y}`;a=y-x;w=[x+y,-(x+y),x-y];st=['نطرح القيمتين المطلقتين ونأخذ إشارة العدد الأكبر قيمةً مطلقة',m(`${e} = ${fmtN(a)}`)]}
@@ -661,6 +666,10 @@ function genTM(gr,ownOnly){const own={1:[0,1,2,3],2:[4,5,6],3:[7,8,9,10]}[gr];co
  case 7:{const x=ri(1,9),y=ri(1,9);q=`إذا كان ${m(`(س + ${x})(س + ${y}) = س² + كس + ${x*y}`)}، فما قيمة ك؟`;a=x+y;w=[x*y===x+y?x*y+2:x*y,Math.abs(x-y)===x+y?x+y+2:Math.abs(x-y),x+y+1];st=['اضرب كل حد في القوس الأول بكل حد في الثاني',m(`س² + ${x}س + ${y}س + ${x*y}`),`ك = ${m(`${x} + ${y} = ${x+y}`)}`];break}
  case 8:{const r1=ri(1,6),r2=ri(r1+1,9),s=r1+r2,pr=r1*r2;str=true;const f=(u,v)=>`{${u}, ${v}}`;a=f(r1,r2);const alt=r1!==1?f(1,pr):f(r1,r2+1);w=[f(fmtN(-r1),fmtN(-r2)),alt,f(r1,fmtN(-r2))];q=`ما مجموعة حل المعادلة ${m(`س² − ${s}س + ${pr} = 0`)}؟`;st=[`نبحث عن عددين حاصل ضربهما ${m(pr)} ومجموعهما ${m(s)}: هما ${m(r1)} و ${m(r2)}`,m(`(س − ${r1})(س − ${r2}) = 0`)];tip='تحقّق بالتعويض: ضع كل حل في المعادلة وتأكد أن الناتج صفر.';break}
  case 9:{const x1=ri(-3,3),y1=ri(-5,5),dx=ri(1,4),sl=pk([-3,-2,-1,1,2,3,4]),x2=x1+dx,y2=y1+sl*dx;q=`ما ميل المستقيم المار بالنقطتين ${m(`(${fmtN(x1)}, ${fmtN(y1)})`)} و ${m(`(${fmtN(x2)}, ${fmtN(y2)})`)}؟`;a=sl;w=[-sl,sl*dx===sl?sl+2:sl*dx,dx===sl?dx+1:dx];st=['الميل = (ص₂ − ص₁) ÷ (س₂ − س₁)',m(`${fmtN(y2-y1)} ÷ ${dx} = ${fmtN(sl)}`)];break}
+ case 11:{const x=ri(2,5),y=ri(2,4);q=`إذا كان ${m(`(س<sup>${x}</sup>)<sup>${y}</sup> = س<sup>ن</sup>`)}، فما قيمة ن؟`;a=x*y;w=[x+y,x*y+1,x**y>40?x*y-1:x**y];st=['قوة القوة: نضرب الأسس',m(`${x} × ${y} = ${x*y}`)];break}
+ case 12:{const a1=ri(1,10),d=ri(2,7),n=ri(6,15);q=`متتابعة حسابية حدها الأول ${m(a1)} وأساسها ${m(d)}. ما الحد رقم ${m(n)}؟`;a=a1+(n-1)*d;w=[a1+n*d,a1*n,a-d];st=['الحد النوني = الحد الأول + (ن − 1) × الأساس',m(`${a1} + ${n-1} × ${d} = ${a}`)];break}
+ case 13:{const r=ri(1,6),b=ri(1,6),t=r+b,g0=(x,y)=>y?g0(y,x%y):x,gg=g0(r,t);str=true;const fr=(x,y)=>{const k=g0(x,y);return (x/k)+'/'+(y/k)};a=fr(r,t);w=[fr(b,t)===a?r+'/'+b:fr(b,t),r+'/'+b===a?(r+1)+'/'+t:r+'/'+b,'1/'+t===a?'2/'+(t+1):'1/'+t].filter((x,i,arr)=>x!==a&&arr.indexOf(x)===i);while(w.length<3)w.push((r+w.length)+'/'+(t+3));q=`كيس فيه ${m(r)} كرات حمراء و ${m(b)} كرات زرقاء. سحبنا كرة عشوائياً. ما احتمال أن تكون حمراء؟`;st=['الاحتمال = عدد الحالات المطلوبة ÷ عدد الحالات الكلية',m(`${r} ÷ ${t} = ${a}`)];break}
+ case 14:{const T=pk([['جا 30°','1/2'],['جتا 60°','1/2'],['ظا 45°','1'],['جا 90°','1'],['جتا 0°','1'],['جا 0°','0'],['جتا 90°','0']]);str=true;a=T[1];w=['1/2','1','0','√3/2','2'].filter(x=>x!==a).slice(0,3);q=`ما قيمة ${m(T[0])}؟`;st=['قيم النسب المثلثية للزوايا الخاصة: جا 30° = 1/2، جتا 60° = 1/2، ظا 45° = 1، جا 90° = 1، جتا 0° = 1'];break}
  default:{const x=ri(2,6),y=ri(2,6);q=`إذا كان ${m(`س<sup>${x}</sup> × س<sup>${y}</sup> = س<sup>ن</sup>`)}، فما قيمة ن؟`;a=x+y;w=[x*y===x+y?x*y+1:x*y,Math.abs(x-y),x+y+1];st=['عند ضرب قوى لها الأساس نفسه نجمع الأسس',m(`${x} + ${y} = ${x+y}`)]}
  }
  const ch=shuf([a,...(str?w:chN(a,w))]);return{cat:'tmath',sec:'th',q,c:ch.map(x=>m(typeof x==='number'?fmtN(x):x)),a:ch.indexOf(a),ex:st,tip,id:'t'+Math.random().toString(36).slice(2,9)}}
@@ -669,209 +678,174 @@ function catItems(p,cat,n){if(QCAT[cat])return Array.from({length:n},()=>genQ(ca
 function startCat(cat){const p=cur();const it=catItems(p,cat,8);if(!it.length)return;startQuiz({title:catName(cat),kind:'cat',cat,back:'qd',items:it})}
 let lastQtab='kmi';
 
-/* ============ حسابات العائلات (تعمل عند ربط Firebase) ============ */
+/* ============ حسابات الطلاب (تعمل عند ربط Firebase) ============ */
 const CLOUD=!!FB;
-const C={ready:!CLOUD,mode:null,user:null,fam:null,famDoc:null,kidId:null,unsub:null,unsubP:null,pins:{},joining:false};
-const SESS='miran-sess';
-function sess(){try{return JSON.parse(localStorage.getItem(SESS))}catch(e){return null}}
-function setSess(v){try{v?localStorage.setItem(SESS,JSON.stringify(v)):localStorage.removeItem(SESS)}catch(e){}}
-const normCode=c=>String(c||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
-function genCode(){const a='ABCDEFGHJKMNPQRSTUVWXYZ23456789';let s='';for(let i=0;i<6;i++)s+=a[Math.floor(Math.random()*a.length)];return s}
-const fmtCode=c=>c?c.slice(0,3)+'-'+c.slice(3):'';
-const LINK=(()=>{try{const q=new URLSearchParams(location.search);const sv=q.get('s'),pv=q.get('p');if(sv||pv)history.replaceState(null,'',location.pathname);const o={};
- if(sv){const [c,k,pin]=sv.split('.');if(c&&k&&/^\d{4}$/.test(pin||''))o.s={code:normCode(c),kid:k,pin}}if(pv)o.p=normCode(pv);return o}catch(e){return{}}})();
+const C={ready:!CLOUD,mode:null,user:null,sid:null,unsub:null,joining:false};
+const STAGES={p:'الابتدائية',m:'المتوسطة',s:'الثانوية'};
+const stageOf=G=>G<=6?'p':G<=9?'m':'s';
+const LINK=(()=>{try{const q=new URLSearchParams(location.search);const jv=q.get('j');if(location.search)history.replaceState(null,'',location.pathname);const o={};
+ if(jv){const i=jv.lastIndexOf('.');if(i>0)o.j={sid:jv.slice(0,i),pin:jv.slice(i+1)}}return o}catch(e){return{}}})();
 const BASE=()=>location.origin+location.pathname;
-const kidLink=(code,kid,pin)=>BASE()+'?s='+code+'.'+kid+'.'+pin;
-const invLink=inv=>BASE()+'?p='+inv;
 const wa=t=>'https://wa.me/?text='+encodeURIComponent(t);
-const rndPin=()=>String(1000+Math.floor(Math.random()*9000));
-function normP(p){if(p.term>2)p.term=2;p.log=p.log||{};p.stats=p.stats||{en:{},qd:{},th:{}};['en','qd','th'].forEach(k=>p.stats[k]=p.stats[k]||{});['hard','learned','daily','days','daySecs','plan'].forEach(k=>p[k]=p[k]||{});p.mist=p.mist||[];if(p.online===undefined)p.online=true;if(!p.nick)p.nick=p.name;if(p.group==null)p.group='';return p}
-const kidsCol=()=>fb.collection('families').doc(C.fam).collection('kids');
+function rndCode(n){const a='ABCDEFGHJKMNPQRSTUVWXYZ23456789';let s='';const r=(window.crypto&&crypto.getRandomValues)?crypto.getRandomValues(new Uint32Array(n||8)):Array.from({length:n||8},()=>Math.floor(Math.random()*1e9));for(let i=0;i<(n||8);i++)s+=a[r[i]%a.length];return s}
+const stuRef=id=>fb.collection('students').doc(id);
+function normP(p){if(!p.gv){p.grade=Math.min(12,(+p.grade||1)+6);p.gv=2}if(p.term>2)p.term=2;p.log=p.log||{};p.stats=p.stats||{en:{},qd:{},th:{}};['en','qd','th'].forEach(k=>p.stats[k]=p.stats[k]||{});['hard','learned','daily','days','daySecs','plan','talk'].forEach(k=>p[k]=p[k]||{});p.mist=p.mist||[];if(p.online===undefined)p.online=true;if(!p.nick)p.nick=p.name;return p}
 function authErr(e){const c=(e&&e.code)||'';
  if(/invalid-credential|wrong-password|user-not-found|invalid-login/.test(c))return 'البريد أو كلمة المرور غير صحيحة.';
- if(/email-already-in-use/.test(c))return 'هذا البريد مسجّل مسبقاً. اختر «تسجيل الدخول».';
- if(/weak-password/.test(c))return 'كلمة المرور قصيرة. اكتب 6 أحرف أو أرقام على الأقل.';
  if(/invalid-email/.test(c))return 'اكتب بريداً إلكترونياً صحيحاً.';
  if(/network/.test(c)||/unavailable/.test(c))return 'تعذّر الاتصال. تحقّق من الإنترنت ثم حاول مرة أخرى.';
  if(/too-many-requests/.test(c))return 'محاولات كثيرة. انتظر قليلاً ثم حاول مرة أخرى.';
- if(/permission-denied/.test(c))return 'البيانات غير صحيحة، أو لا تملك صلاحية.';
+ if(/permission-denied/.test(c))return 'لا توجد صلاحية لهذه العملية.';
  return 'حدث خطأ، حاول مرة أخرى.'}
-function stopKids(){if(C.unsub){C.unsub();C.unsub=null}if(C.unsubP){C.unsubP();C.unsubP=null}}
-async function linkStudent(){C.ready=false;view={name:'loading'};render();
- try{const r=await studentFind(LINK.s.code);if(!r.kids.some(k=>k.id===LINK.s.kid))throw{code:'bad-code'};await studentJoin({famId:r.famId,kid:LINK.s.kid,code:r.code},LINK.s.pin)}
- catch(e){C.ready=true;toast('رابط الدخول غير صالح أو قديم. اطلب رابطاً جديداً من ولي أمرك.');const ss=sess();
-  if(C.user&&C.user.isAnonymous&&ss){C.mode='student';C.fam=ss.famId;C.kidId=ss.kidId;return subKids()}go('start')}}
+function stopSub(){if(C.unsub){C.unsub();C.unsub=null}}
 async function onAuth(u){if(C.joining){C.user=u;return}
- if(LINK.s&&!LINK.sDone){LINK.sDone=true;if(!u||u.isAnonymous){C.user=u;fbUid=u?u.uid:null;return linkStudent()}toast('هذا رابط دخول طالب. افتحه على جوال الطالب.')}
- C.user=u;fbUid=u?u.uid:null;boardKey='';stopKids();
- if(!u){C.mode=null;C.fam=null;C.famDoc=null;C.kidId=null;S={profiles:[],active:null};C.ready=true;return go(LINK.p&&!LINK.pDone?'plogin':'start')}
- if(u.isAnonymous){const ss=sess();if(!ss){if(view.name==='slogin'){C.ready=true;return}await firebase.auth().signOut();return}C.mode='student';C.fam=ss.famId;C.kidId=ss.kidId;return subKids()}
- C.mode='parent';
- try{const ud=await fb.collection('users').doc(u.uid).get();C.fam=ud.exists?ud.data().famId:null}catch(e){C.fam=null}
- if(LINK.p&&!LINK.pDone){LINK.pDone=true;
-  try{let ok=!C.fam;if(C.fam){const k=await famRef(C.fam).collection('kids').get();ok=k.empty}
-   if(ok){await joinInvite(LINK.p);toast('انضممت إلى حساب العائلة');return}
-   toast('حسابك مرتبط بعائلة فيها أبناء، لذلك لم ننضم للعائلة الأخرى.')}catch(e){toast('رابط الدعوة غير صالح.')}}
- if(!C.fam){try{await createFamily();return}catch(e){C.ready=true;return go('pfam')}}
- subKids()}
-async function subKids(){stopKids();C.ready=false;render();
- if(C.mode==='parent'){try{const f=await fb.collection('families').doc(C.fam).get();C.famDoc=f.data()||null}catch(e){C.famDoc=null}}
- const onErr=e=>{C.ready=true;if(C.mode==='student'&&/permission/.test(e.code||'')){setSess(null);firebase.auth().signOut();toast('انتهى ربط هذا الجهاز. ادخل برمز العائلة مرة أخرى.')}else{toast(authErr(e));render()}};
- if(C.mode==='parent')C.unsubP=famRef(C.fam).collection('secrets').onSnapshot(sn=>{C.pins={};sn.docs.forEach(d=>C.pins[d.id]=d.data().pin);if(view.name==='parent')render()},()=>{});
- C.unsub=C.mode==='student'?kidsCol().doc(C.kidId).onSnapshot(d=>applyKids(d.exists?[d]:[]),onErr):kidsCol().onSnapshot(sn=>applyKids(sn.docs),onErr)}
-function applyKids(docs){const loc={};S.profiles.forEach(p=>loc[p.id]=p);const busy=['quiz','flash','result'].includes(view.name);
- S.profiles=docs.map(d=>{const r=normP(Object.assign({},d.data(),{id:d.id}));const l=loc[d.id];
-  if(l&&l.id===S.active&&busy){['name','gender','grade','term','nick','group','online'].forEach(k=>l[k]=r[k]);return l}return r});
- if(C.mode==='student'){S.active=S.profiles.length?C.kidId:null;if(!S.profiles.length){setSess(null);firebase.auth().signOut();return}}
- else if(!cur())S.active=null;
- const first=!C.ready;C.ready=true;
- if(first){if(C.mode==='student')go('home');else go(S.profiles.length?'who':'setup',S.profiles.length?{}:{rows:[newRow()]})}
- else if(!['quiz','flash','form','setup','result'].includes(view.name))render()}
-const newRow=()=>({name:'',gender:'m',grade:1,term:1,pin:''});
-let csT=null;
-function cloudSave(){if(!fb||!C.fam)return;const p=cur();if(!p)return;clearTimeout(csT);const id=p.id;
- csT=setTimeout(()=>{const q=S.profiles.find(x=>x.id===id);if(!q)return;const d=JSON.parse(JSON.stringify(q));delete d.id;kidsCol().doc(id).set(d).catch(()=>{})},4000)}
-function flushSave(){if(csT){clearTimeout(csT);csT=null;const p=cur();if(p&&fb&&C.fam){const d=JSON.parse(JSON.stringify(p));delete d.id;kidsCol().doc(p.id).set(d).catch(()=>{})}}}
-async function createFamily(){const u=C.user;const ref=fb.collection('families').doc();const code=genCode(),inv=genCode();
- await ref.set({owner:u.uid,ownerEmail:u.email||'',code,invite:inv,created:Date.now()});
- await ref.collection('members').doc(u.uid).set({role:'parent',email:u.email||''});
- await fb.collection('codes').doc(code).set({famId:ref.id,type:'student',kids:[]});
- await fb.collection('codes').doc(inv).set({famId:ref.id,type:'invite'});
- await fb.collection('users').doc(u.uid).set({famId:ref.id});
- C.fam=ref.id;return subKids()}
-async function joinInvite(raw){const code=normCode(raw);const c=await fb.collection('codes').doc(code).get();
- if(!c.exists||c.data().type!=='invite')throw{code:'bad-invite'};const f=c.data().famId;
- await fb.collection('families').doc(f).collection('members').doc(C.user.uid).set({role:'parent',invite:code,email:C.user.email||''});
- await fb.collection('users').doc(C.user.uid).set({famId:f});C.fam=f;return subKids()}
-async function syncCodeKids(){return famSyncCode(C.fam)}
-async function cloudAddKids(rows){const f=fb.collection('families').doc(C.fam);
- for(const r of rows){const p=newP(r.name.trim(),r.gender,r.grade,r.term);const d=JSON.parse(JSON.stringify(p));delete d.id;await f.collection('secrets').doc(p.id).set({pin:r.pin});await f.collection('kids').doc(p.id).set(d)}
- await syncCodeKids()}
-async function cloudEditKid(id,fields,pin){const f=fb.collection('families').doc(C.fam);await f.collection('kids').doc(id).update(fields);if(pin)await f.collection('secrets').doc(id).set({pin});await syncCodeKids()}
-async function cloudDelKid(id){const f=fb.collection('families').doc(C.fam);await f.collection('kids').doc(id).delete();await f.collection('secrets').doc(id).delete().catch(()=>{});await fb.collection('players').doc(C.fam+'_'+id).delete().catch(()=>{});await syncCodeKids()}
-async function studentFind(raw){const code=normCode(raw);const c=await fb.collection('codes').doc(code).get();if(!c.exists||c.data().type!=='student')throw{code:'bad-code'};return{code,famId:c.data().famId,kids:c.data().kids||[]}}
-async function studentJoin(v,pin){C.joining=true;
- try{if(!firebase.auth().currentUser)await firebase.auth().signInAnonymously();const u=firebase.auth().currentUser;
-  await fb.collection('families').doc(v.famId).collection('members').doc(u.uid).set({role:'student',kidId:v.kid,code:v.code,pin});
-  setSess({famId:v.famId,kidId:v.kid});C.joining=false;C.user=u;fbUid=u.uid;C.mode='student';C.fam=v.famId;C.kidId=v.kid;return subKids()}
+ C.user=u;fbUid=u?u.uid:null;boardKey='';stopSub();
+ if(LINK.j&&!LINK.jDone&&(!u||u.isAnonymous)){LINK.jDone=true;return linkJoin()}
+ if(!u){C.mode=null;C.sid=null;S={profiles:[],active:null};C.ready=true;return go(view.name==='plogin'?'plogin':'start')}
+ if(!u.isAnonymous){if(isAdm()){C.mode='admin';C.ready=true;A.list=null;return go('admin')}C.ready=true;toast('هذا الحساب ليس حساب مدير النظام.');return firebase.auth().signOut()}
+ C.mode='student';let sid=u.uid;
+ try{const d=await fb.collection('devices').doc(u.uid).get();if(d.exists&&d.data().sid)sid=d.data().sid}catch(e){}
+ C.sid=sid;subStudent()}
+function subStudent(){stopSub();C.ready=false;render();
+ C.unsub=stuRef(C.sid).onSnapshot(d=>{
+  if(!d.exists){if(C.user&&C.sid!==C.user.uid){fb.collection('devices').doc(C.user.uid).delete().catch(()=>{});C.sid=C.user.uid;return subStudent()}
+   S={profiles:[],active:null};C.ready=true;return go('start')}
+  const r=normP(Object.assign({},d.data(),{id:d.id}));const l=S.profiles[0];
+  if(l&&l.id===r.id){const gc=l.grade!==r.grade||l.term!==r.term;['name','gender','grade','term','nick','online'].forEach(k=>l[k]=r[k]);if(gc)Object.keys(l.daily).forEach(k=>{if(l.daily[k])delete l.daily[k].words})}else S.profiles=[r];
+  S.active=r.id;const first=!C.ready;C.ready=true;
+  if(first||['start','loading'].includes(view.name))go('home');else if(!['quiz','flash','form','result','talkRun'].includes(view.name))render()
+ },e=>{C.ready=true;if(/permission/.test(e.code||'')){fb.collection('devices').doc(C.user.uid).delete().catch(()=>{});if(C.sid!==C.user.uid){C.sid=C.user.uid;return subStudent()}}toast(authErr(e));render()})}
+async function register(row){const FA=firebase.auth();C.joining=true;
+ try{if(!FA.currentUser)await FA.signInAnonymously();const u=FA.currentUser;C.user=u;fbUid=u.uid;
+  const p=newP(row.name.trim(),row.gender,row.grade,row.term);const d=JSON.parse(JSON.stringify(p));delete d.id;d.created=Date.now();
+  await stuRef(u.uid).set(d);C.joining=false;C.mode='student';C.sid=u.uid;subStudent()}
  catch(e){C.joining=false;throw e}}
-async function logout(){flushSave();if(C.mode==='student')setSess(null);try{await firebase.auth().signOut()}catch(e){}}
+async function linkJoin(){C.ready=false;view={name:'loading'};render();const FA=firebase.auth();C.joining=true;
+ try{if(!FA.currentUser)await FA.signInAnonymously();const u=FA.currentUser;
+  await fb.collection('devices').doc(u.uid).set({sid:LINK.j.sid,pin:LINK.j.pin,at:Date.now()});
+  C.joining=false;C.user=u;fbUid=u.uid;C.mode='student';C.sid=LINK.j.sid;S={profiles:[],active:null};toast('تم ربط حسابك بهذا الجهاز');subStudent()}
+ catch(e){C.joining=false;C.ready=true;toast('رابط النقل غير صالح أو قديم. اطلب رابطاً جديداً.');const u=FA.currentUser;if(u)onAuth(u);else go('start')}}
+let csT=null;
+function stuDoc(p){const d=JSON.parse(JSON.stringify(p));delete d.id;return d}
+function cloudSave(){if(!fb||!C.sid)return;const p=cur();if(!p)return;clearTimeout(csT);csT=setTimeout(()=>{csT=null;const q=cur();if(q)stuRef(q.id).set(stuDoc(q)).catch(()=>{})},4000)}
+function flushSave(){if(csT){clearTimeout(csT);csT=null;const p=cur();if(p&&fb&&C.sid)stuRef(p.id).set(stuDoc(p)).catch(()=>{})}}
+async function makeTransfer(sid){const pin=rndCode(8);await fb.collection('studentSecrets').doc(sid).set({pin,at:Date.now()});return BASE()+'?j='+sid+'.'+pin}
+async function logout(){flushSave();try{await firebase.auth().signOut()}catch(e){}}
 
 /* شاشات الدخول */
 const startTop=()=>`<div class="top"><div class="brand">مِران</div></div>`;
 function vLoading(){return startTop()+`<div class="sec"><div class="card" style="text-align:center"><p style="margin:0">جارٍ التحميل…</p></div></div>`}
-function vStart(){return startTop()+band('أهلاً بك في مِران','تدريب في الإنجليزي والقدرات والتحصيلي لطلاب المرحلة المتوسطة.')+`<div class="sec">${T('أنا ولي أمر','ادخل ببريدك لإضافة أبنائك ومتابعة تقدّمهم','pLogin',true)}${T('أنا طالب','افتح الرابط الذي أرسله لك ولي أمرك، أو ادخل برمز العائلة','sLogin')}</div>`}
-function vPlogin(){const inv=LINK.p&&!LINK.pDone;return startTop()+band(inv?'دعوة للانضمام لعائلة':'دخول ولي الأمر',inv?'سجّل ببريدك وستنضم لحساب العائلة تلقائياً.':'أول مرة؟ اكتب بريدك واختر كلمة مرور، وسننشئ حسابك تلقائياً.')+`
+const ORDN=['الأول','الثاني','الثالث','الرابع','الخامس','السادس'];
+function gradeSeg(attr,val,extra){return `<div class="gsel">${[['p','ابتدائي',1,6],['m','متوسط',7,9],['s','ثانوي',10,12]].map(([k,l,a,b])=>`<div class="gsrow"><span class="gl">${l}</span><div class="seg">${Array.from({length:b-a+1},(_,i)=>a+i).map(v=>`<button type="button" class="${val===v?'on':''}" ${attr}="grade" data-v="${v}" ${extra||''} aria-label="${GRADES[v]}">${v-a+1}</button>`).join('')}</div></div>`).join('')}</div>`}
+function vStart(){const r=view.reg||(view.reg={name:'',gender:'m',grade:0,term:1});const sg=(k,o)=>`<div class="seg">${o.map(([v,l])=>`<button type="button" class="${r[k]===v?'on':''}" data-regset="${k}" data-v="${v}">${l}</button>`).join('')}</div>`;
+ return startTop()+band('أهلاً بك في مِران','تدرّب على الإنجليزي والقدرات والتحصيلي بأسئلة تناسب صفّك.')+`
+ <form class="sec" id="regform"><label class="f" for="regn">اسمك<input type="text" id="regn" maxlength="20" value="${esc(r.name)}" placeholder="اكتب اسمك" autocomplete="given-name"></label>
+ <div class="f stack"><b style="font-size:14px">أنا</b>${sg('gender',[['m','طالب'],['f','طالبة']])}</div>
+ <div class="f stack"><b style="font-size:14px">صفّي</b>${gradeSeg('data-regset',r.grade)}${r.grade?`<span class="note">${GRADES[r.grade]}</span>`:''}</div>
+ <div class="f stack"><b style="font-size:14px">الفصل الدراسي</b>${sg('term',[[1,'الأول'],[2,'الثاني']])}</div>
+ <p class="warn" id="regerr" hidden></p><button class="btn wide" type="submit" id="regbtn">ابدأ التدريب</button>
+ <p class="note" style="margin:0;text-align:center">عندك حساب على جهاز آخر؟ افتح رابط النقل من ذلك الجهاز هنا.</p>
+ <button type="button" class="x" data-act="pLogin" style="align-self:center;margin-top:18px">دخول مدير النظام</button></form>`}
+function vPlogin(){return startTop()+band('دخول مدير النظام','هذه الصفحة لمدير التطبيق فقط.')+`
  <form class="sec" id="lform"><label class="f" for="lem">البريد الإلكتروني<input type="email" id="lem" dir="ltr" autocomplete="email" required></label>
- <label class="f" for="lpw">كلمة المرور<input type="password" id="lpw" dir="ltr" minlength="6" autocomplete="current-password" required></label><span class="note">6 أحرف أو أرقام على الأقل.</span>
- <p class="warn" id="lerr" hidden></p><button class="btn wide" type="submit" id="lbtn">متابعة</button>
- <button type="button" class="x" data-act="reset" style="align-self:center">نسيت كلمة المرور؟</button><button type="button" class="btn plain wide" data-go="start">رجوع</button></form>`}
-function vPfam(){return startTop()+band('حساب العائلة','خطوة أخيرة: أنشئ حساباً جديداً لعائلتك، أو انضم لعائلة موجودة برمز دعوة من ولي الأمر الآخر.')+`<div class="sec">
- ${T('إنشاء حساب عائلة جديد','أضيف فيه أبنائي، وأحصل على رمز العائلة ورمز الدعوة','createFam',true)}
- <form class="card stack" id="iform"><h3>لدي رمز دعوة</h3><label class="f" for="icode">رمز الدعوة من ولي الأمر الآخر<input type="text" id="icode" dir="ltr" autocapitalize="characters" placeholder="ABC-123" style="text-align:center;letter-spacing:.15em"></label><p class="warn" id="ierr" hidden></p><button class="btn" type="submit">انضمام</button></form>
- ${isAdm()?T('إدارة النظام','كل العائلات والطلاب: إضافة وتعديل وحذف','admin'):''}<button class="btn plain wide" data-act="logout">تسجيل الخروج</button></div>`}
-function vSlogin(){const st=view.step||'code';
- if(st==='code')return startTop()+band('دخول الطالب','اطلب رمز العائلة من ولي أمرك.')+`<form class="sec" id="scform"><label class="f" for="fcode">رمز العائلة<input type="text" id="fcode" dir="ltr" autocapitalize="characters" placeholder="ABC-123" style="text-align:center;font-size:24px;letter-spacing:.2em" value="${esc(view.raw||'')}"></label><p class="warn" id="serr2" hidden></p><button class="btn wide" type="submit">التالي</button><button type="button" class="btn plain wide" data-go="start">رجوع</button></form>`;
- if(st==='pick')return startTop()+band('من أنت؟','اختر اسمك.')+`<div class="sec">${view.kids.length?view.kids.map(k=>`<button class="tile" data-kid="${esc(k.id)}"><span class="av lg ${k.gender==='f'?'f':'m'}">${esc((k.name||'؟').trim()[0])}</span><span class="grow"><h3>${esc(k.name)}</h3></span><span class="go">‹</span></button>`).join(''):'<div class="card">لم يُضِف ولي الأمر أي أسماء بعد.</div>'}<button class="btn plain wide" data-act="sBack">رجوع</button></div>`;
- const k=view.kids.find(x=>x.id===view.kid)||{};
- return startTop()+band('أهلاً يا '+esc(k.name||''),'اكتب رقمك السري المكوّن من 4 أرقام.')+`<form class="sec" id="spform"><label class="f" for="spin">الرقم السري<input type="password" id="spin" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" dir="ltr" style="text-align:center;font-size:28px;letter-spacing:.5em"></label><p class="warn" id="perr" hidden></p><button class="btn wide" type="submit" id="pbtn">دخول</button><button type="button" class="btn plain wide" data-act="sBackPick">رجوع</button></form>`}
-function vFamCard(){const d=C.famDoc||{};
- const rows=S.profiles.map(k=>{const pin=C.pins[k.id];if(!pin||!d.code)return '';const l=kidLink(d.code,k.id,pin);
-  return `<div class="li"><span class="av ${k.gender}">${esc((k.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(k.name)}</b></span><a class="btn" style="padding:8px 14px" href="${esc(wa('رابط دخولك إلى مِران يا '+k.name+' (افتحه مرة واحدة من جوالك):\n'+l))}" target="_blank" rel="noopener">واتساب</a><button class="x" data-copy="${esc(l)}">نسخ</button></div>`}).join('');
- return `${isAdm()?T('إدارة النظام','كل العائلات والطلاب: إضافة وتعديل وحذف','admin',true):''}
- <div class="card stack"><h3>دخول الأبناء من أجهزتهم</h3><p class="note" style="margin:0">أرسل لكل ابن رابطه. يفتحه على جواله مرة واحدة، فيدخل مباشرة ويبقى مسجّلاً بدون أي رموز.</p>${rows?`<div class="list">${rows}</div>`:'<p class="note" style="margin:0">جارٍ تجهيز الروابط…</p>'}</div>
- <div class="card stack"><h3>ولي أمر ثانٍ</h3><p class="note" style="margin:0">أرسل له رابط الدعوة. يفتحه ويسجّل ببريده، فينضم لعائلتك تلقائياً ويتابع الأبناء معك.</p>
- ${d.invite?`<div class="row"><a class="btn grow" href="${esc(wa('انضم لحساب عائلتنا في مِران لمتابعة الأبناء:\n'+invLink(d.invite)))}" target="_blank" rel="noopener">إرسال الدعوة واتساب</a><button class="btn plain" data-copy="${esc(invLink(d.invite))}">نسخ</button></div>`:''}</div>
- <details class="card"><summary>الدخول اليدوي بالرمز</summary><div class="stack" style="margin-top:10px"><div class="row between"><span>رمز العائلة</span><button class="x" data-copy="${esc(fmtCode(d.code))}"><b class="m" style="letter-spacing:.1em">${esc(fmtCode(d.code))}</b> نسخ</button></div>
- <p class="note" style="margin:0">للطالب: «أنا طالب» ← رمز العائلة ← اسمه ← رقمه السري. الرقم السري تجده في «تعديل» بجانب اسمه.</p>
- <div class="row between"><span>رمز دعوة ولي أمر</span><b class="m" style="letter-spacing:.1em">${esc(fmtCode(d.invite))}</b></div></div></details>
- <p class="note" style="margin:0">حسابك: ${esc((C.user&&C.user.email)||'')}</p><button class="btn plain" data-act="logout">تسجيل الخروج</button>`}
-function vStudentWho(){const p=cur();return header()+band('حسابك',p?esc(p.name)+' · '+GRADES[p.grade]:'')+`<div class="sec"><button class="btn wide" data-go="home">متابعة التدريب</button><button class="btn plain wide" data-act="logout">تسجيل الخروج من هذا الجهاز</button><p class="note">بعد الخروج تحتاج رمز العائلة ورقمك السري للدخول مرة أخرى.</p></div>`}
+ <label class="f" for="lpw">كلمة المرور<input type="password" id="lpw" dir="ltr" autocomplete="current-password" required></label>
+ <p class="warn" id="lerr" hidden></p><button class="btn wide" type="submit" id="lbtn">دخول</button>
+ <button type="button" class="x" data-act="reset" style="align-self:center">نسيت كلمة المرور؟</button><button type="button" class="btn plain wide" data-act="toStart">رجوع</button></form>`}
+function vStudentWho(){const p=cur();if(!p)return vLoading();const v=view;
+ return header()+band('حسابي',esc(p.name)+' · '+GRADES[p.grade]+' · '+TERMS[p.term])+`<div class="sec">${progressCard(p,true)}
+ <div class="card stack"><h3>استخدام حسابك على جهاز آخر</h3><p class="note" style="margin:0">أنشئ رابط النقل وافتحه على الجهاز الآخر، فيظهر حسابك بكل نقاطك. احتفظ به أيضاً لو تغيّر جوالك.</p>
+ ${v.tlink?`<div class="tklink" dir="ltr">${esc(v.tlink)}</div><div class="row"><button class="btn plain grow" data-copy="${esc(v.tlink)}">نسخ الرابط</button><a class="btn grow" href="${esc(wa('رابط حسابي في مِران:\n'+v.tlink))}" target="_blank" rel="noopener">واتساب</a></div>`:`<button class="btn plain" data-act="mkLink">إنشاء رابط النقل</button>`}</div>
+ ${v.lo?`<div class="warn stack">إذا خرجت من هذا الجهاز لن تستطيع العودة لحسابك إلا برابط النقل. تأكّد أنك أنشأته وحفظته أولاً.<div class="row"><button class="btn danger" data-act="logoutOk">خروج</button><button class="btn plain" data-act="loNo">إلغاء</button></div></div>`:`<button class="x" style="align-self:flex-start;color:var(--bad)" data-act="loAsk">الخروج من هذا الجهاز</button>`}
+ <button class="btn wide" data-go="home">متابعة التدريب</button></div>`}
 
 /* ============ إدارة النظام (للمدير فقط) ============ */
 const ADMIN_EMAIL='alfifitop2015@gmail.com';
-const ADMV=['admin','adminFam'];
+const ADMV=['admin'];
 const isAdm=()=>CLOUD&&C.user&&!C.user.isAnonymous&&(C.user.email||'').toLowerCase()===ADMIN_EMAIL;
-const A={loading:false,fams:null,err:null,edit:null,form:null,del:null,delFam:false};
-const famRef=f=>fb.collection('families').doc(f);
-async function famSyncCode(f){const fd=(await famRef(f).get()).data()||{};if(!fd.code)return;const sn=await famRef(f).collection('kids').get();
- await fb.collection('codes').doc(fd.code).set({famId:f,type:'student',kids:sn.docs.map(d=>({id:d.id,name:d.data().name,gender:d.data().gender}))})}
+const A={loading:false,list:null,err:null,edit:null,form:null,del:null,links:{},old:0,st:'all'};
 async function adminLoad(){A.loading=true;render();
- try{const sn=await fb.collection('families').get();const fams=[];
-  for(const d of sn.docs){const r=famRef(d.id);const f=Object.assign({id:d.id},d.data());
-   const [m,k,s]=await Promise.all([r.collection('members').get(),r.collection('kids').get(),r.collection('secrets').get()]);
-   f.parents=m.docs.filter(x=>x.data().role==='parent').map(x=>({uid:x.id,email:x.data().email||''}));
-   f.devices=m.docs.filter(x=>x.data().role==='student').length;
-   const pins={};s.docs.forEach(x=>pins[x.id]=x.data().pin);
-   f.kids=k.docs.map(x=>{const p=normP(Object.assign({},x.data(),{id:x.id}));return{id:x.id,name:p.name,gender:p.gender,grade:p.grade,term:p.term,pin:pins[x.id]||'',score:lifetime(p),last:Object.keys(p.log).sort().pop()||''}});
-   fams.push(f)}
-  fams.sort((a,b)=>(b.created||0)-(a.created||0));A.fams=fams;A.err=null}
- catch(e){A.err=authErr(e)}
+ try{const sn=await fb.collection('students').get();
+  A.list=sn.docs.map(d=>{const p=normP(Object.assign({},d.data(),{id:d.id}));return{id:d.id,name:p.name,gender:p.gender,grade:p.grade,term:p.term,score:lifetime(p),last:Object.keys(p.log).sort().pop()||'',created:p.created||0,answers:sumSt(p.stats.en).t+sumSt(p.stats.qd).t+sumSt(p.stats.th).t}}).sort((a,b)=>b.score-a.score);
+  try{const o=await fb.collection('families').get();let n=0;for(const f of o.docs){const k=await fb.collection('families').doc(f.id).collection('kids').get();n+=k.docs.length}A.old=n||(o.docs.length?-1:0)}catch(e){A.old=0}
+  A.err=null}catch(e){A.err=authErr(e)}
  A.loading=false;render()}
-async function adminCreateFam(){const ref=fb.collection('families').doc();const code=genCode(),inv=genCode();
- await ref.set({owner:C.user.uid,ownerEmail:'',code,invite:inv,created:Date.now(),byAdmin:true});
- await fb.collection('codes').doc(code).set({famId:ref.id,type:'student',kids:[]});
- await fb.collection('codes').doc(inv).set({famId:ref.id,type:'invite'});return ref.id}
-async function adminSaveKid(f,id,v){const r=famRef(f);
- if(!id){const p=newP(v.name,v.gender,v.grade,v.term);const d=JSON.parse(JSON.stringify(p));delete d.id;await r.collection('secrets').doc(p.id).set({pin:v.pin});await r.collection('kids').doc(p.id).set(d)}
- else{await r.collection('kids').doc(id).update({name:v.name,gender:v.gender,grade:v.grade,term:v.term,daily:{}});await r.collection('secrets').doc(id).set({pin:v.pin})}
- await famSyncCode(f)}
-async function adminDelKid(f,id){const r=famRef(f);await r.collection('kids').doc(id).delete();await r.collection('secrets').doc(id).delete().catch(()=>{});
- await fb.collection('players').doc(f+'_'+id).delete().catch(()=>{});
- const m=await r.collection('members').get();for(const d of m.docs)if(d.data().kidId===id)await r.collection('members').doc(d.id).delete();
- await famSyncCode(f)}
-async function adminRmParent(f,uid){await famRef(f).collection('members').doc(uid).delete();await fb.collection('users').doc(uid).delete().catch(()=>{})}
-async function adminUnlink(f){const r=famRef(f);const m=await r.collection('members').get();for(const d of m.docs)if(d.data().role==='student')await r.collection('members').doc(d.id).delete()}
-async function adminDelFam(f){const r=famRef(f);const [m,k,s]=await Promise.all([r.collection('members').get(),r.collection('kids').get(),r.collection('secrets').get()]);
- for(const d of k.docs){await r.collection('kids').doc(d.id).delete();await fb.collection('players').doc(f+'_'+d.id).delete().catch(()=>{})}
- for(const d of s.docs)await r.collection('secrets').doc(d.id).delete();
- for(const d of m.docs){if(d.data().role==='parent')await fb.collection('users').doc(d.id).delete().catch(()=>{});await r.collection('members').doc(d.id).delete()}
- const fd=(await r.get()).data()||{};if(fd.code)await fb.collection('codes').doc(fd.code).delete().catch(()=>{});if(fd.invite)await fb.collection('codes').doc(fd.invite).delete().catch(()=>{});
- await r.delete()}
+async function adminSave(id,v){if(!id){const ref=fb.collection('students').doc();const p=newP(v.name,v.gender,v.grade,v.term);const d=stuDoc(p);d.created=Date.now();d.byAdmin=true;await ref.set(d);A.links[ref.id]=await makeTransfer(ref.id);return ref.id}
+ const ref=stuRef(id);const s=await ref.get();const d=s.data()||{};const old=d.name;d.name=v.name;d.gender=v.gender;d.grade=v.grade;d.term=v.term;d.gv=2;if(!d.nick||d.nick===old)d.nick=v.name;d.daily={};await ref.set(d);
+ const pl=fb.collection('players').doc(id);const ps=await pl.get();if(ps.exists)await pl.set(Object.assign(ps.data(),{grade:v.grade,stage:stageOf(v.grade)}));return id}
+async function adminDel(id){await stuRef(id).delete();await fb.collection('studentSecrets').doc(id).delete().catch(()=>{});await fb.collection('players').doc(id).delete().catch(()=>{});
+ const dv=await fb.collection('devices').where('sid','==',id).get();for(const d of dv.docs)await fb.collection('devices').doc(d.id).delete().catch(()=>{})}
+async function adminMigrate(){const fams=await fb.collection('families').get();let n=0;
+ for(const f of fams.docs){const r=fb.collection('families').doc(f.id);
+  const [k,s,m]=await Promise.all([r.collection('kids').get(),r.collection('secrets').get(),r.collection('members').get()]);
+  for(const d of k.docs){const ex=await stuRef(d.id).get();if(!ex.exists){const p=normP(Object.assign({},d.data(),{id:d.id}));const x=stuDoc(p);x.created=Date.now();x.migrated=true;await stuRef(d.id).set(x);n++}
+   await fb.collection('players').doc(f.id+'_'+d.id).delete().catch(()=>{});await r.collection('kids').doc(d.id).delete()}
+  for(const d of s.docs)await r.collection('secrets').doc(d.id).delete();
+  for(const d of m.docs){if(d.data().role==='parent')await fb.collection('users').doc(d.id).delete().catch(()=>{});await r.collection('members').doc(d.id).delete()}
+  const fd=f.data()||{};if(fd.code)await fb.collection('codes').doc(fd.code).delete().catch(()=>{});if(fd.invite)await fb.collection('codes').doc(fd.invite).delete().catch(()=>{});await r.delete()}
+ return n}
 function adBusy(fn,okMsg){const bs=[...document.querySelectorAll('#app button')];bs.forEach(b=>b.disabled=true);
- return fn().then(()=>{if(okMsg)toast(okMsg);return adminLoad()}).catch(e=>{bs.forEach(b=>b.disabled=false);toast(authErr(e))})}
-const famTitle=f=>f.parents.length?f.parents.map(p=>p.email||'ولي أمر').join('، '):'عائلة بدون ولي أمر بعد';
-function vAdmin(){const u=C.user;const back=`<div class="row" style="justify-content:flex-end;margin-bottom:10px"><button class="x" data-act="adBack">رجوع</button></div>`;
- if(false)return startTop()+back+band('إدارة النظام','خطوة أمان لمرة واحدة.')+`<div class="sec"><div class="card stack"><p style="margin:0">لتفعيل صلاحيات المدير يجب تأكيد بريدك <b dir="ltr">${esc(u.email)}</b>.</p>
-  <button class="btn" data-act="adVerify">أرسل رابط التأكيد إلى بريدي</button><p class="note" style="margin:0">افتح الرسالة من Firebase في بريدك واضغط الرابط، ثم ارجع هنا.</p><button class="btn plain" data-act="adRefresh">أكّدت بريدي</button></div></div>`;
- let body;
- if(A.err)body=`<div class="warn stack">${esc(A.err)}<span class="note">تأكد أنك نشرت قواعد الحماية الجديدة في Firebase.</span><button class="btn plain" data-act="adReload">إعادة المحاولة</button></div>`;
- else if(!A.fams)body=`<div class="card">جارٍ تحميل العائلات…</div>`;
- else{const kids=A.fams.reduce((n,f)=>n+f.kids.length,0),par=A.fams.reduce((n,f)=>n+f.parents.length,0);
-  body=`<div class="stats"><div class="stat" style="--c:var(--home)"><b>${A.fams.length}</b><span>عائلة</span></div><div class="stat" style="--c:var(--en)"><b>${par}</b><span>ولي أمر</span></div><div class="stat" style="--c:var(--th)"><b>${kids}</b><span>طالب</span></div></div>
-  ${T('إنشاء عائلة لشخص آخر','تضيف طلابها بنفسك، وترسل رمز الدعوة لولي الأمر ليسجّل وينضم','adNewFam',true)}
-  <label class="f" for="adq">بحث بالبريد أو اسم الطالب أو الرمز<input type="text" id="adq" value="${esc(view.q||'')}" placeholder="ابحث…"></label>
-  <div class="stack" id="adlist">${adList()}</div>
-  <button class="btn plain wide" data-act="adReload">تحديث القائمة</button>`}
- return startTop()+back+band('إدارة النظام','كل العائلات والطلاب في التطبيق. هذه الصفحة تظهر لك فقط.')+`<div class="sec">${body}</div>`}
-function adList(){const q=(view.q||'').trim().toLowerCase();const fs=A.fams.filter(f=>!q||[famTitle(f),f.code,f.invite,fmtCode(f.code),...f.kids.map(k=>k.name)].join(' ').toLowerCase().includes(q));
- return fs.length?fs.map(f=>`<button class="tile" data-afam="${f.id}"><span class="grow"><h3 dir="auto" style="text-align:start">${esc(famTitle(f))}${f.id===C.fam?' <span class="chip">عائلتك</span>':''}</h3><span class="meta">${f.kids.length?f.kids.map(k=>esc(k.name)).join('، '):'لا يوجد طلاب'} · رمز <span class="m">${esc(fmtCode(f.code))}</span></span></span><span class="go">‹</span></button>`).join(''):'<div class="card">لا توجد نتائج.</div>'}
-function adKidForm(f,id){const v=A.form;const sg=(k,o)=>`<div class="seg">${o.map(([x,l])=>`<button type="button" class="${v[k]===x?'on':''}" data-adset="${k}" data-v="${x}">${l}</button>`).join('')}</div>`;
- return `<form class="card stack" id="adkform"><h3>${id?'تعديل الطالب':'إضافة طالب'}</h3>
+ return fn().then(r=>{if(okMsg)toast(typeof okMsg==='function'?okMsg(r):okMsg);return adminLoad()}).catch(e=>{bs.forEach(b=>b.disabled=false);toast(authErr(e))})}
+function adForm(id){const v=A.form;const sg=(k,o)=>`<div class="seg">${o.map(([x,l])=>`<button type="button" class="${v[k]===x?'on':''}" data-adset="${k}" data-v="${x}">${l}</button>`).join('')}</div>`;
+ return `<form class="card stack" id="adkform"><h3>${id?'تعديل بيانات الطالب':'إضافة طالب'}</h3>
  <label class="f" for="adn">الاسم<input type="text" id="adn" maxlength="20" value="${esc(v.name)}"></label>
- <div class="f stack"><b style="font-size:14px">الجنس</b>${sg('gender',[['m','ذكر'],['f','أنثى']])}</div>
- <div class="f stack"><b style="font-size:14px">الصف</b>${sg('grade',[[1,'أول متوسط'],[2,'ثاني متوسط'],[3,'ثالث متوسط']])}</div>
+ <div class="f stack"><b style="font-size:14px">الجنس</b>${sg('gender',[['m','طالب'],['f','طالبة']])}</div>
+ <div class="f stack"><b style="font-size:14px">الصف</b>${gradeSeg('data-adset',v.grade)}<span class="note">${GRADES[v.grade]||''}</span></div>
  <div class="f stack"><b style="font-size:14px">الفصل الدراسي</b>${sg('term',[[1,'الأول'],[2,'الثاني']])}</div>
- <label class="f" for="adp">الرقم السري (4 أرقام)<input type="tel" inputmode="numeric" maxlength="4" id="adp" value="${esc(v.pin)}" dir="ltr" style="text-align:center;letter-spacing:.4em"></label>
+ ${id?'':'<p class="note" style="margin:0">بعد الحفظ يظهر رابط دخول ترسله للطالب، فيفتحه ويبدأ مباشرة.</p>'}
  <p class="warn" id="aderr" hidden></p><div class="row"><button class="btn grow" type="submit">حفظ</button><button type="button" class="btn plain grow" data-act="adCancel">إلغاء</button></div></form>`}
-function vAdminFam(){const f=(A.fams||[]).find(x=>x.id===view.fid);if(!f)return vAdmin();
- const kids=f.kids.map(k=>A.edit===k.id?adKidForm(f,k.id):`<div class="li"><span class="av ${k.gender}">${esc((k.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(k.name)}</b><br><span class="note">${GRADES[k.grade]} · ${TERMS[k.term]||''} · الرقم السري <span class="m">${esc(k.pin||'—')}</span>${k.pin?` · <button class="x" style="padding:2px 8px" data-copy="${esc(kidLink(f.code,k.id,k.pin))}">نسخ رابط الدخول</button>`:''} · ${k.score} نقطة${k.last?' · آخر تدريب '+k.last:''}</span></span>
-  ${A.del===k.id?`<button class="btn danger" data-addelok="${k.id}">تأكيد الحذف</button><button class="x" data-act="adCancel">إلغاء</button>`:`<button class="x" data-adedit="${k.id}">تعديل</button><button class="x" style="color:var(--bad)" data-addel="${k.id}">حذف</button>`}</div>`).join('');
- const pars=f.parents.map(p=>`<div class="li"><span class="grow" dir="ltr" style="text-align:right">${esc(p.email||p.uid)}</span>${p.email?`<button class="x" data-adreset="${esc(p.email)}">إعادة كلمة المرور</button>`:''}<button class="x" style="color:var(--bad)" data-adrmpar="${p.uid}">إزالة</button></div>`).join('');
- return startTop()+`<div class="row" style="justify-content:flex-end;margin-bottom:10px"><button class="x" data-act="adBackList">رجوع للقائمة</button></div>`+band(esc(famTitle(f)),`${f.kids.length} طالب · ${f.devices} جهاز طالب مرتبط`)+`<div class="sec">
- <div class="card stack"><h3>الرموز</h3><div class="row between"><span>رمز العائلة للطلاب</span><button class="x" data-copy="${esc(fmtCode(f.code))}"><b class="m" style="letter-spacing:.1em">${esc(fmtCode(f.code))}</b> نسخ</button></div>
- <div class="row between"><span>رمز دعوة ولي أمر</span><button class="x" data-copy="${esc(fmtCode(f.invite))}"><b class="m" style="letter-spacing:.1em">${esc(fmtCode(f.invite))}</b> نسخ</button></div>
- <div class="row"><button class="btn plain grow" data-copy="${esc(invLink(f.invite))}">نسخ رابط دعوة ولي الأمر</button></div><p class="note" style="margin:0">أرسل رابط الدعوة لولي الأمر. يفتحه ويسجّل ببريده، فينضم لهذه العائلة تلقائياً.</p></div>
- <div class="card stack"><h3>أولياء الأمور</h3>${pars?`<div class="list">${pars}</div>`:'<p class="note" style="margin:0">لم ينضم ولي أمر بعد. أرسل له رمز الدعوة.</p>'}</div>
- <div class="card stack"><div class="row between"><h3>الطلاب</h3>${A.edit?'':'<button class="x" data-act="adAdd">+ إضافة طالب</button>'}</div>${A.edit==='new'?adKidForm(f,null):''}${kids?`<div class="list">${kids}</div>`:(A.edit==='new'?'':'<p class="note" style="margin:0">لا يوجد طلاب.</p>')}</div>
- ${f.devices?`<button class="btn plain wide" data-act="adUnlink">فصل كل أجهزة الطلاب (${f.devices})</button><p class="note" style="margin:0">مفيد عند ضياع جوال: يحتاج الطالب بعدها للدخول برمز العائلة ورقمه السري من جديد.</p>`:''}
- ${A.delFam?`<div class="warn stack">سيُحذف كل شيء في هذه العائلة: الطلاب وتقدّمهم وأولياء الأمور والرموز. لا يمكن التراجع.<div class="row"><button class="btn danger" data-act="adDelFamOk">نعم، احذف العائلة</button><button class="btn plain" data-act="adCancel">إلغاء</button></div></div>`:`<button class="btn plain wide" style="color:var(--bad)" data-act="adDelFam">حذف العائلة بالكامل</button>`}
- <p class="note">حسابات البريد نفسها تبقى مسجّلة في Firebase. لحذفها نهائياً: Firebase ← Authentication ← Users.</p></div>`}
-function bindAdmin(){const q=$('#adq');if(q)q.addEventListener('input',()=>{view.q=q.value;const l=$('#adlist');if(l)l.innerHTML=adList()});
+function adRow(s){if(A.edit===s.id)return adForm(s.id);const l=A.links[s.id];
+ return `<div class="card stack"><div class="row"><span class="av ${s.gender}">${esc((s.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(s.name)}</b><br><span class="note">${GRADES[s.grade]} · ${TERMS[s.term]||''} · ${s.score} نقطة · ${s.answers} سؤال${s.last?' · آخر تدريب '+s.last:''}</span></span></div>
+ ${l?`<div class="tklink" dir="ltr">${esc(l)}</div><div class="row"><button class="btn plain grow" data-copy="${esc(l)}">نسخ الرابط</button><a class="btn grow" href="${esc(wa('رابط دخولك إلى مِران يا '+s.name+':\n'+l))}" target="_blank" rel="noopener">واتساب</a></div>`:''}
+ ${A.del===s.id?`<div class="warn stack">حذف ${esc(s.name)} يمسح حسابه وكل تقدّمه نهائياً.<div class="row"><button class="btn danger" data-addelok="${s.id}">نعم، احذف</button><button class="btn plain" data-act="adCancel">إلغاء</button></div></div>`
+ :`<div class="row" style="flex-wrap:wrap"><button class="x" data-adedit="${s.id}">تعديل</button><button class="x" data-adlink="${s.id}">رابط دخول</button><button class="x" style="color:var(--bad)" data-addel="${s.id}">حذف</button></div>`}</div>`}
+function adFiltered(){const q=(view.q||'').trim().toLowerCase();return(A.list||[]).filter(s=>(A.st==='all'||stageOf(s.grade)===A.st)&&(!q||s.name.toLowerCase().includes(q)))}
+function vAdmin(){let body;
+ if(A.err)body=`<div class="warn stack">${esc(A.err)}<span class="note">تأكد أنك نشرت قواعد الحماية الجديدة في Firebase.</span><button class="btn plain" data-act="adReload">إعادة المحاولة</button></div>`;
+ else if(!A.list)body=`<div class="card">جارٍ التحميل…</div>`;
+ else{const L=A.list,cnt=k=>L.filter(s=>stageOf(s.grade)===k).length;const sg=(k,l)=>`<button type="button" class="${A.st===k?'on':''}" data-adst="${k}">${l}</button>`;
+  body=`<div class="stats"><div class="stat" style="--c:var(--home)"><b>${L.length}</b><span>طالب</span></div><div class="stat" style="--c:var(--en)"><b>${cnt('p')}</b><span>ابتدائي</span></div><div class="stat" style="--c:var(--th)"><b>${cnt('m')+cnt('s')}</b><span>متوسط وثانوي</span></div></div>
+  ${A.old?`<div class="card stack"><h3>بيانات النظام القديم</h3><p class="note" style="margin:0">${A.old>0?`يوجد ${A.old} طالب مسجّل عن طريق أولياء الأمور.`:'توجد بيانات عائلات قديمة.'} انقلهم للنظام الجديد مع تقدّمهم، ثم أرسل لكل واحد رابط الدخول.</p><button class="btn" data-act="adMigrate">نقل الطلاب للنظام الجديد</button></div>`:''}
+  ${A.edit==='new'?adForm(null):`<button class="btn wide" data-act="adAdd">+ إضافة طالب</button>`}
+  <label class="f" for="adq">بحث بالاسم<input type="text" id="adq" value="${esc(view.q||'')}" placeholder="ابحث…"></label>
+  <div class="seg">${sg('all','الكل')}${sg('p','ابتدائي')}${sg('m','متوسط')}${sg('s','ثانوي')}</div>
+  <div class="stack" id="adlist">${adFiltered().map(adRow).join('')||'<div class="card">لا يوجد طلاب.</div>'}</div>
+  <button class="btn plain wide" data-act="adReload">تحديث القائمة</button>`}
+ return startTop()+band('إدارة النظام','كل الطلاب في التطبيق: إضافة وتعديل وحذف وروابط الدخول.')+`<div class="sec">${body}<p class="note" style="margin:0">${esc((C.user&&C.user.email)||'')}</p><button class="btn plain wide" data-act="logoutOk">تسجيل الخروج</button></div>`}
+function adSync(){const n=$('#adn');if(A.form&&n)A.form.name=n.value}
+function bindAdmin(){const q=$('#adq');if(q)q.addEventListener('input',()=>{view.q=q.value;const l=$('#adlist');if(l)l.innerHTML=adFiltered().map(adRow).join('')||'<div class="card">لا يوجد طلاب.</div>'});
  const kf=$('#adkform');if(kf)kf.addEventListener('submit',e=>{e.preventDefault();adSync();const v=A.form,er=$('#aderr');
-  if(!v.name.trim()){er.textContent='اكتب الاسم.';er.hidden=false;return}if(!/^\d{4}$/.test(v.pin)){er.textContent='الرقم السري 4 أرقام.';er.hidden=false;return}
-  const id=A.edit==='new'?null:A.edit;const f=view.fid;v.name=v.name.trim();adBusy(()=>adminSaveKid(f,id,v),'تم الحفظ').then(()=>{A.edit=null;A.form=null;render()})})}
-function adSync(){const n=$('#adn'),p=$('#adp');if(A.form){if(n)A.form.name=n.value;if(p)A.form.pin=p.value.trim()}}
+  if(!v.name.trim()){er.textContent='اكتب الاسم.';er.hidden=false;return}if(!v.grade){er.textContent='اختر الصف.';er.hidden=false;return}
+  const id=A.edit==='new'?null:A.edit;v.name=v.name.trim();adBusy(()=>adminSave(id,v),id?'تم الحفظ':'أُضيف الطالب. أرسل له رابط الدخول.').then(()=>{A.edit=null;A.form=null;render()})})}
+function cloudAct(a){if(!CLOUD)return false;switch(a){
+ case 'pLogin':go('plogin');return true;
+ case 'toStart':go('start');return true;
+ case 'reset':{const em=($('#lem')||{}).value||'';if(!em){const el=$('#lerr');el.textContent='اكتب بريدك أولاً ثم اضغط «نسيت كلمة المرور».';el.hidden=false;return true}firebase.auth().sendPasswordResetEmail(em.trim()).then(()=>toast('أرسلنا رابط إعادة التعيين إلى بريدك.')).catch(er=>toast(authErr(er)));return true}
+ case 'logoutOk':logout();return true;
+ case 'loAsk':view.lo=true;render();return true;
+ case 'loNo':view.lo=false;render();return true;
+ case 'mkLink':{const p=cur();makeTransfer(p.id).then(l=>{view.tlink=l;render()}).catch(er=>toast(authErr(er)));return true}
+ case 'adReload':A.list=null;A.err=null;adminLoad();return true;
+ case 'adAdd':A.edit='new';A.del=null;A.form={name:'',gender:'m',grade:0,term:1};render();return true;
+ case 'adCancel':A.edit=null;A.form=null;A.del=null;render();return true;
+ case 'adMigrate':adBusy(()=>adminMigrate(),n=>'نُقل '+n+' طالب');return true;
+ case 'switch':go('who');return true;
+ }return false}
+function cloudClick(d){if(!CLOUD)return false;
+ if(d.regset){const n=$('#regn');if(n&&view.reg)view.reg.name=n.value;view.reg[d.regset]=d.regset==='gender'?d.v:+d.v;render();return true}
+ if(d.adst){A.st=d.adst;render();return true}
+ if(d.adedit){const s=A.list.find(x=>x.id===d.adedit);if(!s)return true;A.edit=s.id;A.del=null;A.form={name:s.name,gender:s.gender,grade:s.grade,term:s.term||1};render();return true}
+ if(d.adset){adSync();A.form[d.adset]=d.adset==='gender'?d.v:+d.v;render();return true}
+ if(d.addel){A.del=d.addel;A.edit=null;render();return true}
+ if(d.addelok){const id=d.addelok;adBusy(()=>adminDel(id),'حُذف الطالب').then(()=>{A.del=null;render()});return true}
+ if(d.adlink){const id=d.adlink;makeTransfer(id).then(l=>{A.links[id]=l;render()}).catch(er=>toast(authErr(er)));return true}
+ if(d.edit){const q=cur();go('form',{f:{name:q.name,gender:q.gender,grade:q.grade,term:q.term},editId:q.id,back:'who'});return true}
+ return false}
+function bindAuthForms(){
+ const lf=$('#lform');if(lf)lf.addEventListener('submit',e=>{e.preventDefault();const em=$('#lem').value.trim(),pw=$('#lpw').value;const b=$('#lbtn'),er=$('#lerr');b.disabled=true;er.hidden=true;
+  firebase.auth().signInWithEmailAndPassword(em,pw).catch(x=>{b.disabled=false;er.textContent=authErr(x);er.hidden=false})});
+ const rf=$('#regform');if(rf)rf.addEventListener('submit',e=>{e.preventDefault();const r=view.reg;r.name=$('#regn').value.trim();const er=$('#regerr');
+  if(!r.name){er.textContent='اكتب اسمك.';er.hidden=false;return}if(!r.grade){er.textContent='اختر صفّك.';er.hidden=false;return}
+  const b=$('#regbtn');b.disabled=true;b.textContent='جارٍ التسجيل…';register(r).catch(x=>{b.disabled=false;b.textContent='ابدأ التدريب';er.textContent=authErr(x);er.hidden=false})})}
 
 /* ============ المحادثة الصوتية ============ */
 // كل جملة: [كلام التطبيق, الترجمة, التلميح, الإجابة النموذجية, الكلمات المقبولة (| بين البدائل، + للجمع)]
@@ -995,7 +969,7 @@ function tkEval(alts){const t=tkTurn();let ok=false,best=alts[0];
 function tkNext(){TK.i++;if(TK.i>=TK.sc.turns.length){TK.done=true;const p=cur();p.talk=p.talk||{};const pct=Math.round(100*TK.first/TK.sc.turns.length);p.talk[TK.sc.id]=Math.max(p.talk[TK.sc.id]||0,pct);save();render();tkScroll();return}tkBot()}
 function tkShow(){const t=tkTurn();if(TK.attempts<2){TK.attempts=2;TK.log.push({w:'me',t:'…'});tkSys(`الإجابة المتوقعة:<div class="tkmodel" dir="ltr">${esc(t[3])}</div>${g('استمع إليها ثم كرّرها بصوتك.','استمعي إليها ثم كرّريها بصوتكِ.')}`,{say:t[3]});render();tkScroll();setTimeout(()=>speak(t[3]),400)}}
 const MICSVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3M9 21h6"/></svg>';
-function vTalkList(){const p=cur();const own=TALKS.filter(x=>x.g===p.grade),rest=TALKS.filter(x=>x.g!==p.grade);
+function vTalkList(){const p=cur();const srt=nearSort(TALKS,p.grade,x=>x.g);let own=srt.filter(x=>Math.abs(x.g-p.grade)<=1);if(own.length<2)own=srt.slice(0,3);const rest=srt.filter(x=>!own.includes(x));
  const tile=s=>{const b=(p.talk||{})[s.id];return `<button class="tile" data-talk="${s.id}"><span class="grow"><h3>${s.t}</h3><span class="meta"><span class="en" dir="ltr">${s.e}</span> · ${s.turns.length} جمل${b!=null?' · أفضل نتيجة '+b+'%':''}</span></span><span class="go">‹</span></button>`};
  return header()+band('المحادثة الصوتية',g('تحدّث بالإنجليزي، والتطبيق يسمعك ويصحّح لك.','تحدّثي بالإنجليزي، والتطبيق يسمعكِ ويصحّح لكِ.'))+`<div class="sec">
  ${SR?'':'<div class="warn">هذا المتصفح لا يدعم التعرّف على الصوت، لذلك ستكتب إجاباتك. للتحدث بصوتك استخدم Chrome أو Safari.</div>'}
@@ -1018,6 +992,162 @@ function vTalkRun(){if(!TK)return vTalkList();const s=TK.sc,n=s.turns.length;
  <div class="sec"><p class="prog">الجملة ${Math.min(TK.i+1,n)} من ${n}</p><div class="bar"><i style="width:${100*(TK.done?n:TK.i)/n}%"></i></div>
  <div class="chat">${log}</div>${ctl}</div>`}
 
+/* ============ محتوى الصفوف من الأول الابتدائي إلى الثالث الثانوي ============ */
+// الصفوف: 1-6 ابتدائي، 7-9 متوسط، 10-12 ثانوي
+(function(){
+ [1,2,3].forEach(k=>{if(VOC[k]&&!VOC[k+6]){VOC[k+6]=VOC[k];delete VOC[k]}});
+ Object.assign(VOC,{
+ 1:{1:["cat|قطة|I have a cat.","dog|كلب|The dog is big.","red|أحمر|The apple is red.","blue|أزرق|The sky is blue.","one|واحد|I have one pen.","two|اثنان|I see two birds.","pen|قلم|This is my pen.","bag|حقيبة|My bag is new."],
+    2:["mother|أم|I love my mother.","father|أب|My father is tall.","ball|كرة|Kick the ball.","book|كتاب|Open your book.","sun|شمس|The sun is hot.","fish|سمكة|The fish can swim.","green|أخضر|The tree is green.","yellow|أصفر|The banana is yellow."]},
+ 2:{1:["apple|تفاحة|I eat an apple.","milk|حليب|I drink milk.","bread|خبز|We have bread.","egg|بيضة|The egg is white.","house|منزل|This is my house.","door|باب|Open the door.","window|نافذة|Close the window.","chair|كرسي|Sit on the chair."],
+    2:["happy|سعيد|I am happy.","sad|حزين|The boy is sad.","big|كبير|The elephant is big.","small|صغير|The mouse is small.","run|يركض|I can run fast.","jump|يقفز|The frog can jump.","swim|يسبح|Fish swim in water.","sing|يغني|Birds sing in the morning."]},
+ 3:{1:["Monday|الاثنين|School starts on Monday.","morning|صباح|Good morning, teacher!","night|ليل|I sleep at night.","teacher|معلم|My teacher is kind.","friend|صديق|Ali is my friend.","garden|حديقة|We play in the garden.","water|ماء|Drink water every day.","rice|أرز|We eat rice for lunch."],
+    2:["lion|أسد|The lion is strong.","elephant|فيل|The elephant has big ears.","monkey|قرد|The monkey eats bananas.","bird|طائر|The bird can fly.","hot|حار|Riyadh is hot in summer.","cold|بارد|The water is cold.","rain|مطر|I like the rain.","wind|رياح|The wind is strong today."]},
+ 4:{1:["wake up|يستيقظ|I wake up at six.","brush|ينظف بالفرشاة|I brush my teeth.","breakfast|فطور|I have breakfast with my family.","lunch|غداء|We eat lunch at two.","dinner|عشاء|Dinner is ready.","homework|واجب|I do my homework.","clock|ساعة حائط|Look at the clock.","early|مبكراً|I go to bed early."],
+    2:["doctor|طبيب|The doctor helps sick people.","nurse|ممرضة|The nurse is kind.","farmer|مزارع|The farmer grows dates.","pilot|طيار|The pilot flies the plane.","police|شرطة|The police help us.","shop|متجر|I buy milk from the shop.","bank|بنك|My father goes to the bank.","mosque|مسجد|We pray in the mosque."]},
+ 5:{1:["weather|الطقس|The weather is nice today.","sunny|مشمس|It is sunny in Jeddah.","cloudy|غائم|It is cloudy today.","season|فصل من السنة|Winter is my favorite season.","summer|الصيف|Summer is very hot.","winter|الشتاء|We wear jackets in winter.","umbrella|مظلة|Take your umbrella.","jacket|سترة|Put on your jacket."],
+    2:["hobby|هواية|My hobby is drawing.","football|كرة القدم|I play football with my friends.","draw|يرسم|She can draw very well.","read|يقرأ|I read stories at night.","collect|يجمع|He collects stamps.","camping|التخييم|We go camping in the desert.","picnic|نزهة|We had a picnic in the park.","museum|متحف|We visited the museum."]},
+ 6:{1:["healthy|صحي|Vegetables are healthy.","vegetables|خضروات|Eat your vegetables.","exercise|يتمرن|I exercise every morning.","sleep|ينام|Sleep early.","dentist|طبيب أسنان|I visit the dentist.","medicine|دواء|Take the medicine.","fever|حمى|He has a fever.","headache|صداع|I have a headache."],
+    2:["city|مدينة|Riyadh is a big city.","village|قرية|My grandfather lives in a village.","bridge|جسر|The bridge is long.","hospital|مستشفى|The hospital is near my house.","airport|مطار|We went to the airport.","map|خريطة|Look at the map.","left|يسار|Turn left.","straight|مستقيم|Go straight."]},
+ 10:{1:["achieve|يحقق|You can achieve your goals.","responsibility|مسؤولية|It is my responsibility.","volunteer|يتطوع|She volunteers at the hospital.","community|مجتمع|We help our community.","confident|واثق|Be confident in the exam.","challenge|تحدٍّ|This is a big challenge.","improve|يحسّن|Practice to improve your English.","opportunity|فرصة|This is a great opportunity."],
+    2:["research|بحث|We did research on the topic.","evidence|دليل|There is no evidence.","solution|حل|We found a solution.","advantage|ميزة|Speed is an advantage.","disadvantage|عيب|Noise is a disadvantage.","efficient|فعّال|This car is efficient.","resource|مورد|Water is a precious resource.","sustainable|مستدام|We need sustainable energy."]},
+ 11:{1:["although|بالرغم من أن|Although it rained, we went out.","however|ومع ذلك|It is hard. However, I will try.","therefore|لذلك|He studied, therefore he passed.","significant|مهم / كبير|There was a significant change.","consequence|نتيجة / عاقبة|Every action has a consequence.","influence|يؤثر|Friends influence us.","contribute|يساهم|Everyone can contribute.","emphasize|يؤكد|The teacher emphasized the rule."],
+    2:["economy|اقتصاد|Tourism helps the economy.","innovation|ابتكار|Innovation drives progress.","artificial|اصطناعي|Artificial intelligence is growing.","globalization|العولمة|Globalization connects countries.","generation|جيل|The new generation uses phones.","heritage|تراث|We are proud of our heritage.","tradition|تقليد|It is an old tradition.","diverse|متنوع|Our class is diverse."]},
+ 12:{1:["university|جامعة|I want to study at university.","major|تخصص جامعي|My major is engineering.","scholarship|منحة دراسية|She won a scholarship.","interview|مقابلة|I have a job interview.","career|مسيرة مهنية|He has a great career.","qualification|مؤهل|You need a good qualification.","apply|يتقدّم بطلب|Apply before Friday.","deadline|موعد نهائي|The deadline is tomorrow."],
+    2:["analyze|يحلل|Analyze the data carefully.","conclude|يستنتج|We can conclude that it works.","perspective|وجهة نظر|Try to see my perspective.","argument|حجة|That is a strong argument.","persuade|يقنع|He persuaded his friends.","debate|مناظرة|We had a debate in class.","critical|ناقد / حرج|Critical thinking is important.","assumption|افتراض|That is a wrong assumption."]}
+ });
+ GR.forEach(x=>{if(x.g<=3)x.g+=6});
+ GR.push(
+ {g:2,q:"This is ___ cat.",c:["a","an","two","is"],a:0,ex:"نستخدم a قبل الكلمة التي تبدأ بحرف ساكن مثل cat."},
+ {g:2,q:"I ___ a boy.",c:["am","is","are","be"],a:0,ex:"مع I نستخدم am."},
+ {g:2,q:"She ___ a girl.",c:["is","am","are","be"],a:0,ex:"مع he و she نستخدم is."},
+ {g:2,q:"I have two ___.",c:["cats","cat","a cat","cates"],a:0,ex:"بعد العدد two يأتي الجمع: نضيف s."},
+ {g:3,q:"___ is my pen.",c:["This","These","Those","They"],a:0,ex:"This للمفرد القريب."},
+ {g:3,q:"We ___ students.",c:["are","is","am","be"],a:0,ex:"مع we نستخدم are."},
+ {g:4,q:"I can ___ fast.",c:["run","runs","running","ran"],a:0,ex:"بعد can يأتي الفعل في صورته المجردة."},
+ {g:4,q:"He ___ to school every day.",c:["goes","go","going","gone"],a:0,ex:"مع he في المضارع البسيط نضيف es أو s."},
+ {g:4,q:"There ___ three books.",c:["are","is","am","be"],a:0,ex:"There are مع الجمع."},
+ {g:5,q:"She is ___ a book now.",c:["reading","read","reads","to read"],a:0,ex:"now تدل على المضارع المستمر: is + ing."},
+ {g:5,q:"We ___ to the park yesterday.",c:["went","go","goes","going"],a:0,ex:"yesterday تدل على الماضي: went ماضي go."},
+ {g:5,q:"An elephant is ___ than a dog.",c:["bigger","big","biggest","more big"],a:0,ex:"المقارنة بين شيئين: big ← bigger."},
+ {g:6,q:"How ___ apples do you have?",c:["many","much","any","some"],a:0,ex:"many مع المعدود، much مع غير المعدود."},
+ {g:6,q:"I am going ___ visit my uncle.",c:["to","for","at","in"],a:0,ex:"be going to + الفعل للمستقبل المخطط."},
+ {g:6,q:"He ___ like coffee.",c:["doesn't","don't","isn't","not"],a:0,ex:"نفي المضارع البسيط مع he: doesn't + الفعل."},
+ {g:10,q:"If I ___ rich, I would travel the world.",c:["were","am","will be","be"],a:0,ex:"الشرط الثاني: If + ماضٍ (were) ثم would + الفعل."},
+ {g:10,q:"The letter ___ by Ahmed yesterday.",c:["was written","wrote","is writing","has write"],a:0,ex:"المبني للمجهول في الماضي: was / were + التصريف الثالث."},
+ {g:10,q:"She has been studying ___ two hours.",c:["for","since","ago","during"],a:0,ex:"المضارع التام المستمر مع مدة: for."},
+ {g:10,q:"I look forward to ___ you.",c:["seeing","see","saw","seen"],a:0,ex:"بعد look forward to يأتي الفعل بـ ing."},
+ {g:11,q:"If she had studied, she ___ passed.",c:["would have","will have","would","had"],a:0,ex:"الشرط الثالث: If + had + التصريف الثالث، ثم would have + التصريف الثالث."},
+ {g:11,q:"He said that he ___ tired.",c:["was","is","be","will"],a:0,ex:"في الكلام المنقول يتحوّل المضارع إلى ماضٍ: is ← was."},
+ {g:11,q:"This is the city ___ I was born.",c:["where","which","who","when"],a:0,ex:"where ضمير وصل للمكان."},
+ {g:11,q:"Not only ___ smart, but she is also kind.",c:["is she","she is","she","does she"],a:0,ex:"بعد Not only في أول الجملة نقدّم الفعل المساعد على الفاعل (قلب)."},
+ {g:12,q:"By next year, I ___ my degree.",c:["will have finished","will finish","finished","have finished"],a:0,ex:"المستقبل التام: will have + التصريف الثالث لحدث يكتمل قبل وقت في المستقبل."},
+ {g:12,q:"I wish I ___ harder last year.",c:["had studied","studied","study","would study"],a:0,ex:"wish عن الماضي: had + التصريف الثالث."},
+ {g:12,q:"The project, ___ was difficult, was a success.",c:["which","that","who","what"],a:0,ex:"في الجملة الوصفية غير المحددة (بين فاصلتين) نستخدم which لغير العاقل."},
+ {g:12,q:"Hardly ___ arrived when it started to rain.",c:["had we","we had","we have","did we"],a:0,ex:"بعد Hardly في أول الجملة نقلب: had + الفاعل."});
+ RD.forEach(r=>{if(r.g<=3)r.g+=6});
+ RD.push(
+ {g:2,t:"My Cat",p:"I have a cat. Her name is Mimi. She is white. She likes milk. She sleeps on my bed.",qs:[["What is the cat's name?",["Mimi","Lulu","Tom","Sara"],0],["What color is the cat?",["white","black","red","green"],0],["What does the cat like?",["milk","bread","rice","juice"],0]]},
+ {g:4,t:"My Day",p:"I wake up at six o'clock. I wash my face and brush my teeth. I eat breakfast with my family. I go to school by bus. After school, I play football with my brother.",qs:[["When does he wake up?",["at six o'clock","at eight o'clock","at noon","at night"],0],["How does he go to school?",["by bus","by car","on foot","by bike"],0],["Who does he play football with?",["his brother","his father","his teacher","his cat"],0]]},
+ {g:6,t:"The Desert",p:"The desert is a dry place with very little rain. In the day it is very hot, but at night it can be cold. Camels live in the desert because they can walk for days without water. Some plants in the desert store water in their leaves.",qs:[["What is the desert like?",["dry with little rain","wet and cold","full of rivers","green all year"],0],["Why can camels live in the desert?",["They can walk for days without water.","They like rain.","They can swim.","They eat fish."],0],["How do some desert plants survive?",["They store water in their leaves.","They move to rivers.","They sleep all day.","They grow at night only."],0]]},
+ {g:11,t:"Artificial Intelligence in Schools",p:"Artificial intelligence is changing the way students learn. Smart apps can now explain difficult lessons, correct mistakes and suggest exercises that match each student's level. However, experts warn that students should not depend on these tools completely. Critical thinking, they argue, develops only when learners struggle with problems on their own. The best approach, therefore, is to use technology as a helpful guide rather than a replacement for effort.",qs:[["What can smart apps do?",["Explain lessons and suggest suitable exercises","Replace all teachers","Take exams for students","Stop students from thinking"],0],["What do experts warn about?",["Depending on the tools completely","Using books","Studying in groups","Asking teachers questions"],0],["The word \"replacement\" means:",["something used instead of another","a kind of reward","a difficult exercise","a school subject"],0]]},
+ {g:12,t:"Choosing a University Major",p:"Choosing a university major is one of the most important decisions a student makes. Some students follow their passion, while others focus on job opportunities. Career advisors recommend balancing both: researching the job market, talking to professionals, and honestly assessing one's own strengths. A well-informed decision can lead to both personal satisfaction and long-term success.",qs:[["What do career advisors recommend?",["Balancing passion and job opportunities","Choosing the easiest major","Following friends","Deciding quickly"],0],["Which is NOT mentioned as advice?",["Copying a friend's choice","Researching the job market","Talking to professionals","Assessing your strengths"],0],["A \"well-informed\" decision is one that is:",["based on good information","made very fast","made by parents","difficult to change"],0]]});
+ SC.forEach(r=>{if(r[0]<=3)r[0]+=6});
+ SC.push(
+ [1,'bio','ماذا يحتاج النبات لكي ينمو؟',['الماء والضوء','الحلوى','الظلام فقط','الملح'],0,'النبات يحتاج الماء والهواء وضوء الشمس.'],
+ [1,'earth','متى نرى الشمس في السماء؟',['في النهار','في الليل','في الحلم','لا نراها أبداً'],0,'الشمس تضيء في النهار.'],
+ [2,'bio','بأي عضو نشمّ الروائح؟',['الأنف','الأذن','العين','اليد'],0,'الأنف هو عضو الشم.'],
+ [2,'phy','أي هذه الأشياء يجذبه المغناطيس؟',['مسمار حديد','قطعة خشب','ورقة','كوب زجاج'],0,'المغناطيس يجذب الحديد.'],
+ [3,'chem','الثلج هو ماء في الحالة:',['الصلبة','السائلة','الغازية','الذائبة'],0,'الثلج ماء متجمد، أي في الحالة الصلبة.'],
+ [3,'bio','أي الحيوانات التالية يعيش في الماء؟',['السمكة','الجمل','الأسد','الحصان'],0,'السمكة تعيش في الماء وتتنفس بالخياشيم.'],
+ [3,'earth','كم عدد فصول السنة؟',['أربعة','اثنان','ثلاثة','ستة'],0,'الربيع والصيف والخريف والشتاء.'],
+ [4,'bio','أي جزء من النبات يصنع الغذاء؟',['الورقة','الجذر','الزهرة','البذرة'],0,'الأوراق تصنع الغذاء بالبناء الضوئي.'],
+ [4,'phy','الصوت ينتج عن:',['اهتزاز الأجسام','سقوط الضوء','تجمد الماء','ذوبان الملح'],0,'الأجسام المهتزة تُصدر الأصوات.'],
+ [4,'chem','عندما نسخّن الماء كثيراً يتحوّل إلى:',['بخار','ثلج','رمل','حجر'],0,'التسخين يحوّل الماء السائل إلى بخار.'],
+ [5,'earth','الكوكب الذي نعيش عليه هو:',['الأرض','المريخ','القمر','الشمس'],0,'نعيش على كوكب الأرض.'],
+ [5,'bio','الحيوانات التي تأكل النباتات فقط تُسمّى:',['آكلات الأعشاب','آكلات اللحوم','آكلات الحشرات','المفترسات'],0,'مثل البقرة والغزال.'],
+ [5,'phy','الضوء ينتقل في:',['خطوط مستقيمة','دوائر','خطوط منحنية دائماً','لا ينتقل'],0,'لذلك تتكوّن الظلال عندما يعترض جسم طريق الضوء.'],
+ [6,'earth','دورة الماء في الطبيعة تبدأ بـ:',['التبخر','الأكل','الاحتراق','التجمد في الصيف'],0,'يتبخر الماء ثم يتكاثف سحباً ثم يهطل مطراً.'],
+ [6,'chem','خلط الملح بالماء يكوّن:',['محلولاً','عنصراً جديداً','غازاً','فلزاً'],0,'الملح يذوب في الماء فيتكوّن محلول.'],
+ [6,'bio','العضو الذي يضخ الدم في الجسم هو:',['القلب','المعدة','الرئة','الكلية'],0,'القلب مضخة تدفع الدم في الأوعية.'],
+ [6,'phy','الدائرة الكهربائية المغلقة:',['يمر فيها التيار فيضيء المصباح','لا يمر فيها التيار','تحتاج ماءً لتعمل','لا تحتوي على بطارية'],0,'إذا اكتملت الدائرة سرى التيار.'],
+ [10,'phy','سيارة تسارعها 2 م/ث² بدأت من السكون. سرعتها بعد 5 ثوانٍ:',['10 م/ث','2.5 م/ث','7 م/ث','25 م/ث'],0,'ع = ع₀ + ت × ز = 0 + 2 × 5 = 10 م/ث.'],
+ [10,'phy','طاقة الحركة لجسم كتلته 2 كجم وسرعته 3 م/ث:',['9 جول','6 جول','18 جول','3 جول'],0,'ط = ½ ك ع² = ½ × 2 × 9 = 9 جول.'],
+ [10,'chem','عدد مولات 36 جراماً من الماء (الكتلة المولية 18 جم/مول):',['2 مول','1 مول','18 مول','0.5 مول'],0,'عدد المولات = الكتلة ÷ الكتلة المولية = 36 ÷ 18 = 2.'],
+ [10,'chem','الرابطة بين الصوديوم والكلور في ملح الطعام رابطة:',['أيونية','تساهمية','فلزية','هيدروجينية'],0,'تتكوّن من انتقال إلكترون من فلز إلى لافلز.'],
+ [10,'bio','العضيّة المسؤولة عن إنتاج الطاقة في الخلية:',['الميتوكندريا','الريبوسوم','جهاز جولجي','الفجوة'],0,'الميتوكندريا تنتج ATP بالتنفس الخلوي.'],
+ [10,'earth','تُفسّر حركة القارات بنظرية:',['تكتونية الصفائح','الانفجار العظيم','التطور','الجاذبية'],0,'القشرة الأرضية مقسّمة إلى صفائح متحركة.'],
+ [11,'phy','موجة ترددها 50 هيرتز وطولها الموجي 2 م. سرعتها:',['100 م/ث','25 م/ث','52 م/ث','0.04 م/ث'],0,'السرعة = التردد × الطول الموجي = 50 × 2 = 100 م/ث.'],
+ [11,'phy','الشغل المبذول لرفع جسم وزنه 10 نيوتن مسافة 3 م:',['30 جول','13 جول','3.3 جول','7 جول'],0,'الشغل = القوة × المسافة = 10 × 3 = 30 جول.'],
+ [11,'chem','عند الانتقال من يسار الجدول الدوري إلى يمينه في الدورة نفسها، نصف القطر الذري:',['يقل','يزداد','لا يتغير','يتضاعف'],0,'لأن الشحنة النووية تزداد فتجذب الإلكترونات أكثر.'],
+ [11,'chem','المحلول الذي تركيز أيونات الهيدروجين فيه 10⁻³ مول/لتر قيمة pH له:',['3','11','7','-3'],0,'pH = −log[H⁺] = 3.'],
+ [11,'bio','عملية نسخ DNA إلى RNA تُسمّى:',['النسخ','الترجمة','التضاعف','الطفرة'],0,'النسخ يكوّن mRNA، والترجمة تكوّن البروتين.'],
+ [11,'bio','الإنزيمات عبارة عن:',['بروتينات تسرّع التفاعلات','سكريات تخزّن الطاقة','دهون تبني الأغشية','أملاح معدنية'],0,'الإنزيم عامل حفّاز حيوي.'],
+ [12,'phy','مقاومتان 4 أوم و 6 أوم موصولتان على التوالي. المقاومة المكافئة:',['10 أوم','2.4 أوم','24 أوم','2 أوم'],0,'على التوالي نجمع المقاومات: 4 + 6 = 10.'],
+ [12,'phy','وحدة قياس شدة المجال المغناطيسي:',['تسلا','نيوتن','فولت','جول'],0,'التسلا (T) هي وحدة المجال المغناطيسي.'],
+ [12,'chem','المركب CH₄ يُسمّى:',['الميثان','الإيثان','البروبان','الإيثانول'],0,'أبسط الألكانات، ذرة كربون وأربع ذرات هيدروجين.'],
+ [12,'chem','العامل الحفّاز في التفاعل:',['يزيد سرعة التفاعل دون أن يُستهلك','يُستهلك كاملاً','يبطئ التفاعل دائماً','يغيّر نواتج التفاعل'],0,'يقلل طاقة التنشيط.'],
+ [12,'bio','في الانقسام المنصّف ينتج من الخلية الواحدة:',['أربع خلايا أحادية المجموعة الكروموسومية','خليتان متطابقتان','خلية واحدة','ثماني خلايا'],0,'الانقسام المنصّف يكوّن الأمشاج.'],
+ [12,'bio','المعادلة: 6CO₂ + 6H₂O ← C₆H₁₂O₆ + 6O₂ تمثّل:',['البناء الضوئي','التنفس الخلوي','التخمر','الهضم'],0,'النبات يصنع الجلوكوز ويطلق الأكسجين.']);
+ TALKS.forEach(t=>{if(t.g<=3)t.g+=6});
+ TALKS.push(
+ {id:'p1',g:2,t:'مرحباً!',e:'Hello!',turns:[
+ ['Hello!','مرحباً!','ردّ التحية: Hello','Hello!','hello|hi|hey'],
+ ['What is your name?','ما اسمك؟','My name is ...','My name is Sara.','my name is|i am|name'],
+ ['How are you?','كيف حالك؟','I am fine, thank you','I am fine, thank you.','fine|good|ok|okay|great|well'],
+ ['What color do you like?','ما اللون الذي تحبه؟','اذكر لوناً: I like blue','I like blue.','blue|red|green|yellow|pink|black|white|orange|purple|like'],
+ ['Goodbye!','مع السلامة!','ودّعه: Goodbye','Goodbye!','bye']]},
+ {id:'p2',g:3,t:'في حديقة الحيوان',e:'At the zoo',turns:[
+ ['Look! What is this animal?','انظر! ما هذا الحيوان؟','It is a lion / an elephant','It is a lion.','lion|elephant|monkey|tiger|giraffe|zebra|bear|it is'],
+ ['What color is it?','ما لونه؟','It is yellow / grey / brown','It is yellow.','yellow|grey|gray|brown|black|white|orange|it is'],
+ ['Is it big or small?','هل هو كبير أم صغير؟','It is big / small','It is big.','big|small|large|little'],
+ ['What is your favorite animal?','ما حيوانك المفضل؟','My favorite animal is ...','My favorite animal is the cat.','favorite|favourite|i like|i love|cat|dog|lion|horse|camel|bird'],
+ ['That was fun!','كان ذلك ممتعاً!','وافقه: Yes, it was fun','Yes, it was fun!','yes|fun|thank']]},
+ {id:'p3',g:5,t:'يومي',e:'My day',turns:[
+ ['What time do you wake up?','متى تستيقظ؟','I wake up at ...','I wake up at six o\'clock.','wake up|o clock|at|six|seven|five'],
+ ['What do you eat for breakfast?','ماذا تأكل في الفطور؟','I eat ...','I eat eggs and bread.','i eat|i have|eggs|bread|cheese|milk|cereal'],
+ ['How do you go to school?','كيف تذهب إلى المدرسة؟','I go by bus / by car','I go to school by bus.','by bus|by car|walk|on foot|by'],
+ ['What do you do after school?','ماذا تفعل بعد المدرسة؟','I do my homework / I play ...','I do my homework and play.','homework|play|watch|read|eat|sleep|i'],
+ ['What time do you go to bed?','متى تنام؟','I go to bed at ...','I go to bed at nine o\'clock.','bed|sleep|o clock|at|nine|ten|eight']]},
+ {id:'s1',g:10,t:'العمل التطوعي',e:'Volunteering',turns:[
+ ['Have you ever volunteered?','هل سبق أن تطوعت؟','Yes, I have ... / No, I have not','Yes, I have volunteered at a charity.','yes|no|i have|never|volunteered'],
+ ['What kind of volunteering would you like to do?','أي نوع من التطوع تحب أن تقوم به؟','I would like to help ...','I would like to help elderly people.','would like|help|teach|clean|plant|i want'],
+ ['Why is volunteering important?','لماذا التطوع مهم؟','Because it helps ...','Because it helps people and builds the community.','because|helps|community|people|important'],
+ ['How many hours could you give every week?','كم ساعة يمكنك أن تعطي أسبوعياً؟','About ... hours a week','About three hours a week.','hour|about|week'],
+ ['Thank you for your time!','شكراً لوقتك!','ردّ بلطف: You are welcome','You are welcome.','welcome|thank|pleasure']]},
+ {id:'s2',g:11,t:'إبداء الرأي',e:'Giving opinions',turns:[
+ ['Do you think homework is useful?','هل تعتقد أن الواجبات مفيدة؟','In my opinion, ... / I think ...','In my opinion, homework is useful.','i think|in my opinion|i believe|yes|no|useful'],
+ ['Why do you think so?','لماذا ترى ذلك؟','Because ...','Because it helps us review the lessons.','because|helps|practice|review'],
+ ['What about students who have no time?','وماذا عن الطلاب الذين لا يملكون وقتاً؟','However, ... / They should ...','However, teachers should give less homework.','however|should|but|less|time'],
+ ['Do you agree that phones should be banned at school?','هل توافق على منع الجوالات في المدرسة؟','I agree / I disagree because ...','I agree because phones distract students.','i agree|i disagree|agree|disagree|because'],
+ ['Interesting point of view!','وجهة نظر مثيرة للاهتمام!','اشكره: Thank you','Thank you.','thank']]},
+ {id:'s3',g:12,t:'مقابلة القبول الجامعي',e:'University interview',turns:[
+ ['Good morning. Please introduce yourself.','صباح الخير. عرّف بنفسك من فضلك.','My name is ... and I am a student at ...','My name is Omar and I am a high school student.','my name is|i am'],
+ ['Why do you want to study at this university?','لماذا تريد الدراسة في هذه الجامعة؟','Because it has ...','Because it has an excellent engineering program.','because|excellent|good|program|reputation'],
+ ['What major would you like to study?','أي تخصص تريد أن تدرس؟','I would like to study ...','I would like to study computer science.','would like to study|study|major|engineering|medicine|computer|science'],
+ ['What are your strengths?','ما نقاط قوتك؟','I am hardworking / organized ...','I am hardworking and organized.','i am|hardworking|organized|organised|creative|good at|strength'],
+ ['Thank you. We will contact you soon.','شكراً. سنتواصل معك قريباً.','اشكره: Thank you for your time','Thank you for your time.','thank']]});
+})();
+// أدوات اختيار المحتوى حسب الصف
+const nearSort=(arr,G,f)=>arr.slice().sort((a,b)=>{const da=Math.abs(f(a)-G)+(f(a)>G?.5:0),db=Math.abs(f(b)-G)+(f(b)>G?.5:0);return da-db});
+function nearKey(obj,G){const ks=Object.keys(obj).map(Number);return ks.sort((a,b)=>Math.abs(a-G)-Math.abs(b-G)||a-b)[0]}
+const baseL=G=>G<=7?1:G===8?2:G<=10?3:4;
+const vt=G=>G<=7?1:G===8?2:3;
+function qcats(G){const all=Object.keys(QCAT).filter(k=>k!=='basic');if(G<=3)return['basic','seq'];if(G<=6)return['basic','arith','geo','seq','stat'];return all}
+function genBasic(G){const v=G<=1?pk(['add','sub','wadd']):G<=2?pk(['add','sub','wadd','wsub']):G<=3?pk(['add','sub','mul','wmul']):G<=4?pk(['mul','div','add','wmul']):G<=5?pk(['mul','div','frac','add']):pk(['frac','pct','dec','mul']);let q,a,w,st;
+ const M=G<=1?10:G<=2?50:G<=3?100:1000;
+ if(v==='add'){const x=ri(1,M),y=ri(1,M);a=x+y;q=`ما ناتج ${m(`${x} + ${y}`)}؟`;w=[a+1,a-1,a+10];st=[m(`${x} + ${y} = ${a}`)]}
+ else if(v==='sub'){const x=ri(2,M),y=ri(1,x);a=x-y;q=`ما ناتج ${m(`${x} − ${y}`)}؟`;w=[a+1,x+y,a+2];st=[m(`${x} − ${y} = ${a}`)]}
+ else if(v==='wadd'){const x=ri(1,G<=1?5:12),y=ri(1,G<=1?5:12);a=x+y;q=`مع سارة ${m(x)} تفاحات، وأعطتها أمها ${m(y)} تفاحات. كم تفاحة معها الآن؟`;w=[a+1,a-1,Math.abs(x-y)];st=['نجمع العددين',m(`${x} + ${y} = ${a}`)]}
+ else if(v==='wsub'){const x=ri(5,20),y=ri(1,x-1);a=x-y;q=`مع علي ${m(x)} قلماً، وأعطى صديقه ${m(y)}. كم قلماً بقي معه؟`;w=[x+y,a+1,a-1];st=['نطرح ما أعطاه',m(`${x} − ${y} = ${a}`)]}
+ else if(v==='mul'){const x=ri(2,G<=3?5:G<=4?10:12),y=ri(2,G<=3?10:G<=5?12:25);a=x*y;q=`ما ناتج ${m(`${x} × ${y}`)}؟`;w=[a+x,a-y,x+y];st=[m(`${x} × ${y} = ${a}`)]}
+ else if(v==='wmul'){const x=ri(2,6),y=ri(2,G<=3?5:9);a=x*y;q=`في كل علبة ${m(y)} أقلام. كم قلماً في ${m(x)} علب؟`;w=[x+y,a+y,a-x];st=['نضرب عدد العلب في عدد الأقلام',m(`${x} × ${y} = ${a}`)]}
+ else if(v==='div'){const y=ri(2,G<=4?10:12),a0=ri(2,G<=4?10:12);a=a0;q=`ما ناتج ${m(`${a0*y} ÷ ${y}`)}؟`;w=[a+1,a-1,y];st=[m(`${y} × ${a0} = ${a0*y}`),`إذن ${m(`${a0*y} ÷ ${y} = ${a0}`)}`]}
+ else if(v==='frac'){const b=pk([2,4,5,10]),n=b*ri(2,10);a=n/b;q=`كم يساوي ${m('1/'+b)} من ${m(n)}؟`;w=[n*b>200?a+2:n*b,a+1,n-a];st=[`نقسم على ${m(b)}: ${m(`${n} ÷ ${b} = ${a}`)}`]}
+ else if(v==='pct'){const p=pk([10,25,50]),n=ri(2,20)*20;a=p*n/100;q=`كم يساوي ${m(p+'%')} من ${m(n)}؟`;w=[a*2,a+10,n-a];st=[m(`${n} × ${p} ÷ 100 = ${a}`)]}
+ else{const x=ri(1,9)+pk([0.5,0.25,0.75]),y=ri(1,9)+pk([0.5,0.25]);a=+(x+y).toFixed(2);q=`ما ناتج ${m(`${x} + ${y}`)}؟`;w=[+(a+1).toFixed(2),+(a-0.5).toFixed(2),Math.floor(a)];st=['نرتّب الفواصل العشرية تحت بعضها ثم نجمع',m(`${x} + ${y} = ${a}`)]}
+ return{q,a,w,st}}
+
 /* ============ الحالة والتنقل ============ */
 let view={name:'who'};
 function go(name,extra){view=Object.assign({name},extra||{});render();window.scrollTo(0,0)}
@@ -1036,19 +1166,20 @@ function weekDays(p){let n=0;for(let i=0;i<7;i++)if(p.days[daysAgo(i)])n++;retur
 /* ============ خطة اليوم ============ */
 const PLAN=[{k:'enDay',c:'en',i:'E',t:'الإنجليزي',m:'5 كلمات جديدة، ثم 10 أسئلة عليها وعلى القواعد والقراءة'},{k:'qTrain',c:'qd',i:'ق',t:'القدرات',m:'12 سؤالاً كمي ولفظي'},{k:'tTrain',c:'th',i:'ت',t:'التحصيلي',m:'10 أسئلة رياضيات وعلوم'}];
 function planOf(p){p.plan=p.plan||{};return p.plan[dkey()]||(p.plan[dkey()]={})}
-function enDayItems(p,ws){const out=ws.map((w,j)=>vocabItem(w,p,j%2)).concat(grammarItems(p,2));const extra=weightedWords(p,8).filter(w=>!ws.includes(w))[0];if(extra)out.push(canSpeak?listenItem(extra,p):vocabItem(extra,p,0));const r=pk(RD.filter(x=>x.g<=p.grade));return out.concat(readItems(r,2)).slice(0,10)}
+function enDayItems(p,ws){const out=ws.map((w,j)=>vocabItem(w,p,j%2)).concat(grammarItems(p,2));const extra=weightedWords(p,8).filter(w=>!ws.includes(w))[0];if(extra)out.push(canSpeak?listenItem(extra,p):vocabItem(extra,p,0));const r=pk(nearSort(RD,p.grade,x=>x.g).slice(0,3));return out.concat(readItems(r,2)).slice(0,10)}
 function planStep(p){const pl=planOf(p);return PLAN.findIndex(x=>!pl[x.k])}
 /* ============ الشاشات ============ */
 const T=(t,mt,act,pri)=>`<button class="tile${pri?' pri':''}" data-act="${act}"><span class="grow"><h3>${t}</h3><span class="meta">${mt}</span></span><span class="go" aria-hidden="true">‹</span></button>`;
 function wpick(keys,st){const w=keys.map(k=>{const x=st[k];return(!x||x.t<3)?1:.3+(1-x.c/x.t)});let r=Math.random()*w.reduce((a,b)=>a+b,0);for(let i=0;i<keys.length;i++){if((r-=w[i])<=0)return keys[i]}return keys[keys.length-1]}
 function uniq(fn,n){const out=[],seen=new Set();let t=0;while(out.length<n&&t<n*8){t++;const it=fn();if(!it)break;const k=it.q+'|'+it.c.join('|');if(seen.has(k))continue;seen.add(k);out.push(it)}return out}
-function grammarItems(p,n){const own=shuf(GR.filter(x=>x.g===p.grade)),low=shuf(GR.filter(x=>x.g<p.grade));const pool=own.slice(0,Math.ceil(n*.7)).concat(low).concat(own.slice(Math.ceil(n*.7))).slice(0,n);
+function grammarItems(p,n){const srt=nearSort(GR,p.grade,x=>x.g);const top=srt.slice(0,Math.max(10,n+4));const pool=shuf(top).slice(0,n);
  return shuf(pool).map(x=>{const ch=shuf(x.c.map((t,j)=>({t,j})));return{cat:'grammar',sec:'en',q:'اختر الإجابة الصحيحة:',ltr:x.q,c:ch.map(o=>esc(o.t)),chLtr:true,a:ch.findIndex(o=>o.j===x.a),ex:[x.ex]}})}
 function readItems(r,n){return r.qs.slice(0,n||r.qs.length).map(([q,c,a,ar])=>{const ch=shuf(c.map((x,j)=>({x,j})));return{cat:'reading',sec:'en',q:`<span class="en" dir="ltr" style="display:block;text-align:left">${esc(q)}</span>`,c:ch.map(o=>esc(o.x)),chLtr:!ar,a:ch.findIndex(o=>o.j===a),ex:['ارجع إلى القطعة وابحث عن الجملة التي تحمل الإجابة.'],passage:r}})}
 function enTrainItems(p){const ws=weightedWords(p,5);const out=ws.slice(0,3).map((w,j)=>vocabItem(w,p,j%2)).concat(grammarItems(p,3));
  out.push(...(canSpeak?ws.slice(3,5).map(w=>listenItem(w,p)):ws.slice(3,5).map((w,j)=>vocabItem(w,p,j%2))));
- const r=pk(RD.filter(x=>x.g<=p.grade));return shuf(out).concat(readItems(r,2))}
-function qTrainItems(p){const out=[];for(let i=0;i<6;i++){const c=wpick(Object.keys(QCAT),p.stats.qd);out.push(genQ(c,level(p,c)))}
+ const r=pk(nearSort(RD,p.grade,x=>x.g).slice(0,3));return shuf(out).concat(readItems(r,2))}
+function qTrainItems(p){const out=[];const cs=qcats(p.grade);for(let i=0;i<(p.grade<=3?9:6);i++){const c=wpick(cs,p.stats.qd);out.push(genQ(c,level(p,c)))}
+ if(p.grade<=3)return shuf(out).concat(uniq(()=>verbalItems(p,wpick(['anal','odd'],p.stats.qd),1)[0],3));
  out.push(...uniq(()=>verbalItems(p,wpick(['anal','comp','err','odd'],p.stats.qd),1)[0],3));return shuf(out).concat(verbalItems(p,'rc'))}
 function tTrainItems(p){const out=[];for(let i=0;i<3;i++)out.push(genTM(p.grade));out.push(...uniq(()=>sciItems(p,[wpick(['phy','chem','bio','earth'],p.stats.th)],1)[0],7));return shuf(out)}
 function weakOf(p,keys,sec){let w=null;keys.forEach(k=>{const x=p.stats[sec][k];if(x&&x.t>=3){const a=x.c/x.t;if(!w||a<w[1])w=[k,a]}});return w}
@@ -1078,7 +1209,7 @@ function vQd(){const p=cur();const tab=(lastQtab==='t'||lastQtab==='thl')?'t':'q
  const wk=tab==='q'?weakOf(p,[...Object.keys(QCAT),...Object.keys(VCAT)],'qd'):weakOf(p,Object.keys(TCAT),'th');
  const body=tab==='q'?T('تدريب إضافي','12 سؤالاً كمي ولفظي مع شرح الحل، ويركّز على نقاط ضعفك','qTrain',true)+T('اختبار قدرات محاكي','مثل قياس: 4 أقسام لفظي وكمي بالتناوب · 12 دقيقة لكل قسم','exam')
   :T('تدريب إضافي','10 أسئلة رياضيات وفيزياء وكيمياء وأحياء من منهجك مع الشرح','tTrain',true)+T('اختبار تحصيلي محاكي','مثل قياس: 5 أقسام بالتساوي بين المواد الأربع · 5 دقائق لكل قسم','thExam');
- return header()+band('القدرات والتحصيلي','تدريب إضافي واختبارات محاكية لقياس، بمستوى المرحلة المتوسطة.')+`
+ return header()+band('القدرات والتحصيلي','تدريب واختبارات محاكية لقياس، بأسئلة تناسب '+GRADES[p.grade]+'.')+`
  <div class="seg" style="margin-top:14px"><button type="button" class="${tab==='q'?'on':''}" data-qtab="q">القدرات</button><button type="button" class="${tab==='t'?'on':''}" data-qtab="t">التحصيلي</button></div>
  <div class="sec">${body}${p.mist.length?T('دفتر الأخطاء',p.mist.length+' أسئلة لإعادة حلّها','mist'):''}
  ${wk?`<p class="note" style="margin:0">يحتاج تركيزاً: <b>${catName(wk[0])}</b> (${Math.round(wk[1]*100)}%). التدريب يعطيه أسئلة أكثر تلقائياً.</p>`:''}</div>`}
@@ -1090,7 +1221,7 @@ function vFlash(){const p=cur();const ws=view.words;const i=view.i;const w=ws[i]
  <div class="row">${i>0?`<button class="btn plain" data-act="fprev">السابقة</button>`:''}<button class="btn grow" data-act="fnext">${i<ws.length-1?'التالية':'ابدأ الأسئلة'}</button></div></div>`}
 
 function vReadList(){const p=cur();return header()+`<div class="qhead"><h2>القراءة والفهم</h2><button class="x" data-go="en">رجوع</button></div>
- <div class="sec">${RD.map((r,k)=>[r,k]).filter(([r])=>r.g<=p.grade).map(([r,k])=>`<button class="tile" data-read="${k}"><span class="ic">${ICON.book}</span><span class="grow"><h3 class="en" dir="ltr" style="text-align:right">${esc(r.t)}</h3><span class="meta">${r.qs.length} أسئلة · مستوى ${GRADES[r.g]}</span></span></button>`).join('')}</div>`}
+ <div class="sec">${RD.map((r,k)=>[r,k]).filter(([r])=>Math.abs(r.g-p.grade)<=2).map(([r,k])=>`<button class="tile" data-read="${k}"><span class="ic">${ICON.book}</span><span class="grow"><h3 class="en" dir="ltr" style="text-align:right">${esc(r.t)}</h3><span class="meta">${r.qs.length} أسئلة · مستوى ${GRADES[r.g]}</span></span></button>`).join('')}</div>`}
 
 function vHard(){const p=cur();const ws=gradeWords(p).filter(x=>p.hard[x.w]);
  return header()+`<div class="qhead"><h2>دفتر الكلمات الصعبة</h2><button class="x" data-go="en">رجوع</button></div>
@@ -1132,12 +1263,10 @@ function vComp(){const p=cur();const sc=scoreAll(p);const t=tierOf(sc.total);con
  return header()+band('المنافسة','رصيد يزيد مع كل تدريب.')+`
  <div class="sec"><div class="hero"><div class="row between"><div><p class="sub" style="margin:0">رصيدك${tg?` · اليوم +${tg}`:''}</p><div style="font-family:var(--fd);font-size:46px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums">${sc.total}</div></div><span class="chip" style="background:var(--onacc);color:var(--acc);font-size:14px;padding:4px 14px">${t.name}</span></div>
  ${t.next?`<div class="bar" style="background:color-mix(in srgb,var(--onacc) 25%,transparent)"><i style="background:var(--onacc);width:${t.pct}%"></i></div><p class="sub" style="margin:0">باقٍ ${t.next-sc.total} نقطة للوصول إلى ${t.nextName}</p>`:`<p class="sub" style="margin:0">وصلت إلى أعلى لقب.</p>`}</div>
- <div class="card"><h3>الترتيب</h3><div class="seg" style="margin-top:10px">${sg('bs','all','الجميع',bs)}${sg('bs','g','مجموعتي',bs)}</div><div id="board" style="margin-top:10px"></div></div>
+ <div class="card"><h3>الترتيب</h3><div class="seg" style="margin-top:10px">${sg('bs','all','الجميع',bs)}${sg('bs','st','المرحلة '+STAGES[stageOf(p.grade)],bs)}${sg('bs','gr','صفّي',bs)}</div><div id="board" style="margin-top:10px"></div></div>
  <details class="card"><summary>اسمك في الترتيب</summary><form class="stack" id="oform" style="margin-top:12px">
  <label class="f" for="onick">الاسم الظاهر للآخرين<input type="text" id="onick" maxlength="20" value="${esc(p.nick||'')}" placeholder="مثال: بطل الأرقام"></label>
  <span class="note">يُفضَّل اسم مستعار أو الاسم الأول فقط. لا يظهر للآخرين إلا هذا الاسم والصف والنقاط.</span>
- <label class="f" for="ogrp">رمز المجموعة (اختياري)<input type="text" id="ogrp" maxlength="20" value="${esc(p.group||'')}" placeholder="مثال: ALQAHTANI" dir="ltr" style="text-align:right"></label>
- <span class="note">اتفقوا على رمز واحد بين الأقارب أو الزملاء لتظهر لكم قائمة خاصة بكم.</span>
  <div class="seg">${sg('on','1','أشارك في الترتيب',p.online?'1':'0')}${sg('on','0','لا أشارك',p.online?'1':'0')}</div>
  <p class="note" id="osaved" hidden style="color:var(--ok);margin:0">تم الحفظ.</p>
  <button class="btn" type="submit">حفظ</button></form></details>
@@ -1146,10 +1275,10 @@ function vComp(){const p=cur();const sc=scoreAll(p);const t=tierOf(sc.total);con
  <li>إكمال الإنجليزي والقدرات والتحصيلي في يوم واحد 30، كلمات اليوم 15، اختبار محاكي 20، تصحيح سؤال من دفتر الأخطاء 5، إتقان كلمة صعبة 3.</li>
  <li>تمرين السرعة: نقطة لكل إجابة صحيحة، بحد أقصى 30 في اليوم.</li><li>مكافأة 50 نقطة عن كل أسبوع تتحسّن فيه الدقة 5% أو أكثر عن الأسبوع الذي قبله.</li>
  <li>المجموع يُضرب في معامل الدقة العام: من 0.7 عند دقة 0% إلى 1.3 عند دقة 100%.</li><li>الرصيد تراكمي ويُحدَّث في الترتيب خلال ثوانٍ من كل إجابة.</li><li>لا سقف للنقاط: كلما تدرّبت أكثر ارتفع رصيدك.</li>
- <li>الإجابة في أقل من ثانيتين لا تُحسب، حتى لا يُضغط عشوائياً.</li>
+ <li>الإجابة في أقل من ثانيتين لا تُحسب، حتى لا يُضغط عشوائياً.</li><li>الأسئلة تتكيّف مع صف كل طالب ومستواه، فالدقة تُقاس على أسئلة مناسبة له، ويمكن عرض الترتيب حسب المرحلة أو الصف.</li>
  <li>الألقاب: برونزي 300، فضي 1000، ذهبي 3000، ماسي 7000، أسطوري 15000 نقطة.</li></ul></details></div>`}
 
-function vParent(){if(CLOUD&&C.mode==='student'){view.name='home';return vHome()}const rows=S.profiles.map(p=>{const en=sumSt(p.stats.en),qd=sumSt(p.stats.qd),th=sumSt(p.stats.th);
+function progressCard(p,self){const en=sumSt(p.stats.en),qd=sumSt(p.stats.qd),th=sumSt(p.stats.th);
  let weak=null;[...Object.entries(p.stats.qd).filter(([k])=>k!=='speed').map(([k,v])=>[catName(k),v]),...Object.entries(p.stats.th||{}).map(([k,v])=>[catName(k),v]),...Object.entries(p.stats.en).map(([k,v])=>[ECAT[k],v])].forEach(([n,v])=>{if(n&&v.t>=3){const a=v.c/v.t;if(!weak||a<weak[1])weak=[n,a]}});
  const wk=[6,5,4,3,2,1,0].map(i=>{const k=daysAgo(i);return{m:Math.round((p.daySecs[k]||0)/60),d:new Date(Date.now()-i*864e5).toLocaleDateString('ar-SA',{weekday:'narrow'})}});const mx=Math.max(5,...wk.map(x=>x.m));
  const confirm=view.del===p.id;
@@ -1160,21 +1289,22 @@ function vParent(){if(CLOUD&&C.mode==='student'){view.name='home';return vHome()
  <div class="catrow"><span>التحصيلي</span><div class="bar"><i style="width:${acc(th)||0}%"></i></div><span class="v">${acc(th)??'—'}${acc(th)!=null?'%':''}</span></div>
  <p class="note" style="margin:0">${en.t+qd.t+th.t} سؤالاً محلولاً${weak?` · يحتاج تركيزاً على: <b style="color:var(--bad)">${weak[0]}</b> (${Math.round(weak[1]*100)}%)`:''}${p.exams?` · ${p.exams} اختبار محاكي`:''}</p>
  <div><p class="note" style="margin:0 0 6px">دقائق التدريب آخر 7 أيام</p><div class="week">${wk.map(x=>`<div><i style="height:${Math.max(2,60*x.m/mx)}px" title="${x.m} دقيقة"></i><span>${x.d}</span></div>`).join('')}</div></div>
- ${confirm?`<div class="warn stack">حذف ملف ${esc(p.name)} يمسح كل تقدّمه ولا يمكن التراجع.<div class="row"><button class="btn danger" data-delok="${p.id}">نعم، احذف</button><button class="btn plain" data-act="delno">إلغاء</button></div></div>`:`<button class="x" style="align-self:flex-start;color:var(--bad)" data-del="${p.id}">حذف الملف</button>`}</div>`}).join('');
+ ${self?'':(confirm?`<div class="warn stack">حذف ملف ${esc(p.name)} يمسح كل تقدّمه ولا يمكن التراجع.<div class="row"><button class="btn danger" data-delok="${p.id}">نعم، احذف</button><button class="btn plain" data-act="delno">إلغاء</button></div></div>`:`<button class="x" style="align-self:flex-start;color:var(--bad)" data-del="${p.id}">حذف الملف</button>`)}</div>`}
+function vParent(){if(CLOUD&&C.mode==='student'){view.name='home';return vHome()}const rows=S.profiles.map(p=>progressCard(p,false)).join('');
  return header()+`${cur()?'':`<div class="row" style="justify-content:flex-end;margin-bottom:10px"><button class="x" data-go="who">رجوع</button></div>`}`+band('لوحة ولي الأمر','متابعة تقدّم كل مستخدم وتعديل الاسم والصف والفصل في أي وقت.')+`
  <div class="sec">${rows||'<div class="card">لا توجد ملفات بعد.</div>'}<button class="btn ghost wide" data-act="add">إضافة مستخدم جديد</button>
- ${CLOUD?vFamCard():'<p class="note">يُحفظ التقدّم على هذا الجهاز وهذا المتصفح. إذا استخدم كل شخص جهازاً مختلفاً فسيظهر تقدّمه على جهازه فقط.</p>'}</div>`}
+ ${CLOUD?'':'<p class="note">يُحفظ التقدّم على هذا الجهاز وهذا المتصفح. إذا استخدم كل شخص جهازاً مختلفاً فسيظهر تقدّمه على جهازه فقط.</p>'}</div>`}
 
 function segH(key,opts,val,extra){return `<div class="seg" role="radiogroup">${opts.map(([v,l])=>`<button type="button" class="${val===v?'on':''}" data-rset="${key}" data-v="${v}" ${extra} role="radio" aria-checked="${val===v}">${l}</button>`).join('')}</div>`}
 function vSetup(){const rows=view.rows;
  return `<div class="top"><div class="brand">مِران</div></div><h1>${S.profiles.length?'إضافة مستخدمين':'مرحباً بك في مِران'}</h1>
- <p class="sub">تدريب في الإنجليزي والقدرات والتحصيلي لطلاب المرحلة المتوسطة. سجّل الأسماء بالعدد الذي تريد، ولكل اسم ملف وتقدّم مستقل.</p>
+ <p class="sub">تدريب في الإنجليزي والقدرات والتحصيلي من الأول الابتدائي إلى الثالث الثانوي. سجّل الأسماء بالعدد الذي تريد.</p>
  <form class="sec" id="sform">${rows.map((r,i)=>`<div class="card stack"><div class="row between"><h3>${r.name.trim()?esc(r.name.trim()):'المستخدم '+(i+1)}</h3>${rows.length>1?`<button type="button" class="x" data-rdel="${i}" style="color:var(--bad)">حذف</button>`:''}</div>
   <label class="f" for="rn-${i}">الاسم<input type="text" id="rn-${i}" class="rname" data-i="${i}" value="${esc(r.name)}" maxlength="20" placeholder="اكتب الاسم"></label>
   <div class="f stack"><b style="font-size:14px">الجنس</b>${segH('gender',[['m','ذكر'],['f','أنثى']],r.gender,`data-i="${i}"`)}</div>
-  <div class="f stack"><b style="font-size:14px">الصف</b>${segH('grade',[[1,'أول متوسط'],[2,'ثاني متوسط'],[3,'ثالث متوسط']],r.grade,`data-i="${i}"`)}</div>
+  <div class="f stack"><b style="font-size:14px">الصف</b>${gradeSeg('data-rset',r.grade,`data-i="${i}"`)}<span class="note">${GRADES[r.grade]||''}</span></div>
   <div class="f stack"><b style="font-size:14px">الفصل الدراسي</b>${segH('term',[[1,'الأول'],[2,'الثاني']],r.term,`data-i="${i}"`)}</div>
-  ${CLOUD?`<label class="f" for="rp-${i}">رقم سري (اختياري، يُنشأ تلقائياً)<input type="tel" inputmode="numeric" maxlength="4" placeholder="تلقائي" id="rp-${i}" class="rpin" data-i="${i}" value="${esc(r.pin||'')}" dir="ltr" style="text-align:center;letter-spacing:.4em"></label>`:''}</div>`).join('')}
+  ${false?`<label class="f" for="rp-${i}">رقم سري (اختياري، يُنشأ تلقائياً)<input type="tel" inputmode="numeric" maxlength="4" placeholder="تلقائي" id="rp-${i}" class="rpin" data-i="${i}" value="${esc(r.pin||'')}" dir="ltr" style="text-align:center;letter-spacing:.4em"></label>`:''}</div>`).join('')}
  <button type="button" class="btn ghost wide" data-act="addRow">إضافة اسم آخر</button>
  <p class="warn" id="serr" hidden>اكتب الاسم في كل خانة، أو احذف الخانة الفارغة.</p>
  <button class="btn wide" type="submit">حفظ والبدء</button>
@@ -1184,50 +1314,38 @@ function vForm(){const f=view.f;const seg=(key,opts)=>`<div class="seg" role="ra
  return header()+`<div class="qhead"><h1>${view.editId?'تعديل الملف':'ملف جديد'}</h1><button class="x" data-act="formBack">رجوع</button></div>
  <form class="sec" id="pform"><label class="f" for="pname">الاسم<input type="text" id="pname" value="${esc(f.name)}" maxlength="20" placeholder="مثال: عبدالله" required></label>
  <div class="f stack"><b style="font-size:14px">الجنس</b>${seg('gender',[['m','ذكر'],['f','أنثى']])}<span class="note">يغيّر صيغة الخطاب والألوان داخل التطبيق.</span></div>
- <div class="f stack"><b style="font-size:14px">الصف</b>${seg('grade',[[1,'أول متوسط'],[2,'ثاني متوسط'],[3,'ثالث متوسط']])}</div>
+ <div class="f stack"><b style="font-size:14px">الصف</b>${gradeSeg('data-set',f.grade)}<span class="note">${GRADES[f.grade]||''}</span></div>
  <div class="f stack"><b style="font-size:14px">الفصل الدراسي</b>${seg('term',[[1,'الأول'],[2,'الثاني']])}<span class="note">تظهر مفردات الإنجليزي الخاصة بهذا الفصل وما قبله.</span></div>
- ${CLOUD?`<label class="f" for="fpin">الرقم السري (4 أرقام)<input type="tel" inputmode="numeric" maxlength="4" id="fpin" value="${esc(view.pin||'')}" dir="ltr" style="text-align:center;letter-spacing:.4em"></label>`:''}
  <p class="warn" id="ferr" hidden>اكتب الاسم أولاً.</p>
  <button class="btn wide" type="submit">حفظ</button></form>`}
 
 function secOf(){const n=view.name;if(['en','flash','hard','readList','talkList','talkRun'].includes(n))return 'en';if(n==='qd'||n==='mist')return(lastQtab==='t'||lastQtab==='thl')?'th':'qd';if((n==='quiz'||n==='result')&&view.q&&view.q.items[0])return view.q.items[0].sec;if(n==='comp')return 'cp';return ''}
 function band(t,sub){return `<div class="band"><h1>${t}</h1>${sub?`<p class="sub">${sub}</p>`:''}</div>`}
-const AUTHV=['start','plogin','pfam','slogin','loading'];
-function render(){if(CLOUD){if(!C.ready&&view.name!=='loading')view={name:'loading'};else if(C.ready&&!C.user&&!['start','plogin','slogin'].includes(view.name))view={name:'start'};else if(C.ready&&C.mode==='parent'&&!C.fam&&!['pfam',...ADMV].includes(view.name))view={name:'pfam'}}
- const p=cur();document.body.dataset.sec=secOf();if(!AUTHV.includes(view.name)&&!ADMV.includes(view.name)&&(!CLOUD||(C.mode==='parent'&&C.fam))&&!S.profiles.length&&view.name!=='setup'){view={name:'setup',rows:[{name:'',gender:'m',grade:1,term:1}]}}
+const AUTHV=['start','plogin','loading'];
+function render(){if(CLOUD){if(!C.ready&&view.name!=='loading')view={name:'loading'};else if(C.ready&&!C.user&&!['start','plogin'].includes(view.name))view={name:'start'};else if(C.ready&&C.mode==='admin'&&!ADMV.includes(view.name))view={name:'admin'};else if(C.ready&&C.mode==='student'&&!S.profiles.length&&!['start','loading','plogin'].includes(view.name))view={name:'start'}}
+ const p=cur();document.body.dataset.sec=secOf();if(!CLOUD&&!AUTHV.includes(view.name)&&!S.profiles.length&&view.name!=='setup'){view={name:'setup',rows:[{name:'',gender:'m',grade:1,term:1}]}}
  document.body.dataset.g=(view.name==='form'?view.f.gender:view.name==='setup'?'m':(p?p.gender:'m'));
- const map={talkList:vTalkList,talkRun:vTalkRun,admin:vAdmin,adminFam:vAdminFam,start:vStart,plogin:vPlogin,pfam:vPfam,slogin:vSlogin,loading:vLoading,who:vWho,home:vHome,en:vEn,qd:vQd,flash:vFlash,readList:vReadList,hard:vHard,mist:vMist,quiz:vQuiz,result:vResult,parent:vParent,form:vForm,setup:vSetup,comp:vComp};
+ const map={talkList:vTalkList,talkRun:vTalkRun,admin:vAdmin,start:vStart,plogin:vPlogin,loading:vLoading,who:vWho,home:vHome,en:vEn,qd:vQd,flash:vFlash,readList:vReadList,hard:vHard,mist:vMist,quiz:vQuiz,result:vResult,parent:vParent,form:vForm,setup:vSetup,comp:vComp};
  app.innerHTML=(map[view.name]||vWho)();
  const nav=$('#nav');nav.hidden=!p||['who','form','quiz','setup','talkRun',...AUTHV,...ADMV].includes(view.name);document.body.classList.toggle('has-nav',!nav.hidden);
  nav.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.go===view.name||(b.dataset.go==='en'&&['flash','readList','hard','talkList','talkRun'].includes(view.name))||(b.dataset.go==='qd'&&view.name==='mist')));
  if(view.name==='quiz'){const it=view.q.items[view.q.i];if(!it.shownAt)it.shownAt=Date.now();if(it.autoSpeak&&view.q.res[view.q.i]==null&&!it._spoken){it._spoken=true;setTimeout(()=>speak(it.speak),250)}tickTimer()}
- if(view.name==='comp'){subscribeBoard();renderBoard();const of=$('#oform');of.addEventListener('submit',e=>{e.preventDefault();const p=cur();p.nick=$('#onick').value.trim()||p.name;p.group=$('#ogrp').value.trim().toUpperCase();save();pushAll(true);boardKey='';render();const sv=$('#osaved');if(sv)sv.hidden=false})}
- bindAuthForms();const tkf=$('#tkform');if(tkf)tkf.addEventListener('submit',e=>{e.preventDefault();const v=$('#tkin').value.trim();if(!v)return;tkEval([v])});bindAdmin();if(view.name==='admin'&&C.user&&!A.fams&&!A.loading&&!A.err)adminLoad();
+ if(view.name==='comp'){subscribeBoard();renderBoard();const of=$('#oform');of.addEventListener('submit',e=>{e.preventDefault();const p=cur();p.nick=$('#onick').value.trim()||p.name;save();pushAll(true);boardKey='';render();const sv=$('#osaved');if(sv)sv.hidden=false})}
+ bindAuthForms();const tkf=$('#tkform');if(tkf)tkf.addEventListener('submit',e=>{e.preventDefault();const v=$('#tkin').value.trim();if(!v)return;tkEval([v])});bindAdmin();if(view.name==='admin'&&C.user&&!A.list&&!A.loading&&!A.err)adminLoad();
  const sf=$('#sform');if(sf)sf.addEventListener('submit',e=>{e.preventDefault();syncRows();if(view.rows.some(r=>!r.name.trim())){$('#serr').hidden=false;return}
-  if(CLOUD){view.rows.forEach(r=>{if(!/^\d{4}$/.test(r.pin||''))r.pin=rndPin()});const b=sf.querySelector('button[type=submit]');b.disabled=true;b.textContent='جارٍ الحفظ…';cloudAddKids(view.rows).then(()=>go('who')).catch(er=>{b.disabled=false;b.textContent='حفظ والبدء';toast(authErr(er))});return}
   view.rows.forEach(r=>S.profiles.push(newP(r.name.trim(),r.gender,r.grade,r.term)));save();go('who')});
  const f=$('#pform');if(f)f.addEventListener('submit',e=>{e.preventDefault();const nm=$('#pname').value.trim();if(!nm){$('#ferr').hidden=false;return}view.f.name=nm;
-  if(CLOUD&&view.editId){const pin=($('#fpin')||{}).value||'';if(pin&&!/^\d{4}$/.test(pin)){const el=$('#ferr');el.textContent='الرقم السري 4 أرقام.';el.hidden=false;return}cloudEditKid(view.editId,{name:nm,gender:view.f.gender,grade:view.f.grade,term:view.f.term,daily:{}},pin).then(()=>go('parent')).catch(er=>toast(authErr(er)));return}
+  if(CLOUD&&view.editId){const q=cur();const old=q.name;Object.assign(q,{name:nm,gender:view.f.gender,grade:view.f.grade,term:view.f.term});if(q.nick===old)q.nick=nm;Object.keys(q.daily).forEach(k=>{if(q.daily[k])delete q.daily[k].words});stuRef(q.id).set(stuDoc(q)).catch(()=>{});pushAll(true);go('who');return}
   if(view.editId){const q=S.profiles.find(x=>x.id===view.editId);Object.assign(q,{name:nm,gender:view.f.gender,grade:view.f.grade,term:view.f.term});Object.keys(q.daily).forEach(k=>{if(q.daily[k])delete q.daily[k].words})}
   else{const q=newP(nm,view.f.gender,view.f.grade,view.f.term);S.profiles.push(q);if(!S.active&&view.back==='who'){}}
   save();go(view.back||'parent')});
 }
 
-function bindAuthForms(){
- const lf=$('#lform');if(lf)lf.addEventListener('submit',e=>{e.preventDefault();const em=$('#lem').value.trim(),pw=$('#lpw').value;const b=$('#lbtn'),er=$('#lerr');b.disabled=true;er.hidden=true;
-  const FA=firebase.auth();FA.createUserWithEmailAndPassword(em,pw).catch(x=>{if(/email-already-in-use/.test(x.code||''))return FA.signInWithEmailAndPassword(em,pw).catch(y=>{throw /invalid-credential|wrong-password|invalid-login/.test(y.code||'')?{code:'x-wrongpw'}:y});throw x})
-   .catch(x=>{b.disabled=false;er.textContent=x.code==='x-wrongpw'?'كلمة المرور غير صحيحة لهذا البريد. اضغط «نسيت كلمة المرور» إن احتجت.':authErr(x);er.hidden=false})});
- const inf=$('#iform');if(inf)inf.addEventListener('submit',e=>{e.preventDefault();const er=$('#ierr');er.hidden=true;if(normCode($('#icode').value).length<6){er.textContent='اكتب رمز الدعوة المكوّن من 6 أحرف وأرقام، أو اختر «إنشاء حساب عائلة جديد» إذا كنت أول ولي أمر.';er.hidden=false;return}joinInvite($('#icode').value).catch(x=>{er.textContent=x&&x.code==='bad-invite'?'رمز الدعوة غير صحيح.':authErr(x);er.hidden=false})});
- const scf=$('#scform');if(scf)scf.addEventListener('submit',e=>{e.preventDefault();const raw=$('#fcode').value,er=$('#serr2');er.hidden=true;if(normCode(raw).length<6){er.textContent='اكتب رمز العائلة المكوّن من 6 أحرف وأرقام.';er.hidden=false;return}
-  studentFind(raw).then(r=>go('slogin',Object.assign({step:'pick'},r))).catch(x=>{er.textContent=x&&x.code==='bad-code'?'رمز العائلة غير صحيح. تأكّد منه مع ولي أمرك.':authErr(x);er.hidden=false})});
- const spf=$('#spform');if(spf){const pi=$('#spin');setTimeout(()=>{try{pi.focus()}catch(e){}},50);spf.addEventListener('submit',e=>{e.preventDefault();const pin=pi.value.trim(),er=$('#perr'),b=$('#pbtn');er.hidden=true;
-  if(!/^\d{4}$/.test(pin)){er.textContent='الرقم السري 4 أرقام.';er.hidden=false;return}b.disabled=true;
-  studentJoin(view,pin).catch(x=>{b.disabled=false;er.textContent=/permission/.test((x&&x.code)||'')?'الرقم السري غير صحيح.':authErr(x);er.hidden=false})})}}
 
 /* ============ تشغيل الاختبارات ============ */
 function startQuiz(o){const Q=Object.assign({i:0,res:[],mode:'practice',back:'home'},o);if(Q.sections){Q.secIdx=0;Q.usedAcc=0;Q.secStart=Date.now();Q.endAt=Date.now()+Q.sections[0].secs*1000}else if(Q.secs){Q.endAt=Date.now()+Q.secs*1000;Q.start=Date.now()}go('quiz',{q:Q})}
 function endSection(){const Q=view.q;const sc=Q.sections[Q.secIdx];Q.usedAcc+=Math.min(sc.secs,Math.round((Date.now()-Q.secStart)/1000));if(Q.secIdx>=Q.sections.length-1){Q.secStart=null;return finishQuiz()}Q.secIdx++;Q.i=Q.sections[Q.secIdx].start;Q.pause=true;Q.endAt=null;render();window.scrollTo(0,0)}
-function mixedQd(p,n){const cats=shuf(Object.keys(QCAT));const out=[];for(let i=0;i<n;i++){const c=cats[i%cats.length];out.push(genQ(c,level(p,c)))}return shuf(out)}
+function mixedQd(p,n){const cats=shuf(qcats(p.grade));const out=[];for(let i=0;i<n;i++){const c=cats[i%cats.length];out.push(genQ(c,level(p,c)))}return shuf(out)}
 function finishQuiz(){const Q=view.q;const p=cur();if(Q.sections){Q.used=Q.usedAcc+(Q.secStart&&!Q.pause?Math.min(Q.sections[Q.secIdx].secs,Math.round((Date.now()-Q.secStart)/1000)):0);Q.secStart=null}else if(Q.start)Q.used=Math.min(Q.secs,Math.round((Date.now()-Q.start)/1000));Q.endAt=null;
  const ok=Q.res.filter((x,k)=>x===Q.items[k].a).length;
  if(Q.mode==='exam'){p.exams=(p.exams||0)+1;lg(p).ex++}
@@ -1246,28 +1364,9 @@ function again(){const Q=view.q;const p=cur();const k=Q.kind;
  if(k==='read')return startRead(Q.rk);act(k)}
 function startRead(k){const r=RD[k];startQuiz({title:'القراءة والفهم',kind:'read',rk:k,back:'readList',items:r.qs.map(([q,c,a,ar])=>{const ch=c.map((x,j)=>({x,j}));const s=shuf(ch);return{cat:'reading',sec:'en',q:`<span class="en" dir="ltr" style="display:block;text-align:left">${esc(q)}</span>`,c:s.map(o=>esc(o.x)),chLtr:!ar,a:s.findIndex(o=>o.j===a),ex:['ارجع إلى القطعة وابحث عن الجملة التي تحمل الإجابة.'],passage:r}})})}
 
-function act(a){const p=cur();
+function act(a){const p=cur();if(cloudAct(a))return;
  switch(a){
  case 'switch':if(CLOUD&&C.mode==='student'){go('who');break}S.active=null;save();go('who');break;
- case 'sLogin':go('slogin',{step:'code'});break;
- case 'admin':if(!isAdm())break;A.fams=null;A.err=null;A.edit=null;A.del=null;A.delFam=false;go('admin');break;
- case 'adBack':go(C.fam?'parent':'pfam');break;
- case 'adBackList':A.edit=null;A.del=null;A.delFam=false;go('admin',{q:view.q});break;
- case 'adReload':A.fams=null;A.err=null;adminLoad();break;
- case 'adVerify':C.user.sendEmailVerification().then(()=>toast('أرسلنا رابط التأكيد إلى بريدك.')).catch(e=>toast(authErr(e)));break;
- case 'adRefresh':C.user.reload().then(()=>C.user.getIdToken(true)).then(()=>{C.user=firebase.auth().currentUser;if(!C.user.emailVerified)toast('لم يُؤكَّد البريد بعد. افتح الرابط في رسالة Firebase ثم حاول مرة أخرى.');render()}).catch(e=>toast(authErr(e)));break;
- case 'adNewFam':adBusy(async()=>{const id=await adminCreateFam();view.fid=id},'أُنشئت العائلة').then(()=>{if(view.fid)go('adminFam',{fid:view.fid})});break;
- case 'adAdd':A.edit='new';A.form={name:'',gender:'m',grade:1,term:1,pin:rndPin()};render();break;
- case 'adCancel':A.edit=null;A.form=null;A.del=null;A.delFam=false;render();break;
- case 'adUnlink':adBusy(()=>adminUnlink(view.fid),'تم فصل الأجهزة');break;
- case 'adDelFam':A.delFam=true;render();break;
- case 'adDelFamOk':{const f=view.fid;adBusy(()=>adminDelFam(f),'حُذفت العائلة').then(()=>{A.delFam=false;go('admin')});break}
- case 'pLogin':go('plogin',{t:'in'});break;
- case 'sBack':go('slogin',{step:'code',raw:fmtCode(view.code)});break;
- case 'sBackPick':view.step='pick';render();break;
- case 'logout':logout();break;
- case 'createFam':{const b=document.querySelector('[data-act="createFam"]');if(b)b.disabled=true;createFamily().catch(er=>{if(b)b.disabled=false;toast(authErr(er))});break}
- case 'reset':{const em=($('#lem')||{}).value||'';if(!em){const el=$('#lerr');el.textContent='اكتب بريدك أولاً ثم اضغط «نسيت كلمة المرور».';el.hidden=false;break}firebase.auth().sendPasswordResetEmail(em.trim()).then(()=>toast('أرسلنا رابط إعادة التعيين إلى بريدك.')).catch(er=>toast(authErr(er)));break}
  case 'add':go('setup',{rows:[{name:'',gender:'m',grade:1,term:1}],back:view.name==='who'?'who':'parent'});break;
  case 'addRow':syncRows();view.rows.push({name:'',gender:'m',grade:1,term:1});render();break;
  case 'parentFromWho':go('parent');break;
@@ -1289,7 +1388,7 @@ function act(a){const p=cur();
  case 'enDay':go('flash',{words:dailyWords(p),i:0});break;
  case 'fprev':view.i--;render();break;
  case 'vocab':startQuiz({title:'اختبار المفردات',kind:'vocab',back:'en',items:weightedWords(p,8).map((w,j)=>vocabItem(w,p,j%2))});break;
- case 'grammar':{const own=shuf(GR.filter(x=>x.g===p.grade)).slice(0,7),low=shuf(GR.filter(x=>x.g<p.grade)).slice(0,3);let pool=own.concat(low);if(pool.length<10)pool=pool.concat(shuf(GR.filter(x=>x.g===p.grade&&!pool.includes(x))));
+ case 'grammar':{let pool=nearSort(GR,p.grade,x=>x.g).slice(0,12);
   startQuiz({title:'القواعد',kind:'grammar',back:'en',items:shuf(pool).slice(0,10).map(x=>{const ch=shuf(x.c.map((t,j)=>({t,j})));return{cat:'grammar',sec:'en',q:'اختر الإجابة الصحيحة:',ltr:x.q,c:ch.map(o=>esc(o.t)),chLtr:true,a:ch.findIndex(o=>o.j===x.a),ex:[x.ex]}})});break}
  case 'readList':go('readList');break;
  case 'listen':if(!canSpeak){go('en');return}startQuiz({title:'الاستماع',kind:'listen',back:'en',items:weightedWords(p,6).map(w=>listenItem(w,p))});break;
@@ -1310,20 +1409,11 @@ function act(a){const p=cur();
  case 'delno':view.del=null;render();break;
  }}
 
-document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;if(cloudClick(d))return;
  if(d.say){speak(d.say);return}
  if(d.copy){const t=d.copy;try{navigator.clipboard.writeText(t).then(()=>toast(t.length>24?'تم نسخ الرابط':'تم النسخ: '+t),()=>toast(t))}catch(e){toast(t)}return}
- if(d.pt){go('plogin',{t:d.pt});return}
  if(d.talk){startTalk(d.talk);return}
  if(d.tktr){const a=b.closest('.bub').querySelector('.bubar');if(a)a.hidden=!a.hidden;return}
- if(d.afam){A.edit=null;A.del=null;A.delFam=false;go('adminFam',{fid:d.afam,q:view.q});return}
- if(d.adedit){const f=A.fams.find(x=>x.id===view.fid),k=f&&f.kids.find(x=>x.id===d.adedit);if(!k)return;A.edit=k.id;A.del=null;A.form={name:k.name,gender:k.gender,grade:k.grade,term:k.term||1,pin:k.pin||''};render();return}
- if(d.adset){adSync();A.form[d.adset]=d.adset==='gender'?d.v:+d.v;render();return}
- if(d.addel){A.del=d.addel;A.edit=null;render();return}
- if(d.addelok){const f=view.fid,id=d.addelok;adBusy(()=>adminDelKid(f,id),'حُذف الطالب').then(()=>{A.del=null;render()});return}
- if(d.adrmpar){const f=view.fid,u=d.adrmpar;adBusy(()=>adminRmParent(f,u),'أُزيل ولي الأمر');return}
- if(d.adreset){firebase.auth().sendPasswordResetEmail(d.adreset).then(()=>toast('أُرسل رابط إعادة كلمة المرور إلى '+d.adreset)).catch(e=>toast(authErr(e)));return}
- if(d.kid){view.kid=d.kid;view.step='pin';render();return}
  if(d.go){if(view.name==='quiz'&&view.q)view.q.endAt=null;go(d.go);return}
  if(d.pick){S.active=d.pick;save();go('home');return}
  if(d.cat){startCat(d.cat);return}
@@ -1331,14 +1421,13 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
  if(d.ch!=null){const Q=view.q,it=Q&&Q.items[Q.i];if(it&&Q.mode!=='speed'&&it.sec==='en'){const t=b.querySelector('.t');if(it.chLtr&&t)speak(t.textContent);else if(it.word)speak(it.word.w)}answer(+d.ch);return}
  if(d.read!=null){startRead(+d.read);return}
  if(d.bs){view.bs=d.bs;render();return}
- if(d.on!=null){const p=cur();p.nick=$('#onick').value.trim()||p.nick;p.group=$('#ogrp').value.trim().toUpperCase();p.online=d.on==='1';save();pushAll(true);boardKey='';render();return}
+ if(d.on!=null){const p=cur();p.nick=$('#onick').value.trim()||p.nick;p.online=d.on==='1';save();pushAll(true);boardKey='';render();return}
  if(d.rset){syncRows();const r=view.rows[+d.i];r[d.rset]=d.rset==='gender'?d.v:+d.v;render();return}
  if(d.rdel!=null){syncRows();view.rows.splice(+d.rdel,1);render();return}
  if(d.set){const v=d.set==='gender'?d.v:+d.v;view.f[d.set]=v;const nm=$('#pname');if(nm)view.f.name=nm.value;render();return}
- if(d.edit){const q=S.profiles.find(x=>x.id===d.edit);const open=pin=>go('form',{f:{name:q.name,gender:q.gender,grade:q.grade,term:q.term},editId:q.id,back:'parent',pin});if(CLOUD){fb.collection('families').doc(C.fam).collection('secrets').doc(q.id).get().then(s0=>open(s0.exists?s0.data().pin:'')).catch(()=>open(''))}else open('');return}
+ if(d.edit){const q=S.profiles.find(x=>x.id===d.edit);go('form',{f:{name:q.name,gender:q.gender,grade:q.grade,term:q.term},editId:q.id,back:'parent'});return}
  if(d.del){view.del=d.del;render();return}
- if(d.delok&&CLOUD){cloudDelKid(d.delok).then(()=>{view.del=null;if(S.active===d.delok)S.active=null;go('parent')}).catch(er=>toast(authErr(er)));return}
- if(d.delok){S.profiles.forEach(p=>{if(p.term>2)p.term=2;p.log=p.log||{};p.stats.th=p.stats.th||{};if(p.online===undefined)p.online=true;if(!p.nick)p.nick=p.name;if(p.group==null)p.group=''});
+ if(d.delok){S.profiles.forEach(p=>{if(!p.gv){p.grade=Math.min(12,(+p.grade||1)+6);p.gv=2}if(p.term>2)p.term=2;p.log=p.log||{};p.stats.th=p.stats.th||{};if(p.online===undefined)p.online=true;if(!p.nick)p.nick=p.name;if(p.group==null)p.group=''});
  S.profiles=S.profiles.filter(x=>x.id!==d.delok);if(S.active===d.delok)S.active=null;save();view.del=null;go(cur()?'parent':(S.profiles.length?'who':'setup'),S.profiles.length?{}:{rows:[{name:'',gender:'m',grade:1,term:1}]});return}
  if(d.act)act(d.act)});
 
