@@ -453,7 +453,7 @@ function fbStart(){if(!FB)return;const b='https://www.gstatic.com/firebasejs/10.
  loadScript(b+'firebase-app-compat.js').then(()=>Promise.all([loadScript(b+'firebase-auth-compat.js'),loadScript(b+'firebase-firestore-compat.js')])).then(()=>{
   firebase.initializeApp(FB);fb=firebase.firestore();try{fb.enablePersistence({synchronizeTabs:true}).catch(()=>{})}catch(e){}firebase.auth().onAuthStateChanged(u=>{onAuth(u)})}).catch(()=>{fb=null;C.ready=true;app.innerHTML=startTop()+'<div class="warn">تعذّر تحميل الخدمة. تحقّق من الإنترنت ثم أعد فتح الصفحة.</div>'})}
 function pushAll(force){if(!fb||!C.sid||C.mode!=='student')return;if(!force&&Date.now()-lastPush<30000){clearTimeout(pushAll.t);pushAll.t=setTimeout(()=>pushAll(true),30000);return}lastPush=Date.now();
- const p=cur();if(!p)return;const ref=fb.collection('players').doc(p.id);if(!p.name){ref.delete().catch(()=>{});return}
+ const p=cur();if(!p||p.status==='pending')return;const ref=fb.collection('players').doc(p.id);if(!p.name){ref.delete().catch(()=>{});return}
  const sc=scoreAll(p);ref.set({sid:p.id,nick:p.name.slice(0,20),gender:p.gender||'m',grade:p.grade,stage:stageOf(p.grade),total:sc.total,days:sc.days,acc:Math.round(sc.accv*100),answers:sc.a,updated:Date.now()}).catch(()=>{})}
 document.addEventListener('visibilitychange',()=>{if(document.hidden){pushAll(true);if(CLOUD)flushSave()}});
 function subscribeBoard(){const p=cur();const bs=view.bs||'all';const key=bs+'|'+p.grade+'|'+(C.sid||'');if(key===boardKey)return;boardKey=key;if(unsub){unsub();unsub=null}boardRows=null;if(!fb)return;
@@ -776,15 +776,18 @@ async function onAuth(u){if(C.joining){C.user=u;return}
 function subStudent(){stopSub();C.ready=false;render();
  C.unsub=stuRef(C.sid).onSnapshot(d=>{
   if(!d.exists){if(C.asAdmin){toast('هذا الطالب غير موجود');return adBack()}if(C.user&&C.sid!==C.user.uid){fb.collection('devices').doc(C.user.uid).delete().catch(()=>{});C.sid=C.user.uid;return subStudent()}
-   S={profiles:[],active:null};C.ready=true;return go('start')}
+   if(view.name==='wait')toast('لم تتم الموافقة على الطلب. يمكنك التواصل مع مدير النظام.');S={profiles:[],active:null};C.ready=true;return go('start')}
   const r=normP(Object.assign({},d.data(),{id:d.id}));const l=S.profiles[0];
-  if(l&&l.id===r.id&&(l.resetAt||0)===(r.resetAt||0)){const gc=l.grade!==r.grade||l.term!==r.term;['name','gender','grade','term','nick','online'].forEach(k=>l[k]=r[k]);if(gc)Object.keys(l.daily).forEach(k=>{if(l.daily[k])delete l.daily[k].words})}else S.profiles=[r];
-  S.active=r.id;const first=!C.ready;C.ready=true;if(first)setTimeout(()=>pushAll(true),500);
+  if(l&&l.id===r.id&&(l.resetAt||0)===(r.resetAt||0)){const gc=l.grade!==r.grade||l.term!==r.term;['name','gender','grade','term','nick','online','status'].forEach(k=>l[k]=r[k]);if(gc)Object.keys(l.daily).forEach(k=>{if(l.daily[k])delete l.daily[k].words})}else S.profiles=[r];
+  S.active=r.id;const first=!C.ready;C.ready=true;
+  if(r.status==='pending'&&!C.asAdmin){view={name:'wait'};return render()}
+  if(first||view.name==='wait')setTimeout(()=>pushAll(true),500);
+  if(view.name==='wait'){toast(g('تمت الموافقة! أهلاً بك في المنافسة','تمت الموافقة! أهلاً بكِ في المنافسة'));return go('home')}
   if(first||['start','loading'].includes(view.name))go('home');else if(!['quiz','flash','form','result','talkRun'].includes(view.name))render()
  },e=>{C.ready=true;if(C.asAdmin){toast(authErr(e));return adBack()}if(/permission/.test(e.code||'')){fb.collection('devices').doc(C.user.uid).delete().catch(()=>{});if(C.sid!==C.user.uid){C.sid=C.user.uid;return subStudent()}}toast(authErr(e));render()})}
 async function register(row){const FA=firebase.auth();C.joining=true;
  try{if(!FA.currentUser)await FA.signInAnonymously();const u=FA.currentUser;C.user=u;fbUid=u.uid;
-  const p=newP(row.name.trim(),row.gender,row.grade,row.term);const d=JSON.parse(JSON.stringify(p));delete d.id;d.created=Date.now();
+  const p=newP(row.name.trim(),row.gender,row.grade,row.term);const d=JSON.parse(JSON.stringify(p));delete d.id;d.created=Date.now();d.status='pending';
   await stuRef(u.uid).set(d);C.joining=false;C.mode='student';C.sid=u.uid;subStudent()}
  catch(e){C.joining=false;throw e}}
 async function linkJoin(){C.ready=false;view={name:'loading'};render();const FA=firebase.auth();C.joining=true;
@@ -811,6 +814,7 @@ function vStart(){const r=view.reg||(view.reg={name:'',gender:'m',grade:0,term:1
  <div class="f stack"><b style="font-size:14px">صفّي</b>${gradeSeg('data-regset',r.grade)}${r.grade?`<span class="note">${GRADES[r.grade]}</span>`:''}</div>
  <div class="f stack"><b style="font-size:14px">الفصل الدراسي</b>${sg('term',[[1,'الأول'],[2,'الثاني']])}</div>
  <p class="warn" id="regerr" hidden></p><button class="btn wide" type="submit" id="regbtn">ابدأ التدريب</button>
+ <p class="note" style="margin:0;text-align:center">يبدأ التدريب بعد موافقة مدير النظام على طلبك.</p>
  <p class="note" style="margin:0;text-align:center">عندك حساب على جهاز آخر؟ افتح رابط النقل من ذلك الجهاز هنا.</p>
  <button type="button" class="x" data-act="pLogin" style="align-self:center;margin-top:18px">دخول مدير النظام</button></form>`}
 function vPlogin(){return startTop()+band('دخول مدير النظام','هذه الصفحة لمدير التطبيق فقط.')+`
@@ -818,6 +822,10 @@ function vPlogin(){return startTop()+band('دخول مدير النظام','هذ
  <label class="f" for="lpw">كلمة المرور<input type="password" id="lpw" dir="ltr" autocomplete="current-password" required></label>
  <p class="warn" id="lerr" hidden></p><button class="btn wide" type="submit" id="lbtn">دخول</button>
  <button type="button" class="x" data-act="reset" style="align-self:center">نسيت كلمة المرور؟</button><button type="button" class="btn plain wide" data-act="toStart">رجوع</button></form>`}
+function vWait(){const p=cur();return startTop()+band('طلبك قيد المراجعة','سيبدأ التدريب فور موافقة مدير النظام.')+`<div class="sec">
+ <div class="card stack" style="align-items:center;text-align:center"><div style="font-size:46px">⏳</div><h3 style="margin:0">${p?esc(p.name):''}</h3><span class="note">${p?GRADES[p.grade]+' · '+TERMS[p.term]:''}</span>
+ <p style="margin:0">${g('وصل طلبك','وصل طلبكِ')} إلى مدير النظام. أبقِ هذه الصفحة مفتوحة أو ${g('عد','عودي')} إليها لاحقاً، وستنتقل للتدريب تلقائياً بعد الموافقة.</p></div>
+ ${introCard(false)}</div>`}
 function vStudentWho(){const p=cur();if(!p)return vLoading();const v=view;
  return header()+band('حسابي',esc(p.name)+' · '+GRADES[p.grade]+' · '+TERMS[p.term])+`<div class="sec">${progressCard(p,true)}
  <div class="card stack"><h3>استخدام حسابك على جهاز آخر</h3><p class="note" style="margin:0">أنشئ رابط النقل وافتحه على الجهاز الآخر، فيظهر حسابك بكل نقاطك. احتفظ به أيضاً لو تغيّر جوالك.</p>
@@ -832,11 +840,11 @@ const isAdm=()=>CLOUD&&C.user&&!C.user.isAnonymous&&(C.user.email||'').toLowerCa
 const A={loading:false,list:null,err:null,edit:null,form:null,del:null,links:{},old:0,st:'all'};
 async function adminLoad(){A.loading=true;render();
  try{const sn=await fb.collection('students').get();
-  A.list=sn.docs.map(d=>{const p=normP(Object.assign({},d.data(),{id:d.id}));return{id:d.id,name:p.name,gender:p.gender,grade:p.grade,term:p.term,score:lifetime(p),last:Object.keys(p.log).sort().pop()||'',created:p.created||0,answers:sumSt(p.stats.en).t+sumSt(p.stats.qd).t+sumSt(p.stats.th).t}}).sort((a,b)=>b.score-a.score);
+  A.list=sn.docs.map(d=>{const p=normP(Object.assign({},d.data(),{id:d.id}));return{id:d.id,status:p.status||'approved',name:p.name,gender:p.gender,grade:p.grade,term:p.term,score:lifetime(p),last:Object.keys(p.log).sort().pop()||'',created:p.created||0,answers:sumSt(p.stats.en).t+sumSt(p.stats.qd).t+sumSt(p.stats.th).t}}).sort((a,b)=>b.score-a.score);
   try{const o=await fb.collection('families').get();let n=0;for(const f of o.docs){const k=await fb.collection('families').doc(f.id).collection('kids').get();n+=k.docs.length}A.old=n||(o.docs.length?-1:0)}catch(e){A.old=0}
   A.err=null}catch(e){A.err=authErr(e)}
  A.loading=false;render()}
-async function adminSave(id,v){if(!id){const ref=fb.collection('students').doc();const p=newP(v.name,v.gender,v.grade,v.term);const d=stuDoc(p);d.created=Date.now();d.byAdmin=true;await ref.set(d);A.links[ref.id]=await makeTransfer(ref.id);return ref.id}
+async function adminSave(id,v){if(!id){const ref=fb.collection('students').doc();const p=newP(v.name,v.gender,v.grade,v.term);const d=stuDoc(p);d.created=Date.now();d.byAdmin=true;d.status='approved';await ref.set(d);A.links[ref.id]=await makeTransfer(ref.id);return ref.id}
  const ref=stuRef(id);const s=await ref.get();const d=s.data()||{};const old=d.name;d.name=v.name;d.gender=v.gender;d.grade=v.grade;d.term=v.term;d.gv=2;d.nick=v.name;d.daily={};await ref.set(d);
  const pl=fb.collection('players').doc(id);const ps=await pl.get();if(ps.exists)await pl.set(Object.assign(ps.data(),{grade:v.grade,stage:stageOf(v.grade)}));return id}
 async function adminReset(id){const ref=stuRef(id);const sn=await ref.get();const d=sn.data()||{};
@@ -847,7 +855,7 @@ async function adminDel(id){await stuRef(id).delete();await fb.collection('stude
 async function adminMigrate(){const fams=await fb.collection('families').get();let n=0;
  for(const f of fams.docs){const r=fb.collection('families').doc(f.id);
   const [k,s,m]=await Promise.all([r.collection('kids').get(),r.collection('secrets').get(),r.collection('members').get()]);
-  for(const d of k.docs){const ex=await stuRef(d.id).get();if(!ex.exists){const p=normP(Object.assign({},d.data(),{id:d.id}));const x=stuDoc(p);x.created=Date.now();x.migrated=true;await stuRef(d.id).set(x);n++;
+  for(const d of k.docs){const ex=await stuRef(d.id).get();if(!ex.exists){const p=normP(Object.assign({},d.data(),{id:d.id}));const x=stuDoc(p);x.created=Date.now();x.migrated=true;x.status='approved';await stuRef(d.id).set(x);n++;
     if(p.nick){const sc=scoreAll(p);await fb.collection('players').doc(d.id).set({sid:d.id,nick:p.name.slice(0,20),gender:p.gender||'m',grade:p.grade,stage:stageOf(p.grade),total:sc.total,days:sc.days,acc:Math.round(sc.accv*100),answers:sc.a,updated:Date.now()}).catch(()=>{})}}
    await fb.collection('players').doc(f.id+'_'+d.id).delete().catch(()=>{});await r.collection('kids').doc(d.id).delete()}
   for(const d of s.docs)await r.collection('secrets').doc(d.id).delete();
@@ -869,13 +877,17 @@ function adRow(s){if(A.edit===s.id)return adForm(s.id);const l=A.links[s.id];
  ${l?`<div class="tklink" dir="ltr">${esc(l)}</div><div class="row"><button class="btn plain grow" data-copy="${esc(l)}">نسخ الرابط</button><a class="btn grow" href="${esc(wa('رابط دخولك إلى مِران يا '+s.name+':\n'+l))}" target="_blank" rel="noopener">واتساب</a></div>`:''}
  ${A.rst===s.id?`<div class="warn stack">تصفير رصيد ${esc(s.name)} يجعل نقاطه صفراً ويبدأ المنافسة من جديد، ويبقى اسمه وحسابه.<div class="row"><button class="btn danger" data-adrstok="${s.id}">نعم، صفّر الرصيد</button><button class="btn plain" data-act="adCancel">إلغاء</button></div></div>`:A.del===s.id?`<div class="warn stack">حذف ${esc(s.name)} يمسح حسابه وكل تقدّمه نهائياً.<div class="row"><button class="btn danger" data-addelok="${s.id}">نعم، احذف</button><button class="btn plain" data-act="adCancel">إلغاء</button></div></div>`
  :`<div class="row" style="flex-wrap:wrap"><button class="x" style="font-weight:700" data-adas="${s.id}">دخول حسابه</button><button class="x" data-adedit="${s.id}">تعديل</button><button class="x" data-adlink="${s.id}">رابط دخول</button><button class="x" style="color:var(--cp)" data-adrst="${s.id}">تصفير الرصيد</button><button class="x" style="color:var(--bad)" data-addel="${s.id}">حذف</button></div>`}</div>`}
-function adFiltered(){const q=(view.q||'').trim().toLowerCase();return(A.list||[]).filter(s=>(A.st==='all'||stageOf(s.grade)===A.st)&&(!q||s.name.toLowerCase().includes(q)))}
+async function adminApprove(id){await stuRef(id).update({status:'approved',approvedAt:Date.now()})}
+function adPendRow(s){return `<div class="card stack" style="border:2px solid #FFCB5C"><div class="row"><span class="av ${s.gender}">${esc((s.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(s.name)}</b><br><span class="note">${s.gender==='f'?'طالبة':'طالب'} · ${GRADES[s.grade]} · ${TERMS[s.term]||''}${s.created?' · '+new Date(s.created).toLocaleDateString('ar-SA'):''}</span></span></div>
+ <div class="row"><button class="btn grow" data-adok="${s.id}">✓ قبول</button><button class="btn plain grow" style="color:var(--bad)" data-adno="${s.id}">رفض</button></div></div>`}
+function adFiltered(){const q=(view.q||'').trim().toLowerCase();return(A.list||[]).filter(s=>s.status!=='pending').filter(s=>(A.st==='all'||stageOf(s.grade)===A.st)&&(!q||s.name.toLowerCase().includes(q)))}
 function vAdmin(){let body;
  if(A.err)body=`<div class="warn stack">${esc(A.err)}<span class="note">تأكد أنك نشرت قواعد الحماية الجديدة في Firebase.</span><button class="btn plain" data-act="adReload">إعادة المحاولة</button></div>`;
  else if(!A.list)body=`<div class="card">جارٍ التحميل…</div>`;
- else{const L=A.list,cnt=k=>L.filter(s=>stageOf(s.grade)===k).length;const sg=(k,l)=>`<button type="button" class="${A.st===k?'on':''}" data-adst="${k}">${l}</button>`;
+ else{const PD=A.list.filter(s=>s.status==='pending');const L=A.list.filter(s=>s.status!=='pending'),cnt=k=>L.filter(s=>stageOf(s.grade)===k).length;const sg=(k,l)=>`<button type="button" class="${A.st===k?'on':''}" data-adst="${k}">${l}</button>`;
   body=`<div class="stats"><div class="stat" style="--c:var(--home)"><b>${L.length}</b><span>منافس</span></div><div class="stat" style="--c:var(--en)"><b>${cnt('p')}</b><span>ابتدائي</span></div><div class="stat" style="--c:var(--th)"><b>${cnt('m')+cnt('s')}</b><span>متوسط وثانوي</span></div></div>
   ${A.old?`<div class="card stack"><h3>بيانات النظام القديم</h3><p class="note" style="margin:0">${A.old>0?`يوجد ${A.old} طالب مسجّل عن طريق أولياء الأمور.`:'توجد بيانات عائلات قديمة.'} انقلهم للنظام الجديد مع تقدّمهم، ثم أرسل لكل واحد رابط الدخول.</p><button class="btn" data-act="adMigrate">نقل الطلاب للنظام الجديد</button></div>`:''}
+  ${PD.length?`<div class="card stack" style="background:#FFF6DB"><h3 style="margin:0">طلبات انضمام جديدة (${PD.length})</h3><p class="note" style="margin:0">لا يدخل المنافس التطبيق ولا يظهر في الترتيب حتى توافق عليه.</p></div>${PD.map(adPendRow).join('')}`:''}
   <button class="btn plain wide" data-act="adBoard">🏆 عرض الترتيب</button>
   ${A.edit==='new'?adForm(null):`<button class="btn wide" data-act="adAdd">+ إضافة منافس جديد</button>`}
   <label class="f" for="adq">بحث بالاسم<input type="text" id="adq" value="${esc(view.q||'')}" placeholder="ابحث…"></label>
@@ -922,6 +934,8 @@ function cloudClick(d){if(!CLOUD)return false;
  if(d.adedit){const s=A.list.find(x=>x.id===d.adedit);if(!s)return true;A.edit=s.id;A.del=null;A.form={name:s.name,gender:s.gender,grade:s.grade,term:s.term||1};render();return true}
  if(d.adset){adSync();A.form[d.adset]=d.adset==='gender'?d.v:+d.v;render();return true}
  if(d.addel){A.del=d.addel;A.rst=null;A.edit=null;render();return true}
+ if(d.adok){const id=d.adok;adBusy(()=>adminApprove(id),'تمت الموافقة');return true}
+ if(d.adno){const id=d.adno;adBusy(()=>adminDel(id),'رُفض الطلب');return true}
  if(d.adrst){A.rst=d.adrst;A.del=null;A.edit=null;render();return true}
  if(d.adrstok){const id=d.adrstok;adBusy(()=>adminReset(id),'صُفّر الرصيد').then(()=>{A.rst=null;render()});return true}
  if(d.addelok){const id=d.addelok;adBusy(()=>adminDel(id),'حُذف الطالب').then(()=>{A.del=null;render()});return true}
@@ -1471,10 +1485,10 @@ function vForm(){const f=view.f;const seg=(key,opts)=>`<div class="seg" role="ra
 function secOf(){const n=view.name;if(['en','flash','hard','readList','talkList','talkRun'].includes(n))return 'en';if(n==='qd'||n==='mist')return(lastQtab==='t'||lastQtab==='thl')?'th':'qd';if((n==='quiz'||n==='result')&&view.q&&view.q.items[0])return view.q.items[0].sec;if(n==='comp')return 'cp';return ''}
 function band(t,sub){return `<div class="band"><h1>${t}</h1>${sub?`<p class="sub">${sub}</p>`:''}</div>`}
 const AUTHV=['start','plogin','loading'];
-function render(){if(CLOUD){if(!C.ready&&view.name!=='loading')view={name:'loading'};else if(C.ready&&!C.user&&!['start','plogin'].includes(view.name))view={name:'start'};else if(C.ready&&C.mode==='admin'&&!ADMV.includes(view.name))view={name:'admin'};else if(C.ready&&C.mode==='student'&&!S.profiles.length&&!['start','loading','plogin'].includes(view.name))view={name:'start'}}
+function render(){if(CLOUD){if(!C.ready&&view.name!=='loading')view={name:'loading'};else if(C.ready&&!C.user&&!['start','plogin'].includes(view.name))view={name:'start'};else if(C.ready&&C.mode==='admin'&&!ADMV.includes(view.name))view={name:'admin'};else if(C.ready&&C.mode==='student'&&S.profiles.length&&cur()&&cur().status==='pending'&&!C.asAdmin)view={name:'wait'};else if(C.ready&&C.mode==='student'&&!S.profiles.length&&!['start','loading','plogin'].includes(view.name))view={name:'start'}}
  const p=cur();document.body.dataset.sec=secOf();if(!CLOUD&&!AUTHV.includes(view.name)&&!S.profiles.length&&view.name!=='setup'){view={name:'setup',rows:[{name:'',gender:'m',grade:1,term:1}]}}
  document.body.dataset.g=(view.name==='form'?view.f.gender:view.name==='setup'?'m':(p?p.gender:'m'));
- const map={talkList:vTalkList,talkRun:vTalkRun,admin:vAdmin,adBoard:vAdBoard,start:vStart,plogin:vPlogin,loading:vLoading,who:vWho,home:vHome,en:vEn,qd:vQd,flash:vFlash,readList:vReadList,hard:vHard,mist:vMist,quiz:vQuiz,result:vResult,parent:vParent,form:vForm,setup:vSetup,comp:vComp};
+ const map={talkList:vTalkList,wait:vWait,talkRun:vTalkRun,admin:vAdmin,adBoard:vAdBoard,start:vStart,plogin:vPlogin,loading:vLoading,who:vWho,home:vHome,en:vEn,qd:vQd,flash:vFlash,readList:vReadList,hard:vHard,mist:vMist,quiz:vQuiz,result:vResult,parent:vParent,form:vForm,setup:vSetup,comp:vComp};
  app.innerHTML=(map[view.name]||vWho)();
  const nav=$('#nav');nav.hidden=true||!p||['who','form','quiz','setup','talkRun',...AUTHV,...ADMV].includes(view.name);document.body.classList.toggle('has-nav',!nav.hidden);
  nav.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.go===view.name||(b.dataset.go==='en'&&['flash','readList','hard','talkList','talkRun'].includes(view.name))||(b.dataset.go==='qd'&&view.name==='mist')));
