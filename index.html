@@ -83,6 +83,9 @@ h1{font-size:28px;font-weight:800}h2{font-size:21px;font-weight:700}h3{font-size
 .plan .n{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-family:var(--fd);font-weight:700;border:2px solid currentColor;flex:none}
 .plan button.done .n{background:var(--onacc)}.plan button.done .n i{color:var(--acc);font-style:normal}
 .plan .m2{font-size:12px;opacity:.85}
+.instcard{display:flex;align-items:center;gap:12px;width:100%;text-align:start;border:2px dashed color-mix(in srgb,var(--th) 55%,transparent);border-radius:16px;padding:10px 14px;background:color-mix(in srgb,var(--th) 9%,var(--card));color:var(--ink);cursor:pointer;margin:6px 0 4px;font:inherit}
+.instcard b{font-family:var(--fd);font-size:18px;color:var(--th)}.instcard .ic2{font-size:24px}
+.instcard.ios{display:block}.instcard.ios summary{display:flex;align-items:center;gap:12px;list-style:none;cursor:pointer}.instcard.ios summary::-webkit-details-marker{display:none}.instcard.ios p{margin:10px 0 2px;line-height:1.8}.instcard p b{font-family:inherit;font-size:inherit;color:var(--ink)}
 .motto{margin:6px 0 14px;text-align:center;font-family:var(--fd);font-weight:800;font-size:clamp(20px,5.4vw,24px);line-height:1.4;background:linear-gradient(90deg,#FF7A18,#E8468A 55%,#8B3FE0);-webkit-background-clip:text;background-clip:text;color:transparent}
 .ivcard{display:flex;align-items:center;gap:12px;width:100%;text-align:start;border:none;border-radius:16px;padding:10px 14px;background:linear-gradient(135deg,#1F1A4A,#2F2475);box-shadow:0 10px 22px -14px #1F1A4A;cursor:pointer;margin:6px 0 4px}
 .ivcard,.ivcard *{color:#fff!important}.ivcard b{flex:1;font-family:var(--fd);font-size:19px}.ivcard.big{padding:13px 16px}.ivcard.big b{font-size:21px}
@@ -808,7 +811,7 @@ function vLoading(){return startTop()+`<div class="sec"><div class="card" style=
 const ORDN=['الأول','الثاني','الثالث','الرابع','الخامس','السادس'];
 function gradeSeg(attr,val,extra){return `<div class="gsel">${[['p','ابتدائي',1,6],['m','متوسط',7,9],['s','ثانوي',10,12]].map(([k,l,a,b])=>`<div class="gsrow"><span class="gl">${l}</span><div class="seg">${Array.from({length:b-a+1},(_,i)=>a+i).map(v=>`<button type="button" class="${val===v?'on':''}" ${attr}="grade" data-v="${v}" ${extra||''} aria-label="${GRADES[v]}">${v-a+1}</button>`).join('')}</div></div>`).join('')}</div>`}
 function vStart(){const r=view.reg||(view.reg={name:'',gender:'m',grade:0,term:1});const sg=(k,o)=>`<div class="seg">${o.map(([v,l])=>`<button type="button" class="${r[k]===v?'on':''}" data-regset="${k}" data-v="${v}">${l}</button>`).join('')}</div>`;
- return startTop()+band('أهلاً بك في مِران','تدرّب على الإنجليزي والقدرات والتحصيلي بأسئلة تناسب صفّك.')+`<div class="sec">${introCard(true)}</div>
+ return startTop()+band('أهلاً بك في مِران','تدرّب على الإنجليزي والقدرات والتحصيلي بأسئلة تناسب صفّك.')+`<div class="sec">${introCard(true)}${installCard()}</div>
  <form class="sec" id="regform"><label class="f" for="regn">اسمك<input type="text" id="regn" maxlength="20" value="${esc(r.name)}" placeholder="اكتب اسمك" autocomplete="given-name"></label>
  <div class="f stack"><b style="font-size:14px">أنا</b>${sg('gender',[['m','طالب'],['f','طالبة']])}</div>
  <div class="f stack"><b style="font-size:14px">صفّي</b>${gradeSeg('data-regset',r.grade)}${r.grade?`<span class="note">${GRADES[r.grade]}</span>`:''}</div>
@@ -909,7 +912,7 @@ function bindAdmin(){const q=$('#adq');if(q)q.addEventListener('input',()=>{view
  const kf=$('#adkform');if(kf)kf.addEventListener('submit',e=>{e.preventDefault();adSync();const v=A.form,er=$('#aderr');
   if(!v.name.trim()){er.textContent='اكتب الاسم.';er.hidden=false;return}if(!v.grade){er.textContent='اختر الصف.';er.hidden=false;return}
   const id=A.edit==='new'?null:A.edit;v.name=v.name.trim();adBusy(()=>adminSave(id,v),id?'تم الحفظ':'انضم منافس جديد! أرسل له رابط الدخول.').then(()=>{A.edit=null;A.form=null;render()})})}
-function cloudAct(a){if(a==='intro'){openIntro();return true}if(!CLOUD)return false;switch(a){
+function cloudAct(a){if(a==='intro'){openIntro();return true}if(a==='install'){doInstall();return true}if(!CLOUD)return false;switch(a){
  case 'pLogin':go('plogin');return true;
  case 'toStart':go('start');return true;
  case 'reset':{const em=($('#lem')||{}).value||'';if(!em){const el=$('#lerr');el.textContent='اكتب بريدك أولاً ثم اضغط «نسيت كلمة المرور».';el.hidden=false;return true}firebase.auth().sendPasswordResetEmail(em.trim()).then(()=>toast('أرسلنا رابط إعادة التعيين إلى بريدك.')).catch(er=>toast(authErr(er)));return true}
@@ -1120,6 +1123,17 @@ function ivCtl(a){const pp=$('#ivpp');
 document.addEventListener('keydown',e=>{if(IV.on&&e.key==='Escape')closeIntro()});
 const introCard=(big)=>`<button type="button" class="ivcard${big?' big':''}" data-act="intro"><span class="ivplay"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"/></svg></span><b>تعرّف على مِران</b><span class="ivfilm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/></svg></span></button>`;
 
+/* ============ تثبيت التطبيق ============ */
+let installEvt=null;const isStandalone=()=>{try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return false}};
+const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;if(['home','start','wait'].includes(view.name))render()});
+window.addEventListener('appinstalled',()=>{installEvt=null;toast('تم تثبيت مِران على جهازك');render()});
+if('serviceWorker' in navigator&&location.protocol==='https:'){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
+function installCard(){if(!FB||isStandalone())return '';
+ if(installEvt)return `<button type="button" class="instcard" data-act="install"><span class="ic2">📲</span><b>ثبّت مِران على جهازك</b></button>`;
+ if(isIOS)return `<details class="instcard ios"><summary><span class="ic2">📲</span><b>ثبّت مِران على جهازك</b></summary><p>في Safari اضغط زر المشاركة <b>⬆︎</b> أسفل الشاشة، ثم اختر <b>«إضافة إلى الشاشة الرئيسية»</b>، ثم <b>«إضافة»</b>.</p></details>`;
+ return ''}
+function doInstall(){if(!installEvt)return;installEvt.prompt();installEvt.userChoice.finally(()=>{installEvt=null;render()})}
 const MICSVG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3M9 21h6"/></svg>';
 function vTalkList(){const p=cur();const srt=nearSort(TALKS,p.grade,x=>x.g);let own=srt.filter(x=>Math.abs(x.g-p.grade)<=1);if(own.length<2)own=srt.slice(0,3);const rest=srt.filter(x=>!own.includes(x));
  const tile=s=>{const b=(p.talk||{})[s.id];return `<button class="tile" data-talk="${s.id}"><span class="grow"><h3>${s.t}</h3><span class="meta"><span class="en" dir="ltr">${s.e}</span> · ${s.turns.length} جمل${b!=null?' · أفضل نتيجة '+b+'%':''}</span></span><span class="go">‹</span></button>`};
@@ -1362,7 +1376,7 @@ const SECS=[{k:'en',go:'en',c:'en',c2:'pink',i:'E',t:'الإنجليزي',items:
 function vHome(){const p=cur();const pl=planOf(p);const st=planStep(p);const done=PLAN.filter(x=>pl[x.k]).length;const bs=view.bs||'all';
  const card=x=>{const d=x.items.filter(k=>pl[k]).length,all=d===x.items.length;return `<button class="seccard" ${x.go==='en'?'data-go="en"':`data-act="${x.go}"`} style="--c:var(--${x.c});--c2:var(--${x.c2})"><span class="sci">${x.i}</span><span class="grow"><b>${x.t}</b><span>${x.m}</span>${d?`<span class="scst">✓ ${g('تدرّبت','تدرّبتِ')} اليوم</span>`:''}</span><span class="go">‹</span></button>`};
  return header()+`<h1>أهلاً يا ${esc(p.name)}</h1>
- ${introCard(false)}<div class="homegrid"><div class="sec">${SECS.map(card).join('')}</div>
+ ${introCard(false)}${installCard()}<div class="homegrid"><div class="sec">${SECS.map(card).join('')}</div>
  <div><p class="motto">${g('كلما تدرّبت أكثر زادت نقاطك','كلما تدرّبتِ أكثر زادت نقاطكِ')}</p>${CLOUD?`<div class="sec"><div class="row between"><h2>🏆 الترتيب</h2><button class="x" data-go="comp">عرض الكل</button></div><div class="card"><div class="seg">${['all','st','gr'].map(k=>`<button type="button" class="${bs===k?'on':''}" data-bs="${k}">${k==='all'?'الجميع':k==='st'?STAGES[stageOf(p.grade)]:'صفّي'}</button>`).join('')}</div><div id="board" style="margin-top:10px"></div></div></div>`:`<div class="sec"><button class="btn plain wide" data-go="comp">🏆 الترتيب</button><button class="btn plain wide" data-go="parent">لوحة ولي الأمر</button></div>`}</div></div>`}
 
 function vEn(){const p=cur();const hc=Object.keys(p.hard).length;const pl=planOf(p);
