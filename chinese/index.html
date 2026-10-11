@@ -104,6 +104,26 @@ input::placeholder{font-family:var(--fb);font-size:15px}
   .mic.on{animation:pulse 1.2s ease-in-out infinite}@keyframes pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--bad) 45%,transparent)}50%{box-shadow:0 0 0 16px transparent}}
 }
 @media (prefers-reduced-motion:reduce){.wait i{animation:none}}
+input[type=email],input[type=password]{padding:12px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);width:100%;font-size:16px}
+input.ar{font-family:var(--fb);font-size:16px}
+label.f{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:14px}
+.warn{background:var(--badbg);border-radius:12px;padding:12px;font-size:14px}
+.chip{display:inline-block;font-size:12px;padding:2px 10px;border-radius:999px;background:var(--accsoft);color:var(--acc);font-weight:600}
+.bub.sys .chip{background:var(--card);color:var(--ok);margin-inline-start:6px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{background:var(--accsoft);border-radius:14px;padding:10px 12px}
+.stat b{display:block;font-family:var(--fd);font-size:24px;line-height:1.2;color:var(--acc);font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--muted)}
+.brd{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.brd:last-child{border-bottom:none}.brd.me{background:var(--accsoft);border-radius:10px;padding-inline:8px;border-bottom-color:transparent}
+.brd .n{font-family:var(--fd);font-weight:700;text-align:center;font-variant-numeric:tabular-nums}
+.brd .sc{font-family:var(--fd);font-weight:700;font-size:18px;font-variant-numeric:tabular-nums}
+.brd .nm{min-width:0;overflow-wrap:anywhere}
+.tier{font-size:11px;padding:1px 8px;border-radius:999px;border:1px solid var(--chalk);white-space:nowrap}
+.li{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
+.li:last-child{border-bottom:none}.li .grow{overflow-wrap:anywhere}
+.x.ok{border-color:var(--ok);color:var(--ok)}.x.bad{border-color:var(--bad);color:var(--bad)}
+.foot{display:flex;justify-content:center;margin-top:6px}
 .toast{position:fixed;inset-inline:16px;bottom:calc(20px + env(safe-area-inset-bottom,0px));margin-inline:auto;max-width:420px;background:var(--ink);color:var(--paper);padding:12px 16px;border-radius:12px;font-size:14px;text-align:center;z-index:20;direction:rtl}
 @media (min-width:720px){.wrap{max-width:680px;padding-inline:28px}h1{font-size:30px}}
 </style>
@@ -182,6 +202,131 @@ const KEY = 'zh-talk-v1';
 let SAVE = {best:{}, level:0};
 try{ const v = JSON.parse(localStorage.getItem(KEY)); if (v && typeof v === 'object') SAVE = Object.assign(SAVE, v); if (!SAVE.best || typeof SAVE.best !== 'object') SAVE.best = {}; }catch(e){}
 const persist = () => { try{ localStorage.setItem(KEY, JSON.stringify(SAVE)); }catch(e){} };
+
+/* ============ المنافسة: تسجيل بالاسم، والانضمام بموافقة المشرف ============
+   قاعدة البيانات نفسها التي يستخدمها مِران، لكن في مجموعة مستقلة (zhPlayers) وبجلسة دخول مستقلة. */
+const FB = {apiKey:"AIzaSyDfDRNr06QJKPShAvjuc0UOaFYNlvU5NEo",authDomain:"miran-7ad31.firebaseapp.com",projectId:"miran-7ad31",storageBucket:"miran-7ad31.firebasestorage.app",messagingSenderId:"1089204486985",appId:"1:1089204486985:web:986b4a4ad56190c878d098"};
+const ADMIN_EMAIL = 'alfifitop2015@gmail.com';
+const X = {ready:false, off:false, uid:null, me:null, meLoaded:false, board:null, full:false, admin:false, rows:null, err:'', busy:false, confirm:''};
+const JF = {name:'', gender:''};
+let fsP = null, fsA = null, authP = null, authA = null, INC = null, unsubMe = null, unsubBoard = null, unsubAdmin = null;
+const g = (m, f) => X.me && X.me.gender === 'f' ? f : m;
+const COL = 'zhPlayers';
+function loadScript(src){ return new Promise((res, rej) => { const e = document.createElement('script'); e.src = src; e.onload = res; e.onerror = rej; document.head.appendChild(e); }); }
+function soft(){ if (view !== 'run') render(); }
+function subBoard(){
+  const want = !!(X.me && X.me.status === 'approved');
+  if (want && !unsubBoard){
+    unsubBoard = fsP.collection(COL).where('status', '==', 'approved').onSnapshot(sn => {
+      X.board = sn.docs.map(d => Object.assign({id:d.id}, d.data())).filter(r => r.total > 0).sort((a, b) => b.total - a.total); soft();
+    }, () => { X.board = []; soft(); });
+  } else if (!want && unsubBoard){ unsubBoard(); unsubBoard = null; X.board = null; }
+}
+function fbStart(){
+  const b = 'https://www.gstatic.com/firebasejs/10.12.2/';
+  loadScript(b + 'firebase-app-compat.js').then(() => Promise.all([loadScript(b + 'firebase-auth-compat.js'), loadScript(b + 'firebase-firestore-compat.js')])).then(() => {
+    const aP = firebase.initializeApp(FB, 'nihao'), aA = firebase.initializeApp(FB, 'nihao-admin');
+    authP = firebase.auth(aP); authA = firebase.auth(aA); fsP = firebase.firestore(aP); fsA = firebase.firestore(aA);
+    INC = firebase.firestore.FieldValue.increment;
+    authP.onAuthStateChanged(u => {
+      X.ready = true; X.uid = u ? u.uid : null; X.me = null; X.meLoaded = !u;
+      if (unsubMe){ unsubMe(); unsubMe = null; }
+      if (u) unsubMe = fsP.collection(COL).doc(u.uid).onSnapshot(d => { X.meLoaded = true; X.me = d.exists ? d.data() : null; subBoard(); soft(); }, () => { X.meLoaded = true; X.me = null; subBoard(); soft(); });
+      else subBoard();
+      soft();
+    });
+    authA.onAuthStateChanged(u => {
+      const ok = !!u && !u.isAnonymous && (u.email || '').toLowerCase() === ADMIN_EMAIL;
+      if (u && !ok){ authA.signOut(); X.err = 'هذا الحساب ليس حساب المشرف.'; }
+      X.admin = ok; X.rows = null;
+      if (unsubAdmin){ unsubAdmin(); unsubAdmin = null; }
+      if (ok) unsubAdmin = fsA.collection(COL).onSnapshot(sn => { X.rows = sn.docs.map(d => Object.assign({id:d.id}, d.data())); soft(); }, () => { X.rows = []; soft(); });
+      soft();
+    });
+  }).catch(() => { X.off = true; X.ready = true; soft(); });
+}
+async function join(){
+  const name = JF.name.trim().slice(0, 20);
+  if (!name){ X.err = 'اكتب اسمك.'; return render(); }
+  if (!JF.gender){ X.err = 'اختر: طالب أو طالبة.'; return render(); }
+  X.busy = true; X.err = ''; render();
+  try{
+    if (!authP.currentUser) await authP.signInAnonymously();
+    const u = authP.currentUser;
+    await fsP.collection(COL).doc(u.uid).set({name, gender:JF.gender, status:'pending', total:0, talks:0, created:Date.now(), updated:Date.now()});
+  }catch(e){
+    X.err = e && e.code === 'permission-denied' ? 'المنافسة لم تُفعَّل بعد من المشرف. حاول لاحقاً.' : 'تعذّر إرسال الطلب. تحقق من الإنترنت ثم حاول مرة أخرى.';
+  }
+  X.busy = false; soft();
+}
+function award(n, talk){
+  if (!TK || !X.me || X.me.status !== 'approved' || !fsP || !X.uid) return 0;
+  TK.pts += n;
+  const d = {total:INC(n), updated:Date.now()}; if (talk) d.talks = INC(1);
+  fsP.collection(COL).doc(X.uid).update(d).catch(() => {});
+  return n;
+}
+function adminLogin(){
+  const em = ($('#aem').value || '').trim(), pw = $('#apw').value || '';
+  if (!em || !pw){ X.err = 'اكتب البريد وكلمة المرور.'; return render(); }
+  X.busy = true; X.err = ''; render();
+  authA.signInWithEmailAndPassword(em, pw).then(() => { X.busy = false; soft(); }).catch(() => { X.busy = false; X.err = 'تعذّر الدخول. تحقق من البريد وكلمة المرور.'; soft(); });
+}
+function adminDo(what, id){
+  const ref = fsA.collection(COL).doc(id), now = Date.now();
+  const fail = () => toast('لم يُنفَّذ الطلب. تحقق من الإنترنت ومن نشر قواعد قاعدة البيانات.');
+  if (what === 'approve') ref.update({status:'approved', updated:now}).catch(fail);
+  else if (what === 'reject') ref.update({status:'rejected', updated:now}).catch(fail);
+  else if (what === 'reset' || what === 'del'){
+    if (X.confirm !== what + id){ X.confirm = what + id; return render(); }
+    X.confirm = '';
+    (what === 'reset' ? ref.update({total:0, talks:0, updated:now}) : ref.delete()).catch(fail);
+    render();
+  }
+}
+const TITLE = (i, f) => i === 0 ? '🥇 ' + (f ? 'فارسة المنافسة' : 'فارس المنافسة') : i === 1 ? '🥈 ' + (f ? 'منافسة شرسة' : 'منافس شرس') : i === 2 ? '🥉 ' + (f ? 'منافسة قوية' : 'منافس قوي') : i < 10 ? '🔥 ' + (f ? 'صاعدة بقوة' : 'صاعد بقوة') : '';
+function vComp(){
+  if (X.off) return '';
+  if (!X.ready || (X.uid && !X.meLoaded)) return `<div class="card"><p class="sub" style="margin:0">جارٍ تحميل المنافسة…</p></div>`;
+  const m = X.me;
+  if (!m) return `<form id="joinform" class="card stack"><div><h2>انضم للمنافسة</h2><p class="sub">سجّل اسمك، وتدخل المنافسة بعد موافقة المشرف.</p></div>
+    <label class="f">الاسم<input type="text" class="ar" id="jname" maxlength="20" autocomplete="off" value="${esc(JF.name)}" placeholder="اكتب اسمك"></label>
+    <div class="seg"><button type="button" class="${JF.gender === 'm' ? 'on' : ''}" data-gen="m" aria-pressed="${JF.gender === 'm'}">طالب</button><button type="button" class="${JF.gender === 'f' ? 'on' : ''}" data-gen="f" aria-pressed="${JF.gender === 'f'}">طالبة</button></div>
+    ${X.err ? `<div class="warn">${esc(X.err)}</div>` : ''}
+    <button class="btn wide" type="submit" ${X.busy ? 'disabled' : ''}>${X.busy ? 'جارٍ الإرسال…' : 'أرسل طلب الانضمام'}</button></form>`;
+  if (m.status === 'pending') return `<div class="card"><h2>طلبك قيد المراجعة</h2><p class="sub">أهلاً ${esc(m.name)}. وصل طلبك إلى المشرف، وتظهر المنافسة هنا فور الموافقة. ${g('تستطيع', 'تستطيعين')} التدرّب الآن، وتبدأ ${g('نقاطك', 'نقاطكِ')} بعد القبول.</p></div>`;
+  if (m.status !== 'approved') return `<div class="card"><h2>لم يُقبل طلب الانضمام</h2><p class="sub">${g('تواصل', 'تواصلي')} مع المشرف إن كان ذلك خطأ. التدريب متاح دون منافسة.</p></div>`;
+  const B = X.board, my = B ? B.findIndex(r => r.id === X.uid) : -1;
+  const row = (r, i) => `<div class="brd ${r.id === X.uid ? 'me' : ''}"><span class="n">${i + 1}</span><span class="nm">${esc(r.name)} ${TITLE(i, r.gender === 'f') ? `<span class="tier">${TITLE(i, r.gender === 'f')}</span>` : ''}</span><span class="sc">${r.total}</span></div>`;
+  const lim = X.full ? 100 : 5;
+  let list;
+  if (!B) list = `<p class="sub" style="margin:0">جارٍ تحميل الترتيب…</p>`;
+  else if (!B.length) list = `<p class="sub" style="margin:0">لا نقاط بعد. ${g('ابدأ', 'ابدئي')} محادثة ${g('لتتصدّر', 'لتتصدّري')} الترتيب.</p>`;
+  else list = B.slice(0, lim).map(row).join('') + (my >= lim ? row(B[my], my) : '') + (B.length > 5 ? `<button class="x" data-act="full" style="margin-top:8px">${X.full ? 'عرض أقل' : 'عرض الترتيب كاملاً'}</button>` : '');
+  return `<div class="card stack"><div class="stats"><div class="stat"><b>${m.total || 0}</b><span>${g('نقاطك', 'نقاطكِ')}</span></div><div class="stat"><b>${my >= 0 ? my + 1 : '–'}</b><span>${g('ترتيبك', 'ترتيبكِ')}${B ? ' من ' + B.length : ''}</span></div></div>
+    <div><h2>ترتيب المتنافسين</h2><div>${list}</div></div>
+    <p class="sub" style="margin:0">الفهم من أول محاولة: 10 نقاط × المستوى. بعد الإعادة: 5 × المستوى. إكمال المحادثة: 10 نقاط.</p></div>`;
+}
+function vAdmin(){
+  const back = `<button class="btn plain wide" data-act="home">رجوع</button>`;
+  if (X.off || !X.ready) return header() + `<div class="sec"><div class="warn">تعذّر الاتصال بخدمة المنافسة. تحقق من الإنترنت ثم أعد فتح الصفحة.</div>${back}</div>`;
+  if (!X.admin) return header() + `<div class="sec"><form id="admform" class="card stack"><div><h2>دخول المشرف</h2><p class="sub">بحساب المدير نفسه المستخدم في مِران.</p></div>
+    <label class="f">البريد الإلكتروني<input type="email" id="aem" dir="ltr" autocomplete="username"></label>
+    <label class="f">كلمة المرور<input type="password" id="apw" dir="ltr" autocomplete="current-password"></label>
+    ${X.err ? `<div class="warn">${esc(X.err)}</div>` : ''}
+    <button class="btn wide" type="submit" ${X.busy ? 'disabled' : ''}>${X.busy ? 'جارٍ الدخول…' : 'دخول'}</button></form>${back}</div>`;
+  const R = X.rows;
+  if (!R) return header() + `<div class="sec"><p class="sub">جارٍ التحميل…</p>${back}</div>`;
+  const by = st => R.filter(r => (st === 'rejected' ? r.status !== 'pending' && r.status !== 'approved' : r.status === st));
+  const P = by('pending').sort((a, b) => (a.created || 0) - (b.created || 0)), A = by('approved').sort((a, b) => (b.total || 0) - (a.total || 0)), J = by('rejected');
+  const who = r => `<span class="grow"><b>${esc(r.name || '')}</b> <span class="chip">${r.gender === 'f' ? 'طالبة' : 'طالب'}</span></span>`;
+  const btn = (w, r, label, cls) => `<button class="x ${cls || ''}" data-adm="${w}" data-id="${esc(r.id)}">${X.confirm === w + r.id ? 'تأكيد: ' + label : label}</button>`;
+  return header() + `<div class="qhead"><h2>لوحة المشرف</h2><button class="x" data-act="adminOut">خروج المشرف</button></div><div class="sec">
+    <div class="card"><h3>طلبات الانضمام (${P.length})</h3>${P.length ? P.map(r => `<div class="li">${who(r)}${btn('approve', r, 'موافقة', 'ok')}${btn('reject', r, 'رفض', 'bad')}</div>`).join('') : '<p class="sub">لا توجد طلبات جديدة.</p>'}</div>
+    <div class="card"><h3>المتنافسون (${A.length})</h3>${A.length ? A.map(r => `<div class="li">${who(r)}<span class="chip">${r.total || 0} نقطة</span>${btn('reset', r, 'تصفير النقاط')}${btn('reject', r, 'إيقاف', 'bad')}</div>`).join('') : '<p class="sub">لا يوجد متنافسون بعد.</p>'}</div>
+    ${J.length ? `<div class="card"><h3>المرفوضون والموقوفون (${J.length})</h3>${J.map(r => `<div class="li">${who(r)}${btn('approve', r, 'قبول', 'ok')}${btn('del', r, 'حذف', 'bad')}</div>`).join('')}</div>` : ''}
+    ${back}</div>`;
+}
 
 const SPK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5L6 9H3v6h3l5 4z" fill="none"/><path d="M15.5 8.5a5 5 0 010 7M18.5 5.5a9 9 0 010 13" fill="none"/></svg>';
 const MICSVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="none"/><path d="M5 11a7 7 0 0014 0M12 18v3M9 21h6" fill="none"/></svg>';
@@ -283,7 +428,7 @@ function go(v){ view = v; render(); window.scrollTo(0, 0); }
 function tkScroll(){ setTimeout(() => { window.scrollTo({top:document.body.scrollHeight, behavior:'smooth'}); }, 60); }
 function startTalk(id){
   const sc = TALKS.find(x => x.id === id); if (!sc) return;
-  TK = {sc, i:0, attempts:0, log:[], listening:false, busy:false, done:false, first:0, waitNext:false};
+  TK = {sc, i:0, attempts:0, log:[], listening:false, busy:false, done:false, first:0, pts:0, waitNext:false};
   go('run'); tkBot();
 }
 function tkBot(){ const t = tkTurn(); TK.attempts = 0; TK.waitNext = false; TK.log.push({w:'bot', t:t[0], py:t[1], ar:t[2]}); render(); tkScroll(); speak(t[0]); }   // spoken inside the tap itself, so phones allow the sound
@@ -340,7 +485,8 @@ async function tkEval(alts){
   if (ok){
     const first = TK.attempts === 0; if (first) TK.first++;
     const fuller = !fixed && tsim(best, t[4]) < 0.5 ? `<div class="tknote">جملة أكمل:</div><div class="tkmodel">${esc(t[4])}</div><div class="py">${esc(t[5])}</div>` : '';
-    tkSys(`<b>${first ? 'ممتاز! فهمتك.' : 'أحسنت! هذه المرة فهمتك.'}</b>${fixHtml(ai, best, notes)}${fuller}`, {ok:true, say:fixed || (fuller ? t[4] : '')});
+    const gain = award((first ? 10 : 5) * TK.sc.l);
+    tkSys(`<b>${first ? 'ممتاز! فهمتك.' : 'أحسنت! هذه المرة فهمتك.'}</b>${gain ? `<span class="chip">+${gain} نقطة</span>` : ''}${fixHtml(ai, best, notes)}${fuller}`, {ok:true, say:fixed || (fuller ? t[4] : '')});
     TK.waitNext = true;
   } else {
     TK.attempts++;
@@ -353,7 +499,7 @@ async function tkEval(alts){
 function tkNext(){
   TK.i++;
   if (TK.i >= TK.sc.turns.length){
-    TK.done = true;
+    TK.done = true; award(10, true);
     const pct = Math.round(100 * TK.first / TK.sc.turns.length);
     SAVE.best[TK.sc.id] = Math.max(SAVE.best[TK.sc.id] || 0, pct); persist();
     render(); tkScroll(); return;
@@ -377,11 +523,14 @@ function vList(){
   const groups = [1, 2, 3].filter(l => !lv || l === lv).map(l => `<h2>محادثات المستوى ال${LV[l]}</h2>${TALKS.filter(x => x.l === l).map(tile).join('')}`).join('');
   return header() + `<div class="band"><span class="tcmic">${MICSVG}</span><div class="grow"><h1>المحادثة الصوتية</h1><p class="sub">تحدّث بالصينية، والتطبيق يسمعك ويصحّح لك.</p></div></div>
   <div class="sec">
+   ${X.admin && X.rows ? `<button class="tile" data-act="admin"><span class="grow"><h3>لوحة المشرف</h3><span class="meta">طلبات انضمام بانتظارك: ${X.rows.filter(r => r.status === 'pending').length}</span></span><span class="go">‹</span></button>` : ''}
+   ${vComp()}
    <div class="card"><p style="margin:0;font-size:14px">التطبيق يقول جملة ويسألك. اضغط زر المايكروفون وأجب بصوتك. إذا لم يفهمك يطلب منك الإعادة مع تلميح، وإذا تكرر ذلك يعرض لك الإجابة المتوقعة لتكرّرها.</p></div>
    <div class="stack" style="gap:6px"><span class="lbl">المستوى <small>(اختياري)</small></span>
     <div class="seg">${[[0,'الكل'],[1,'بسيط'],[2,'متوسط'],[3,'صعب']].map(([v, n]) => `<button class="${lv === v ? 'on' : ''}" data-lv="${v}" aria-pressed="${lv === v}">${n}</button>`).join('')}</div></div>
    ${groups}
    ${installEvt ? '<button class="btn wide" data-act="install">تثبيت التطبيق على جهازك</button>' : ''}
+   ${X.off || X.admin ? '' : '<div class="foot"><button class="x" data-act="admin">دخول المشرف</button></div>'}
   </div>`;
 }
 function vRun(){
@@ -393,7 +542,7 @@ function vRun(){
   let ctl;
   if (TK.done){
     const pct = Math.round(100 * TK.first / n);
-    ctl = `<div class="card stack" style="text-align:center;align-items:center"><div class="big">${TK.first}/${n}</div><p style="margin:0">فهمتك من أول محاولة في ${TK.first} من ${n} جمل (${pct}%).</p>
+    ctl = `<div class="card stack" style="text-align:center;align-items:center"><div class="big">${TK.first}/${n}</div><p style="margin:0">فهمتك من أول محاولة في ${TK.first} من ${n} جمل (${pct}%).</p>${TK.pts ? `<p style="margin:0"><span class="chip">+${TK.pts} نقطة في هذه المحادثة</span></p>` : ''}
      <div class="row" style="width:100%"><button class="btn grow" data-talk="${s.id}">إعادة المحادثة</button><button class="btn plain grow" data-act="tkList">محادثة أخرى</button></div></div>`;
   }
   else if (TK.busy) ctl = `<div class="wait" role="status" aria-label="أصحّح إجابتك"><i></i><i></i><i></i></div>`;
@@ -406,7 +555,7 @@ function vRun(){
   <div class="sec"><p class="prog">الجملة ${Math.min(TK.i + 1, n)} من ${n} · المستوى ال${LV[s.l]}</p><div class="bar"><i style="width:${100 * (TK.done ? n : TK.i) / n}%"></i></div>
   <div class="chat" aria-live="polite">${log}</div>${ctl}</div>`;
 }
-function render(){ app.innerHTML = view === 'run' && TK ? vRun() : vList(); }
+function render(){ app.innerHTML = view === 'run' && TK ? vRun() : view === 'admin' ? vAdmin() : vList(); }
 
 /* ============ الأحداث ============ */
 function quit(){ tkStopRec(); try{ speechSynthesis.cancel(); }catch(e){} TK = null; go('list'); }
@@ -416,6 +565,12 @@ app.addEventListener('click', e => {
   if (b.dataset.lv != null){ SAVE.level = +b.dataset.lv; persist(); render(); return; }
   if (b.dataset.say){ speak(b.dataset.say); return; }
   if (b.dataset.tr){ const a = b.closest('.bub').querySelector('.bubar'); if (a) a.hidden = !a.hidden; return; }
+  if (b.dataset.gen){ JF.gender = b.dataset.gen; X.err = ''; render(); return; }
+  if (b.dataset.adm){ adminDo(b.dataset.adm, b.dataset.id); return; }
+  if (b.dataset.act === 'admin'){ X.err = ''; go('admin'); return; }
+  if (b.dataset.act === 'home'){ X.err = ''; X.confirm = ''; go('list'); return; }
+  if (b.dataset.act === 'adminOut'){ if (authA) authA.signOut(); go('list'); return; }
+  if (b.dataset.act === 'full'){ X.full = !X.full; render(); return; }
   if (b.dataset.act === 'install'){ const ev = installEvt; if (ev){ installEvt = null; ev.prompt(); render(); } return; }
   const act = b.dataset.act; if (!act || (!TK && act !== 'tkList')) return;
   if (act === 'tkMic') tkListen();
@@ -425,12 +580,16 @@ app.addEventListener('click', e => {
   else if (act === 'tkNext'){ tkNext(); const i = $('#tkin'); if (i) i.focus(); }
   else if (act === 'tkQuit' || act === 'tkList') quit();
 });
+app.addEventListener('input', e => { if (e.target.id === 'jname') JF.name = e.target.value; });
 app.addEventListener('submit', e => {
   e.preventDefault();
+  if (e.target.id === 'joinform'){ if (!X.busy) join(); return; }
+  if (e.target.id === 'admform'){ if (!X.busy) adminLogin(); return; }
   const i = $('#tkin'); if (!i || !TK || TK.busy) return;
   const v = i.value.trim(); if (v) tkEval([v.slice(0, 300)]);
 });
 render();
+fbStart();
 </script>
 
 </body>
