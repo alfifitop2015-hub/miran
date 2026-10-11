@@ -135,6 +135,7 @@ label.f{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:14p
 .iv-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;color:#fff;font-family:var(--fd);font-size:18px}
 .iv-bar .x{color:#fff;border-color:rgba(255,255,255,.5)}
 @media (prefers-reduced-motion:no-preference){.ivplay{animation:ivpulse 2.2s infinite}@keyframes ivpulse{0%,100%{box-shadow:0 0 0 6px rgba(255,203,92,.18)}50%{box-shadow:0 0 0 11px rgba(255,203,92,.08)}}}
+.lock{width:44px;height:44px;border-radius:12px;background:var(--accsoft);color:var(--acc);display:grid;place-items:center;flex:none}.lock svg{width:22px;height:22px}
 .toast{position:fixed;inset-inline:16px;bottom:calc(20px + env(safe-area-inset-bottom,0px));margin-inline:auto;max-width:420px;background:var(--ink);color:var(--paper);padding:12px 16px;border-radius:12px;font-size:14px;text-align:center;z-index:20;direction:rtl}
 @media (min-width:720px){.wrap{max-width:680px;padding-inline:28px}h1{font-size:30px}}
 </style>
@@ -224,7 +225,8 @@ let fsP = null, fsA = null, authP = null, authA = null, INC = null, unsubMe = nu
 const g = (m, f) => X.me && X.me.gender === 'f' ? f : m;
 const COL = 'zhPlayers';
 function loadScript(src){ return new Promise((res, rej) => { const e = document.createElement('script'); e.src = src; e.onload = res; e.onerror = rej; document.head.appendChild(e); }); }
-function soft(){ if (view !== 'run') render(); }
+const allowed = () => X.admin || !!(X.me && X.me.status === 'approved');   // المحادثات للمقبولين فقط
+function soft(){ if (view === 'run' && !allowed()){ quit(); return; } if (view !== 'run') render(); }
 function subBoard(){
   const want = !!(X.me && X.me.status === 'approved');
   if (want && !unsubBoard){
@@ -305,8 +307,8 @@ function vComp(){
     <div class="seg"><button type="button" class="${JF.gender === 'm' ? 'on' : ''}" data-gen="m" aria-pressed="${JF.gender === 'm'}">طالب</button><button type="button" class="${JF.gender === 'f' ? 'on' : ''}" data-gen="f" aria-pressed="${JF.gender === 'f'}">طالبة</button></div>
     ${X.err ? `<div class="warn">${esc(X.err)}</div>` : ''}
     <button class="btn wide" type="submit" ${X.busy ? 'disabled' : ''}>${X.busy ? 'جارٍ الإرسال…' : 'أرسل طلب الانضمام'}</button></form>`;
-  if (m.status === 'pending') return `<div class="card"><h2>طلبك قيد المراجعة</h2><p class="sub">أهلاً ${esc(m.name)}. وصل طلبك إلى المشرف، وتظهر المنافسة هنا فور الموافقة. ${g('تستطيع', 'تستطيعين')} التدرّب الآن، وتبدأ ${g('نقاطك', 'نقاطكِ')} بعد القبول.</p></div>`;
-  if (m.status !== 'approved') return `<div class="card"><h2>لم يُقبل طلب الانضمام</h2><p class="sub">${g('تواصل', 'تواصلي')} مع المشرف إن كان ذلك خطأ. التدريب متاح دون منافسة.</p></div>`;
+  if (m.status === 'pending') return `<div class="card"><h2>طلبك قيد المراجعة</h2><p class="sub">أهلاً ${esc(m.name)}. وصل طلبك إلى المشرف. تُفتح لك المحادثات والمنافسة هنا فور الموافقة.</p></div>`;
+  if (m.status !== 'approved') return `<div class="card"><h2>لم يُقبل طلب الانضمام</h2><p class="sub">${g('تواصل', 'تواصلي')} مع المشرف إن كان ذلك خطأ.</p></div>`;
   const B = X.board, my = B ? B.findIndex(r => r.id === X.uid) : -1;
   const row = (r, i) => `<div class="brd ${r.id === X.uid ? 'me' : ''}"><span class="n">${i + 1}</span><span class="nm">${esc(r.name)} ${TITLE(i, r.gender === 'f') ? `<span class="tier">${TITLE(i, r.gender === 'f')}</span>` : ''}</span><span class="sc">${r.total}</span></div>`;
   const lim = X.full ? 100 : 5;
@@ -317,6 +319,15 @@ function vComp(){
   return `<div class="card stack"><div class="stats"><div class="stat"><b>${m.total || 0}</b><span>${g('نقاطك', 'نقاطكِ')}</span></div><div class="stat"><b>${my >= 0 ? my + 1 : '–'}</b><span>${g('ترتيبك', 'ترتيبكِ')}${B ? ' من ' + B.length : ''}</span></div></div>
     <div><h2>ترتيب المتنافسين</h2><div>${list}</div></div>
     <p class="sub" style="margin:0">الفهم من أول محاولة: 10 نقاط × المستوى. بعد الإعادة: 5 × المستوى. إكمال المحادثة: 10 نقاط.</p></div>`;
+}
+function lockNote(){
+  const why = X.off ? 'تعذّر الاتصال بخدمة المنافسة. تحقق من الإنترنت ثم أعد فتح الصفحة.'
+    : !X.ready || (X.uid && !X.meLoaded) ? ''
+    : !X.me ? 'المحادثات مخصّصة للمتنافسين المقبولين. سجّل اسمك أولاً، وتُفتح لك بعد موافقة المشرف.'
+    : X.me.status === 'pending' ? 'المحادثات مقفلة حتى يوافق المشرف على طلبك.'
+    : 'المحادثات متاحة للمتنافسين المقبولين فقط.';
+  if (!why) return '';
+  return `<div class="card row"><span class="lock" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2" fill="none"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none"/></svg></span><p class="grow" style="margin:0;font-size:15px">${why}</p></div>`;
 }
 function vAdmin(){
   const back = `<button class="btn plain wide" data-act="home">رجوع</button>`;
@@ -438,6 +449,7 @@ const tkTurn = () => TK.sc.turns[TK.i];
 function go(v){ view = v; render(); window.scrollTo(0, 0); }
 function tkScroll(){ setTimeout(() => { window.scrollTo({top:document.body.scrollHeight, behavior:'smooth'}); }, 60); }
 function startTalk(id){
+  if (!allowed()) return;
   const sc = TALKS.find(x => x.id === id); if (!sc) return;
   TK = {sc, i:0, attempts:0, log:[], listening:false, busy:false, done:false, first:0, pts:0, waitNext:false};
   go('run'); tkBot();
@@ -537,10 +549,10 @@ function vList(){
    ${X.admin && X.rows ? `<button class="tile" data-act="admin"><span class="grow"><h3>لوحة المشرف</h3><span class="meta">طلبات انضمام بانتظارك: ${X.rows.filter(r => r.status === 'pending').length}</span></span><span class="go">‹</span></button>` : ''}
    <button type="button" class="ivcard" data-act="intro"><span class="ivplay"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" fill="currentColor"/></svg></span><b>تعرّف على ني هاو</b><span class="ivfilm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3" fill="none"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4" fill="none"/></svg></span></button>
    ${vComp()}
-   <div class="card"><p style="margin:0;font-size:14px">التطبيق يقول جملة ويسألك. اضغط زر المايكروفون وأجب بصوتك. إذا لم يفهمك يطلب منك الإعادة مع تلميح، وإذا تكرر ذلك يعرض لك الإجابة المتوقعة لتكرّرها.</p></div>
+   ${allowed() ? `   <div class="card"><p style="margin:0;font-size:14px">التطبيق يقول جملة ويسألك. اضغط زر المايكروفون وأجب بصوتك. إذا لم يفهمك يطلب منك الإعادة مع تلميح، وإذا تكرر ذلك يعرض لك الإجابة المتوقعة لتكرّرها.</p></div>
    <div class="stack" style="gap:6px"><span class="lbl">المستوى <small>(اختياري)</small></span>
     <div class="seg">${[[0,'الكل'],[1,'بسيط'],[2,'متوسط'],[3,'صعب']].map(([v, n]) => `<button class="${lv === v ? 'on' : ''}" data-lv="${v}" aria-pressed="${lv === v}">${n}</button>`).join('')}</div></div>
-   ${groups}
+   ${groups}` : lockNote()}
    ${installEvt ? '<button class="btn wide" data-act="install">تثبيت التطبيق على جهازك</button>' : ''}
    ${X.off || X.admin ? '' : '<div class="foot"><button class="x" data-act="admin">دخول المشرف</button></div>'}
   </div>`;
@@ -575,7 +587,7 @@ function openIntro(){
   closeIntro(); try{ speechSynthesis.cancel(); }catch(e){}
   const el = document.createElement('div');
   el.id = 'intro'; el.className = 'iv-ov'; el.dir = 'rtl'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'تعريف بتطبيق ني هاو');
-  el.innerHTML = '<div class="iv-box"><div class="iv-bar"><span>تعرّف على ني هاو</span><button type="button" class="x" id="ivclose">إغلاق</button></div><video class="iv-video" src="intro.mp4?v=1" poster="intro-poster.jpg" controls playsinline autoplay preload="auto"></video></div>';
+  el.innerHTML = '<div class="iv-box"><div class="iv-bar"><span>تعرّف على ني هاو</span><button type="button" class="x" id="ivclose">إغلاق</button></div><video class="iv-video" src="intro.mp4?v=2" poster="intro-poster.jpg" controls playsinline autoplay preload="auto"></video></div>';
   el.addEventListener('click', e => { if (e.target === el || e.target.id === 'ivclose') closeIntro(); });
   document.body.appendChild(el); document.body.style.overflow = 'hidden';
   const v = el.querySelector('video'); const p = v.play(); if (p && p.catch) p.catch(() => {});
