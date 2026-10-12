@@ -1039,6 +1039,52 @@ function tsim(raw,model){const m=tnorm(model).split(' ').filter(w=>w.length>1);i
 const GNOTES=[[/\bi is\b/,'نقول I am وليس I is.'],[/\b(he|she|it) (go|play|like|have|do|want|live|work)\b/,'مع he / she / it نضيف s للفعل في المضارع: he goes, she plays, it has.'],[/\bi am (go|play|like|have|want|live|work|agree)\b/,'لا نضع am قبل الفعل العادي: نقول I go وليس I am go.'],[/\bi has\b/,'مع I نقول have وليس has.'],[/\b(yesterday|last)\b.*\b(go|play|visit|watch|eat)\b/,'مع yesterday و last نستخدم الماضي: went, played, visited.'],[/\ba (apple|orange|engineer|english|hour)\b/,'قبل الكلمة التي تبدأ بصوت حرف علّة نستخدم an: an engineer, an apple.'],[/\bmore (big|small|hot|cold|tall|fast)\b/,'الصفات القصيرة نضيف لها er: bigger وليس more big.']];
 function gnotes(raw){const t=tnorm(raw);return GNOTES.filter(([r])=>r.test(t)).map(x=>x[1])}
 /* ============ قبول مرن + محادثة يبدؤها الطالب ============ */
+/* ============ الذكاء الاصطناعي: يفهم معنى إجابة الطالب (Firebase AI Logic + Gemini) ============
+   تطبيق Firebase مستقل باسم miran-ai على مشروع مِران نفسه، محمي بـ App Check.
+   إذا تعذّر الوصول للذكاء الاصطناعي يرجع التطبيق إلى المطابقة المحلية. */
+const AI_SDK='https://www.gstatic.com/firebasejs/12.19.0/';
+const AI_MODELS=['gemini-3.8-flash','gemini-flash-latest','gemini-2.5-flash'];
+const APPCHECK_SITE_KEY='6LfGiOstAAAAAESfhLqvBOgqQsv6KE9K5QXQl-CE';
+let aiPromise=null,aiDown=false,aiFails=0,aiModelIdx=0,AIOK=false;
+const aStr=v=>typeof v==='string'?v.trim():'';
+function aiInit(){if(!FB||location.protocol==='file:'){aiDown=true;return Promise.resolve(null)}
+ if(!aiPromise)aiPromise=(async()=>{const [{initializeApp},AI]=await Promise.all([import(AI_SDK+'firebase-app.js'),import(AI_SDK+'firebase-ai.js')]);
+  const app=initializeApp(FB,'miran-ai');
+  if(APPCHECK_SITE_KEY){const AC=await import(AI_SDK+'firebase-app-check.js');AC.initializeAppCheck(app,{provider:new AC.ReCaptchaEnterpriseProvider(APPCHECK_SITE_KEY),isTokenAutoRefreshEnabled:true})}
+  return {ai:AI.getAI(app,{backend:new AI.GoogleAIBackend()}),getGenerativeModel:AI.getGenerativeModel}})().catch(()=>{aiDown=true;return null});
+ return aiPromise}
+async function aiAsk(prompt){if(aiDown)return null;const k=await aiInit();if(!k)return null;
+ while(aiModelIdx<AI_MODELS.length){try{const model=k.getGenerativeModel(k.ai,{model:AI_MODELS[aiModelIdx],generationConfig:{responseMimeType:'application/json',temperature:0.2}});
+  const res=await Promise.race([model.generateContent(prompt),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),15000))]);
+  const out=JSON.parse(res.response.text());aiFails=0;AIOK=true;return out&&typeof out==='object'?out:null}
+ catch(e){const m=String((e&&(e.message||e.code))||e);
+  if(/not.?found|404|unsupported|is not supported/i.test(m)){aiModelIdx++;continue}
+  if(/api.?not.?enabled|permission|403|401|app.?check|unauthenticated|billing|quota/i.test(m)||++aiFails>=2)aiDown=true;return null}}
+ aiDown=true;return null}
+const aiLevel=()=>{const p=cur();return p?`The learner is a Saudi school student in ${['','grade 1','grade 2','grade 3','grade 4','grade 5','grade 6','grade 7','grade 8','grade 9','grade 10','grade 11','grade 12'][p.grade]||'school'}; keep your English simple for that level.`:''};
+const AI_FIELDS=`"corrected": the learner's OWN sentence with grammar/word mistakes fixed, changing as little as possible (identical when already correct; empty when understandable is false). "notes": 0-2 short explanations IN ARABIC of real grammar or vocabulary mistakes, naming the exact word; never invent mistakes; ignore capitalization and punctuation (the text is a speech transcript).`;
+async function aiJudgeEn(turn,said,scene){
+ const r=await aiAsk(`You check one spoken answer in an English speaking drill for an Arabic-speaking learner. Scenario: "${scene}". ${aiLevel()} The learner's text is a speech-recognition transcript and may contain mis-recognized words that sound alike.
+The app asked: ${turn[0]}
+Example of a good answer: ${turn[3]}
+Learner said: ${said}
+Reply ONLY with JSON:
+{"understandable":true,"fits":true,"corrected":"","ideal":"","notes":[]}
+"understandable": true when the learner's words form understandable English. "fits": true only when the answer is understandable AND a relevant, sensible answer to the question; its content may differ from the example (any natural wording counts). Off-topic or unrelated answers, nonsense, or just repeating the question are false. ${AI_FIELDS} "ideal": one natural, complete, correct English answer to the question that keeps the learner's own idea when fits is true (otherwise a good model answer); short and simple.`);
+ if(!r||typeof r.fits!=='boolean')return null;
+ return {fits:r.fits,understandable:r.understandable!==false,corrected:aStr(r.corrected),ideal:aStr(r.ideal),notes:(Array.isArray(r.notes)?r.notes:[]).map(aStr).filter(Boolean).slice(0,2)}}
+async function aiChat(history,said,scene){
+ const h=history.slice(-8).map(m=>(m.w==='bot'?'App: ':'Learner: ')+m.t).join('\n');
+ const r=await aiAsk(`You are Miran, a friendly English conversation partner for an Arabic-speaking school student. ${aiLevel()} ${scene?`Topic: "${scene}".`:'The learner leads a free conversation on any suitable topic.'} The learner's text is a speech-recognition transcript.
+Conversation so far:
+${h||'(none)'}
+Learner just said: ${said}
+Reply ONLY with JSON:
+{"understandable":true,"corrected":"","notes":[],"reply":{"en":"","ar":""},"end":false}
+"understandable": true when the learner's words form understandable English. ${AI_FIELDS} "reply": your short, warm, natural answer to what the learner said (1-2 simple sentences), usually ending with a simple follow-up question to keep the conversation going, plus its Arabic translation; empty when understandable is false. Keep everything appropriate for children. "end": true only when the learner says goodbye.`);
+ if(!r||typeof r.understandable!=='boolean')return null;const rp=r.reply||{};
+ return {understandable:r.understandable,corrected:aStr(r.corrected),notes:(Array.isArray(r.notes)?r.notes:[]).map(aStr).filter(Boolean).slice(0,2),reply:{en:aStr(rp.en),ar:aStr(rp.ar)},end:r.end===true}}
+
 const FILLER=new Set(['uh','um','umm','hmm','ah','oh','er','eh','mm','huh']);
 function tWords(raw){return tnorm(raw).split(' ').filter(w=>w&&!FILLER.has(w))}
 // الكلام مفهوم: كلمتان إنجليزيتان على الأقل، أو كلمة واحدة إذا كانت الإجابة المثالية قصيرة
@@ -1116,18 +1162,11 @@ const FALLBACK=[['That is interesting! Tell me more.','هذا مثير للاه�
 function botReply(raw,used){const t=tnorm(raw);for(let k=0;k<CHAT.length;k++){const m=t.match(CHAT[k][0]);if(m&&!(used&&used.has(k)&&k!==0)){used&&used.add(k);return CHAT[k][1](m)}}
  const f=FALLBACK[(used?used.size:0)%FALLBACK.length];used&&used.add('f'+used.size);return f}
 const FREE_N=8;
-function startFree(){TK={free:true,i:0,attempts:0,log:[],listening:false,typing:!SR,done:false,first:0,score:0,waitNext:false,used:new Set(),sc:{id:'free',t:'محادثة حرة: أنت تبدأ',turns:Array(FREE_N).fill(0)}};go('talkRun');
+function startFree(){aiInit();TK={free:true,i:0,attempts:0,log:[],listening:false,typing:!SR,done:false,first:0,score:0,waitNext:false,used:new Set(),sc:{id:'free',t:'محادثة حرة: أنت تبدأ',turns:Array(FREE_N).fill(0)}};go('talkRun');
  tkSys(`<b>${g('أنت','أنتِ')} ${g('تبدأ','تبدئين')} المحادثة!</b> ${g('قل','قولي')} أي شيء بالإنجليزي: ${g('سلّم','سلّمي')}، أو ${g('اسأل','اسألي')} سؤالاً، أو ${g('تكلّم','تكلّمي')} عن نفسك، والتطبيق يردّ ${g('عليك','عليكِ')}.<div class="tknote">أمثلة: Hello! How are you? · My name is … · I like football.</div>`);render()}
-function tkFree(alts){const raw=alts.find(a=>understood(a,''))||alts[0];TK.log.push({w:'me',t:raw});
- if(!understood(raw,'')){TK.attempts++;tkSys(g('لم أفهمك جيداً. أعد الكلام بجملة إنجليزية أوضح.','لم أفهمكِ جيداً. أعيدي الكلام بجملة إنجليزية أوضح.'));render();tkScroll();return}
- const notes=gnotes(raw);TK.first++;TK.score+=2;record({sec:'en',cat:'speak'},true,'practice',null);
- if(notes.length)tkSys(`<div class="tknote">تصحيح: ${notes.join(' ')}</div>`);
- const r=botReply(raw,TK.used);TK.i++;TK.log.push({w:'bot',t:r[0],ar:r[1]});
- if(r[2]||TK.i>=FREE_N){TK.done=true;tkFinish()}
- render();tkScroll();setTimeout(()=>speak(r[0]),300)}
 let TK=null,REC=null;
 const tkTurn=()=>TK.sc.turns[TK.i];
-function startTalk(id){const sc=TALKS.find(x=>x.id===id);if(!sc)return;const me=(cur()||{}).talkFirst==='me';TK={sc,i:0,attempts:0,log:[],listening:false,typing:!SR,done:false,first:0,score:0,waitNext:false,opener:me,used:new Set()};go('talkRun');
+function startTalk(id){const sc=TALKS.find(x=>x.id===id);if(!sc)return;aiInit();const me=(cur()||{}).talkFirst==='me';TK={sc,i:0,attempts:0,log:[],listening:false,typing:!SR,done:false,first:0,score:0,waitNext:false,opener:me,used:new Set()};go('talkRun');
  if(me){tkSys(`<b>${g('أنت','أنتِ')} ${g('تبدأ','تبدئين')}!</b> ${g('ابدأ','ابدئي')} المحادثة بالتحية أو بسؤال، مثل: <span dir="ltr">Hello! How are you?</span>`);render()}else tkBot()}
 function tkBot(){const t=tkTurn();TK.attempts=0;TK.waitNext=false;TK.log.push({w:'bot',t:t[0],ar:t[1]});render();tkScroll();setTimeout(()=>speak(t[0]),350)}
 function tkScroll(){setTimeout(()=>{window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})},60)}
@@ -1146,27 +1185,57 @@ function tkListen(){if(!SR){TK.typing=true;render();return}
   else tkSys('لم أسمع صوتك. اضغط زر المايكروفون، ثم تكلّم بوضوح وقرّب الجوال منك.');
   render();tkScroll()};
  try{r.start();TK.listening=true;render()}catch(e){TK.typing=true;render()}}
-function tkEval(alts){if(TK.free)return tkFree(alts);
+const tkIdeal=(lbl,en)=>`<div class="tknote">${lbl}</div><div class="tkmodel" dir="ltr" style="font-size:16px">${esc(en)}</div>`;
+const tkNotes=(ai,raw)=>{const n=ai?ai.notes:gnotes(raw);return n.length?`<div class="tknote">تصحيح: ${n.map(esc).join(' ')}</div>`:''};
+async function tkFree(alts){const run=TK;const raw=alts.find(a=>understood(a,''))||alts[0];TK.log.push({w:'me',t:raw});
+ if(!understood(raw,'')){TK.attempts++;tkSys(g('لم أفهمك جيداً. أعد الكلام بجملة إنجليزية أوضح.','لم أفهمكِ جيداً. أعيدي الكلام بجملة إنجليزية أوضح.'));render();tkScroll();return}
+ TK.busy=true;render();tkScroll();
+ const ai=await aiChat(TK.log.filter(m=>m.w!=='sys').slice(0,-1),raw,'');
+ if(TK!==run)return;TK.busy=false;
+ if(ai&&!ai.understandable){TK.attempts++;tkSys(g('لم أفهمك جيداً. أعد الكلام بجملة إنجليزية أوضح.','لم أفهمكِ جيداً. أعيدي الكلام بجملة إنجليزية أوضح.'));render();tkScroll();return}
+ TK.first++;TK.score+=2;record({sec:'en',cat:'speak'},true,'practice',null);
+ const fixed=ai&&ai.corrected&&tnorm(ai.corrected)!==tnorm(raw)?ai.corrected:'';
+ const fb=tkNotes(ai,raw)+(fixed?tkIdeal('الصيغة الصحيحة لجملتك:',fixed):'');
+ if(fb)tkSys(fb,fixed?{say:fixed}:{});
+ const r=ai&&ai.reply.en?[ai.reply.en,ai.reply.ar,ai.end]:botReply(raw,TK.used);
+ TK.i++;TK.log.push({w:'bot',t:r[0],ar:r[1]});
+ if(r[2]||TK.i>=FREE_N){TK.done=true;tkFinish()}
+ render();tkScroll();setTimeout(()=>{if(TK===run)speak(r[0])},300)}
+async function tkEval(alts){if(TK.free)return tkFree(alts);const run=TK;
  if(TK.opener){const raw=alts.find(a=>understood(a,''))||alts[0];TK.log.push({w:'me',t:raw});
   if(!understood(raw,'')){tkSys(g('لم أفهمك جيداً. ابدأ بتحية واضحة، مثل: Hello!','لم أفهمكِ جيداً. ابدئي بتحية واضحة، مثل: Hello!'));render();tkScroll();return}
-  TK.opener=false;const r=botReply(raw,TK.used);const t0=tkTurn();TK.log.push({w:'bot',t:r[0].replace(/[^.!]*\?\s*$/,'').trim()||r[0],ar:r[1].replace(/[^.!]*؟\s*$/,'').trim()||r[1]});record({sec:'en',cat:'speak'},true,'practice',null);
-  render();tkScroll();setTimeout(()=>{speak(TK.log[TK.log.length-1].t);setTimeout(()=>{if(TK&&!TK.done)tkBot()},1800)},300);return}
- const t=tkTurn();let ok=false,exact=false,best=alts[0];
- for(const a of alts){if(tmatch(a,t)){ok=exact=true;best=a;break}}
- let offTopic=false;
- if(!ok)for(const a of alts){if(understood(a,t[3])){if(relevant(a,t)){ok=true;best=a;break}offTopic=true;best=a}}
- TK.log.push({w:'me',t:best});
- const notes=gnotes(best);
+  TK.busy=true;render();tkScroll();
+  const ai=await aiChat([],raw,TK.sc.e||TK.sc.t);if(TK!==run)return;TK.busy=false;
+  if(ai&&!ai.understandable){tkSys(g('لم أفهمك جيداً. ابدأ بتحية واضحة، مثل: Hello!','لم أفهمكِ جيداً. ابدئي بتحية واضحة، مثل: Hello!'));render();tkScroll();return}
+  TK.opener=false;record({sec:'en',cat:'speak'},true,'practice',null);
+  const strip=(s,q)=>s.replace(q,'').trim()||s;
+  const r=ai&&ai.reply.en?[ai.reply.en,ai.reply.ar]:botReply(raw,TK.used);
+  TK.log.push({w:'bot',t:strip(r[0],/[^.!]*\?\s*$/),ar:strip(r[1]||'',/[^.!]*؟\s*$/)});
+  render();tkScroll();setTimeout(()=>{speak(TK.log[TK.log.length-1].t);setTimeout(()=>{if(TK===run&&!TK.done)tkBot()},1800)},300);return}
+ const t=tkTurn();
+ const pick=alts.find(a=>tmatch(a,t))||alts.find(a=>understood(a,t[3])&&relevant(a,t))||alts.find(a=>understood(a,t[3]));
+ const best=pick||alts[0];
+ const echo=!!pick&&tsim(t[0],pick)>=0.85&&tsim(t[3],pick)<0.6;
+ TK.log.push({w:'me',t:best});TK.busy=true;render();tkScroll();
+ const ai=pick&&!echo?await aiJudgeEn(t,best,TK.sc.e||TK.sc.t):null;
+ if(TK!==run||tkTurn()!==t)return;TK.busy=false;
+ const localOk=!!pick&&(tmatch(pick,t)||relevant(pick,t));
+ const ok=!!pick&&!echo&&(ai?ai.fits:localOk);
  if(ok){const first=TK.attempts===0;if(first)TK.first++;TK.score+=first?2:1;
   record({sec:'en',cat:'speak'},true,'practice',null);
-  const showModel=!exact||tsim(best,t[3])<0.5;
-  tkSys(`<b>${exact?(first?g('ممتاز! فهمتك.','ممتازة! فهمتكِ.'):g('أحسنت! هذه المرة فهمتك.','أحسنتِ! هذه المرة فهمتكِ.')):g('إجابتك مفهومة، أحسنت ✓','إجابتكِ مفهومة، أحسنتِ ✓')}</b>${notes.length?`<div class="tknote">تصحيح: ${notes.join(' ')}</div>`:''}${showModel?`<div class="tknote">الرد المثالي:</div><div class="tkmodel" dir="ltr" style="font-size:16px">${esc(t[3])}</div>`:''}`,{ok:true,say:showModel?t[3]:null});
-  if(showModel)setTimeout(()=>speak(t[3]),600);
+  const fixed=ai&&ai.corrected&&tnorm(ai.corrected)!==tnorm(best)?ai.corrected:'';
+  const ideal=(ai&&ai.ideal)||t[3];
+  const same=tnorm(ideal)===tnorm(best);
+  const head=same?(first?g('ممتاز! إجابة سليمة.','ممتازة! إجابة سليمة.'):g('أحسنت! هذه المرة فهمتك.','أحسنتِ! هذه المرة فهمتكِ.')):g('إجابتك مفهومة، أحسنت ✓','إجابتكِ مفهومة، أحسنتِ ✓');
+  tkSys(`<b>${head}</b>${tkNotes(ai,best)}${fixed&&tnorm(fixed)!==tnorm(ideal)?tkIdeal('الصيغة الصحيحة لجملتك:',fixed):''}${same?'':tkIdeal('الرد المثالي:',ideal)}`,{ok:true,say:same?null:ideal});
+  if(!same)setTimeout(()=>{if(TK===run)speak(ideal)},600);
   TK.waitNext=true}
  else{TK.attempts++;
-  if(TK.attempts===1&&offTopic)tkSys(`<b>${g('كلامك مفهوم، لكنه لا يجيب عن السؤال.','كلامكِ مفهوم، لكنه لا يجيب عن السؤال.')}</b> ${g('استمع للسؤال مرة أخرى وأجب عنه.','استمعي للسؤال مرة أخرى وأجيبي عنه.')}<div class="tknote">تلميح: ${esc(t[2])}</div>${notes.length?`<div class="tknote">ملاحظة: ${notes.join(' ')}</div>`:''}`);
-  else if(TK.attempts===1)tkSys(`<b>${g('لم أفهمك جيداً.','لم أفهمكِ جيداً.')}</b> ${g('أعد الكلام','أعيدي الكلام')} بنطق أوضح وجملة كاملة.<div class="tknote">تلميح: ${esc(t[2])}</div>${notes.length?`<div class="tknote">ملاحظة: ${notes.join(' ')}</div>`:''}`);
-  else if(TK.attempts===2){tkSys(`<b>ما زلت لا أفهم.</b> الإجابة المتوقعة هي:<div class="tkmodel" dir="ltr">${esc(t[3])}</div>${g('استمع إليها ثم كرّرها بصوتك.','استمعي إليها ثم كرّريها بصوتكِ.')}`,{say:t[3]});setTimeout(()=>speak(t[3]),500)}
+  const why=!pick||(ai&&!ai.understandable)?g('لم أفهمك جيداً.','لم أفهمكِ جيداً.')+' '+g('أعد الكلام','أعيدي الكلام')+' بنطق أوضح وجملة كاملة.'
+   :echo?g('كرّرت السؤال نفسه. أجب عنه بجملة منك.','كرّرتِ السؤال نفسه. أجيبي عنه بجملة منكِ.')
+   :g('كلامك مفهوم، لكنه لا يجيب عن السؤال.','كلامكِ مفهوم، لكنه لا يجيب عن السؤال.')+' '+g('استمع للسؤال مرة أخرى وأجب عنه.','استمعي للسؤال مرة أخرى وأجيبي عنه.');
+  if(TK.attempts===1)tkSys(`<b>${why}</b><div class="tknote">تلميح: ${esc(t[2])}</div>`);
+  else if(TK.attempts===2){tkSys(`<b>${why}</b> إجابة مقترحة:<div class="tkmodel" dir="ltr">${esc(t[3])}</div>${g('استمع إليها ثم أجب بصوتك.','استمعي إليها ثم أجيبي بصوتكِ.')}`,{say:t[3]});setTimeout(()=>speak(t[3]),500)}
   else{record({sec:'en',cat:'speak'},false,'practice',null);tkSys(`لا بأس، ننتقل للجملة التالية. ${g('تدرّب','تدرّبي')} على هذه الجملة لاحقاً:<div class="tkmodel" dir="ltr">${esc(t[3])}</div>`,{say:t[3]});TK.waitNext=true}}
  render();tkScroll()}
 function tkFinish(){const p=cur();p.talk=p.talk||{};const n=TK.free?Math.max(TK.i,1):TK.sc.turns.length;const pct=Math.min(100,Math.round(100*TK.first/n));p.talk[TK.sc.id]=Math.max(p.talk[TK.sc.id]||0,pct);{const pl=planOf(p);if(!pl.talk){pl.talk=1;if(planStep(p)<0){lg(p).pl=1;TK.allDone=true}}}save()}
@@ -1251,12 +1320,13 @@ function vTalkRun(){if(!TK)return vTalkList();const s=TK.sc,n=s.turns.length;
  let ctl;
  if(TK.done){const pct=Math.min(100,Math.round(100*TK.first/(TK.free?Math.max(TK.i,1):n)));ctl=`<div class="card stack" style="text-align:center;align-items:center"><div class="big">${TK.first}/${n}</div><p style="margin:0">${TK.free?`تحدّثت ${TK.i} مرات في محادثة حرة. ${g('أحسنت','أحسنتِ')}!`:`فهمتك من أول محاولة في ${TK.first} من ${n} جمل (${pct}%).`}</p>${TK.allDone?`<p style="margin:0;font-weight:700;color:var(--ok)">${g('أنهيت','أنهيتِ')} تدريب اليوم كاملاً. ${g('أحسنت','أحسنتِ')}!</p>`:''}
   <div class="row" style="width:100%"><button class="btn grow" ${TK.free?'data-act="tkFree"':`data-talk="${s.id}"`}>إعادة المحادثة</button><button class="btn plain grow" data-act="tkList">محادثة أخرى</button></div><button class="btn plain wide" data-go="home">الرئيسية</button></div>`}
+ else if(TK.busy)ctl=`<div class="tkctl"><p class="note" style="margin:0">⏳ ${AIOK||!aiDown?'جارٍ فهم إجابتك…':'لحظة…'}</p></div>`;
  else if(TK.waitNext)ctl=`<button class="btn wide" data-act="tkNext">${TK.i<n-1?'الجملة التالية':'عرض النتيجة'}</button>`;
  else ctl=`<div class="tkctl">${TK.typing?`<form id="tkform" class="row" style="width:100%"><input type="text" id="tkin" dir="ltr" autocomplete="off" placeholder="Type your answer…" class="grow"><button class="btn" type="submit">إرسال</button></form>${SR?'<button class="x" data-act="tkMicMode">العودة للتحدث بالصوت</button>':''}`
   :`<button class="mic ${TK.listening?'on':''}" data-act="tkMic" aria-label="${TK.listening?'إيقاف':'تكلّم'}">${MICSVG}</button><div class="tklive" id="tklive" dir="ltr">${TK.listening?'…':''}</div><p class="note" style="margin:0">${TK.listening?g('أستمع إليك… تكلّم الآن، ثم اضغط للإيقاف','أستمع إليكِ… تكلّمي الآن، ثم اضغطي للإيقاف'):g('اضغط وتكلّم بالإنجليزي','اضغطي وتكلّمي بالإنجليزي')}</p><button class="x" data-act="tkType">اكتب بدلاً من ذلك</button>`}
   ${TK.free?`<button class="x" data-act="tkEndFree">إنهاء المحادثة</button>`:TK.opener?'':TK.attempts<2?'<button class="x" data-act="tkShow">لا أعرف، أظهر الإجابة</button>':''}</div>`;
  return header()+`<div class="qhead"><h2>${s.t}</h2><button class="x" data-act="tkQuit">إنهاء</button></div>
- <div class="sec"><p class="prog">${TK.free?`ردودك: ${TK.i} من ${n}`:`الجملة ${Math.min(TK.i+1,n)} من ${n}`}</p><div class="bar"><i style="width:${100*(TK.done?n:TK.i)/n}%"></i></div>
+ <div class="sec"><p class="prog">${TK.free?`ردودك: ${TK.i} من ${n}`:`الجملة ${Math.min(TK.i+1,n)} من ${n}`}${AIOK?' · تصحيح بالذكاء الاصطناعي':''}</p><div class="bar"><i style="width:${100*(TK.done?n:TK.i)/n}%"></i></div>
  <div class="chat">${log}</div>${ctl}</div>`}
 
 /* ============ محتوى الصفوف من الأول الابتدائي إلى الثالث الثانوي ============ */
