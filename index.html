@@ -1038,9 +1038,63 @@ function tmatch(raw,turn){return tvars(raw).some(t=>t&&turn[4].split('|').some(g
 function tsim(raw,model){const m=tnorm(model).split(' ').filter(w=>w.length>1);if(!m.length)return 0;return Math.max(...tvars(raw).map(v=>{const set=new Set(v.split(' '));return m.filter(w=>set.has(w)).length/m.length}))}
 const GNOTES=[[/\bi is\b/,'نقول I am وليس I is.'],[/\b(he|she|it) (go|play|like|have|do|want|live|work)\b/,'مع he / she / it نضيف s للفعل في المضارع: he goes, she plays, it has.'],[/\bi am (go|play|like|have|want|live|work|agree)\b/,'لا نضع am قبل الفعل العادي: نقول I go وليس I am go.'],[/\bi has\b/,'مع I نقول have وليس has.'],[/\b(yesterday|last)\b.*\b(go|play|visit|watch|eat)\b/,'مع yesterday و last نستخدم الماضي: went, played, visited.'],[/\ba (apple|orange|engineer|english|hour)\b/,'قبل الكلمة التي تبدأ بصوت حرف علّة نستخدم an: an engineer, an apple.'],[/\bmore (big|small|hot|cold|tall|fast)\b/,'الصفات القصيرة نضيف لها er: bigger وليس more big.']];
 function gnotes(raw){const t=tnorm(raw);return GNOTES.filter(([r])=>r.test(t)).map(x=>x[1])}
+/* ============ قبول مرن + محادثة يبدؤها الطالب ============ */
+const FILLER=new Set(['uh','um','umm','hmm','ah','oh','er','eh','mm','huh']);
+function tWords(raw){return tnorm(raw).split(' ').filter(w=>w&&!FILLER.has(w))}
+// الكلام مفهوم: كلمتان إنجليزيتان على الأقل، أو كلمة واحدة إذا كانت الإجابة المثالية قصيرة
+function understood(raw,model){const w=tWords(raw);const mw=tnorm(model||'').split(' ').filter(Boolean).length;return w.length>=2||(w.length===1&&(mw<=3||w[0].length>=3))}
+const FAV={color:['blue','الأزرق'],colour:['blue','الأزرق'],food:['kabsa','الكبسة'],sport:['football','كرة القدم'],subject:['English','الإنجليزية'],animal:['the camel','الجمل'],season:['spring','الربيع'],book:['a story book','كتاب قصص'],game:['chess','الشطرنج'],fruit:['dates','التمر'],drink:['orange juice','عصير البرتقال'],day:['Friday','الجمعة'],place:['the beach','الشاطئ'],movie:['an animal film','فيلم عن الحيوانات']};
+const NUMW={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18};
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+const CHAT=[
+ [/\b(bye|goodbye|see you|good night)\b/,()=>['Goodbye! It was really nice talking to you. See you soon!','مع السلامة! سعدت كثيراً بالحديث معك. أراك قريباً!',1]],
+ [/\bhow are you|how is it going|how do you do|how are things/,()=>['I am fine, thank you! And how are you today?','أنا بخير، شكراً لك! وكيف حالك اليوم؟']],
+ [/\b(what is|whats) your name|who are you/,()=>['My name is Miran. I am your English friend. What is your name?','اسمي مِران، وأنا صديقك في الإنجليزية. ما اسمك؟']],
+ [/\bmy name is (\w+)|\bcall me (\w+)/,m=>{const n=cap(m[1]||m[2]);return[`Nice to meet you, ${n}! How old are you?`,`سعدت بلقائك يا ${n}! كم عمرك؟`]}],
+ [/\bhow old are you/,()=>['I am a young app, only one year old! How old are you?','أنا تطبيق صغير، عمري سنة واحدة فقط! وأنت كم عمرك؟']],
+ [/\bi am (\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen)( years?)?( old)?\b/,m=>{const a=NUMW[m[1]]||m[1];return[`${a} years old, great! Which grade are you in?`,`${a} سنة، رائع! في أي صف أنت؟`]}],
+ [/\b(grade|class|primary|middle|secondary|high school)\b/,()=>['That is nice! Which subject do you like most at school?','جميل! ما المادة التي تحبها أكثر في المدرسة؟']],
+ [/\bwhere are you from|where do you live/,()=>['I am from Saudi Arabia. Where do you live?','أنا من المملكة العربية السعودية. أين تسكن؟']],
+ [/\bi (?:am from|live in|come from) (\w+)/,m=>[`${cap(m[1])} is a beautiful place! What do you like to do there?`,`${cap(m[1])} مكان جميل! ماذا تحب أن تفعل هناك؟`]],
+ [/\byour favou?rite (\w+)/,m=>{const f=FAV[m[1]];return f?[`My favorite ${m[1]} is ${f[0]}. What is your favorite ${m[1]}?`,`المفضل عندي هو ${f[1]}. وما المفضل عندك؟`]:['Good question! I like many things. What about you?','سؤال جميل! أحب أشياء كثيرة. وماذا عنك؟']}],
+ [/\bmy favou?rite (\w+) is ([\w ]+)/,m=>[`${cap(m[2].trim())}? Nice choice! Why do you like it?`,`${m[2].trim()}؟ اختيار جميل! لماذا تحبه؟`]],
+ [/\b(hobby|hobbies|free time|like to do)\b.*\byou\b|\bwhat do you (like|love|enjoy)/,()=>['I like reading stories and learning new words. What is your hobby?','أحب قراءة القصص وتعلّم كلمات جديدة. ما هوايتك؟']],
+ [/\bi (?:really )?(?:like|love|enjoy) ([\w ]+)/,m=>{const x=m[1].trim().split(' ').slice(0,4).join(' ');return[`You like ${x}? That is great! How often do you do it?`,`تحب ${x}؟ هذا رائع! كم مرة تفعل ذلك؟`]}],
+ [/\bi (?:do not|dont|hate) (?:like )?([\w ]+)/,m=>['I understand. Everyone likes different things. What do you like instead?','أفهمك. كل شخص يحب أشياء مختلفة. وماذا تحب بدلاً من ذلك؟']],
+ [/\bbecause\b/,()=>['That is a good reason! Tell me more about it.','هذا سبب جميل! أخبرني أكثر.']],
+ [/\b(weather|hot|cold|rain|sunny|windy)\b/,()=>['It is sunny and hot here today. Do you like hot or cold weather?','الجو مشمس وحار هنا اليوم. هل تحب الجو الحار أم البارد؟']],
+ [/\b(eat|ate|food|hungry|breakfast|lunch|dinner|pizza|rice|chicken|kabsa)\b/,()=>['Yummy! I love kabsa and dates. What did you eat today?','لذيذ! أحب الكبسة والتمر. ماذا أكلت اليوم؟']],
+ [/\b(brother|brothers|sister|sisters|mother|father|mom|dad|family)\b/,()=>['Family is very important. How many brothers and sisters do you have?','العائلة مهمة جداً. كم عدد إخوتك وأخواتك؟']],
+ [/\b(football|soccer|basketball|swim|swimming|tennis|run|running|sport|sports)\b/,()=>['Sports are good for your health! Do you play with your friends?','الرياضة مفيدة للصحة! هل تلعب مع أصدقائك؟']],
+ [/\b(friend|friends)\b/,()=>['Friends make life happy! What do you do with your friends?','الأصدقاء يجعلون الحياة سعيدة! ماذا تفعل مع أصدقائك؟']],
+ [/\b(english|math|science|arabic|study|homework|test|exam)\b/,()=>['Learning is the key to success! What is difficult for you in your studies?','التعلّم مفتاح النجاح! ما الصعب عليك في دراستك؟']],
+ [/\b(game|games|play|playing|video)\b/,()=>['Games are fun! But do not forget to study too. What is your favorite game?','الألعاب ممتعة! لكن لا تنسَ الدراسة أيضاً. ما لعبتك المفضلة؟']],
+ [/\b(travel|trip|visit|holiday|vacation)\b/,()=>['Traveling is exciting! Where do you want to go next?','السفر ممتع! إلى أين تريد أن تذهب في المرة القادمة؟']],
+ [/\bi do not know|not sure|no idea/,()=>['No problem! Let us talk about something else. What is your favorite sport?','لا مشكلة! لنتحدث عن شيء آخر. ما رياضتك المفضلة؟']],
+ [/^(hi|hello|hey|good (morning|afternoon|evening)|salam|assalam|peace)\b/,()=>['Hello! I am Miran. It is nice to talk with you. How are you today?','أهلاً! أنا مِران. يسعدني الحديث معك. كيف حالك اليوم؟']],
+ [/^(i am |im )?(fine|good|great|ok|okay|very well|not bad|happy|well)\b/,()=>['Great to hear that! What is your name?','يسعدني سماع ذلك! ما اسمك؟']],
+ [/\bthank/,()=>['You are welcome! Do you want to tell me about your day?','على الرحب والسعة! هل تحب أن تحدثني عن يومك؟']],
+ [/^(i am |im )?(tired|sad|sick|bored)\b/,()=>['Oh, I am sorry to hear that. I hope you feel better soon! What makes you happy?','أوه، يؤسفني ذلك. أتمنى أن تتحسن قريباً! ما الذي يسعدك؟']],
+ [/^(yes|yeah|yep|sure|of course)\b/,()=>['Great! Can you tell me more about it?','رائع! هل تخبرني أكثر عن ذلك؟']],
+ [/^(no|nope|not really)\b/,()=>['Okay, I see. What do you like then?','حسناً، فهمت. إذاً ماذا تحب؟']],
+ [/^(what|where|when|why|how|who|which|do|does|did|can|could|are|is|will|would)\b/,()=>['That is a good question! I think it is interesting. What do you think?','سؤال جميل! أراه موضوعاً ممتعاً. ما رأيك أنت؟']]];
+const FALLBACK=[['That is interesting! Tell me more.','هذا مثير للاهتمام! أخبرني أكثر.'],['Really? Why do you say that?','حقاً؟ لماذا تقول ذلك؟'],['I understand. What else do you like to do?','فهمت. ماذا تحب أن تفعل أيضاً؟'],['Nice! Can you give me an example?','جميل! هل تعطيني مثالاً؟']];
+function botReply(raw,used){const t=tnorm(raw);for(let k=0;k<CHAT.length;k++){const m=t.match(CHAT[k][0]);if(m&&!(used&&used.has(k)&&k!==0)){used&&used.add(k);return CHAT[k][1](m)}}
+ const f=FALLBACK[(used?used.size:0)%FALLBACK.length];used&&used.add('f'+used.size);return f}
+const FREE_N=8;
+function startFree(){TK={free:true,i:0,attempts:0,log:[],listening:false,typing:!SR,done:false,first:0,score:0,waitNext:false,used:new Set(),sc:{id:'free',t:'محادثة حرة: أنت تبدأ',turns:Array(FREE_N).fill(0)}};go('talkRun');
+ tkSys(`<b>${g('أنت','أنتِ')} ${g('تبدأ','تبدئين')} المحادثة!</b> ${g('قل','قولي')} أي شيء بالإنجليزي: ${g('سلّم','سلّمي')}، أو ${g('اسأل','اسألي')} سؤالاً، أو ${g('تكلّم','تكلّمي')} عن نفسك، والتطبيق يردّ ${g('عليك','عليكِ')}.<div class="tknote">أمثلة: Hello! How are you? · My name is … · I like football.</div>`);render()}
+function tkFree(alts){const raw=alts.find(a=>understood(a,''))||alts[0];TK.log.push({w:'me',t:raw});
+ if(!understood(raw,'')){TK.attempts++;tkSys(g('لم أفهمك جيداً. أعد الكلام بجملة إنجليزية أوضح.','لم أفهمكِ جيداً. أعيدي الكلام بجملة إنجليزية أوضح.'));render();tkScroll();return}
+ const notes=gnotes(raw);TK.first++;TK.score+=2;record({sec:'en',cat:'speak'},true,'practice',null);
+ if(notes.length)tkSys(`<div class="tknote">تصحيح: ${notes.join(' ')}</div>`);
+ const r=botReply(raw,TK.used);TK.i++;TK.log.push({w:'bot',t:r[0],ar:r[1]});
+ if(r[2]||TK.i>=FREE_N){TK.done=true;tkFinish()}
+ render();tkScroll();setTimeout(()=>speak(r[0]),300)}
 let TK=null,REC=null;
 const tkTurn=()=>TK.sc.turns[TK.i];
-function startTalk(id){const sc=TALKS.find(x=>x.id===id);if(!sc)return;TK={sc,i:0,attempts:0,log:[],listening:false,typing:!SR,done:false,first:0,score:0,waitNext:false};go('talkRun');tkBot()}
+function startTalk(id){const sc=TALKS.find(x=>x.id===id);if(!sc)return;const me=(cur()||{}).talkFirst==='me';TK={sc,i:0,attempts:0,log:[],listening:false,typing:!SR,done:false,first:0,score:0,waitNext:false,opener:me,used:new Set()};go('talkRun');
+ if(me){tkSys(`<b>${g('أنت','أنتِ')} ${g('تبدأ','تبدئين')}!</b> ${g('ابدأ','ابدئي')} المحادثة بالتحية أو بسؤال، مثل: <span dir="ltr">Hello! How are you?</span>`);render()}else tkBot()}
 function tkBot(){const t=tkTurn();TK.attempts=0;TK.waitNext=false;TK.log.push({w:'bot',t:t[0],ar:t[1]});render();tkScroll();setTimeout(()=>speak(t[0]),350)}
 function tkScroll(){setTimeout(()=>{window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})},60)}
 function tkSys(html,extra){TK.log.push(Object.assign({w:'sys',h:html},extra||{}))}
@@ -1058,20 +1112,29 @@ function tkListen(){if(!SR){TK.typing=true;render();return}
   else tkSys('لم أسمع صوتك. اضغط زر المايكروفون، ثم تكلّم بوضوح وقرّب الجوال منك.');
   render();tkScroll()};
  try{r.start();TK.listening=true;render()}catch(e){TK.typing=true;render()}}
-function tkEval(alts){const t=tkTurn();let ok=false,best=alts[0];
- for(const a of alts){if(tmatch(a,t)||(TK.attempts>=2&&tsim(a,t[3])>=0.6)){ok=true;best=a;break}}
+function tkEval(alts){if(TK.free)return tkFree(alts);
+ if(TK.opener){const raw=alts.find(a=>understood(a,''))||alts[0];TK.log.push({w:'me',t:raw});
+  if(!understood(raw,'')){tkSys(g('لم أفهمك جيداً. ابدأ بتحية واضحة، مثل: Hello!','لم أفهمكِ جيداً. ابدئي بتحية واضحة، مثل: Hello!'));render();tkScroll();return}
+  TK.opener=false;const r=botReply(raw,TK.used);const t0=tkTurn();TK.log.push({w:'bot',t:r[0].replace(/[^.!]*\?\s*$/,'').trim()||r[0],ar:r[1].replace(/[^.!]*؟\s*$/,'').trim()||r[1]});record({sec:'en',cat:'speak'},true,'practice',null);
+  render();tkScroll();setTimeout(()=>{speak(TK.log[TK.log.length-1].t);setTimeout(()=>{if(TK&&!TK.done)tkBot()},1800)},300);return}
+ const t=tkTurn();let ok=false,exact=false,best=alts[0];
+ for(const a of alts){if(tmatch(a,t)){ok=exact=true;best=a;break}}
+ if(!ok)for(const a of alts){if(understood(a,t[3])){ok=true;best=a;break}}
  TK.log.push({w:'me',t:best});
  const notes=gnotes(best);
  if(ok){const first=TK.attempts===0;if(first)TK.first++;TK.score+=first?2:1;
-  record({sec:'en',cat:'speak'},TK.attempts<2,'practice',null);
-  tkSys(`<b>${first?g('ممتاز! فهمتك.','ممتازة! فهمتكِ.'):g('أحسنت! هذه المرة فهمتك.','أحسنتِ! هذه المرة فهمتكِ.')}</b>${notes.length?`<div class="tknote">تصحيح: ${notes.join(' ')}</div>`:''}${tsim(best,t[3])<0.5?`<div class="tknote">جملة أكمل:</div><div class="tkmodel" dir="ltr" style="font-size:16px">${esc(t[3])}</div>`:''}`,{ok:true});
+  record({sec:'en',cat:'speak'},true,'practice',null);
+  const showModel=!exact||tsim(best,t[3])<0.5;
+  tkSys(`<b>${exact?(first?g('ممتاز! فهمتك.','ممتازة! فهمتكِ.'):g('أحسنت! هذه المرة فهمتك.','أحسنتِ! هذه المرة فهمتكِ.')):g('إجابتك مفهومة، أحسنت ✓','إجابتكِ مفهومة، أحسنتِ ✓')}</b>${notes.length?`<div class="tknote">تصحيح: ${notes.join(' ')}</div>`:''}${showModel?`<div class="tknote">الرد المثالي:</div><div class="tkmodel" dir="ltr" style="font-size:16px">${esc(t[3])}</div>`:''}`,{ok:true,say:showModel?t[3]:null});
+  if(showModel)setTimeout(()=>speak(t[3]),600);
   TK.waitNext=true}
  else{TK.attempts++;
   if(TK.attempts===1)tkSys(`<b>${g('لم أفهمك جيداً.','لم أفهمكِ جيداً.')}</b> ${g('أعد الكلام','أعيدي الكلام')} بنطق أوضح وجملة كاملة.<div class="tknote">تلميح: ${esc(t[2])}</div>${notes.length?`<div class="tknote">ملاحظة: ${notes.join(' ')}</div>`:''}`);
   else if(TK.attempts===2){tkSys(`<b>ما زلت لا أفهم.</b> الإجابة المتوقعة هي:<div class="tkmodel" dir="ltr">${esc(t[3])}</div>${g('استمع إليها ثم كرّرها بصوتك.','استمعي إليها ثم كرّريها بصوتكِ.')}`,{say:t[3]});setTimeout(()=>speak(t[3]),500)}
   else{record({sec:'en',cat:'speak'},false,'practice',null);tkSys(`لا بأس، ننتقل للجملة التالية. ${g('تدرّب','تدرّبي')} على هذه الجملة لاحقاً:<div class="tkmodel" dir="ltr">${esc(t[3])}</div>`,{say:t[3]});TK.waitNext=true}}
  render();tkScroll()}
-function tkNext(){TK.i++;if(TK.i>=TK.sc.turns.length){TK.done=true;const p=cur();p.talk=p.talk||{};const pct=Math.round(100*TK.first/TK.sc.turns.length);p.talk[TK.sc.id]=Math.max(p.talk[TK.sc.id]||0,pct);{const pl=planOf(p);if(!pl.talk){pl.talk=1;if(planStep(p)<0){lg(p).pl=1;TK.allDone=true}}}save();render();tkScroll();return}tkBot()}
+function tkFinish(){const p=cur();p.talk=p.talk||{};const n=TK.free?Math.max(TK.i,1):TK.sc.turns.length;const pct=Math.min(100,Math.round(100*TK.first/n));p.talk[TK.sc.id]=Math.max(p.talk[TK.sc.id]||0,pct);{const pl=planOf(p);if(!pl.talk){pl.talk=1;if(planStep(p)<0){lg(p).pl=1;TK.allDone=true}}}save()}
+function tkNext(){TK.i++;if(TK.i>=TK.sc.turns.length){TK.done=true;tkFinish();render();tkScroll();return}tkBot()}
 function tkShow(){const t=tkTurn();if(TK.attempts<2){TK.attempts=2;TK.log.push({w:'me',t:'…'});tkSys(`الإجابة المتوقعة:<div class="tkmodel" dir="ltr">${esc(t[3])}</div>${g('استمع إليها ثم كرّرها بصوتك.','استمعي إليها ثم كرّريها بصوتكِ.')}`,{say:t[3]});render();tkScroll();setTimeout(()=>speak(t[3]),400)}}
 /* ============ مقطع التعريف بالتطبيق (صورة متحركة + صوت عربي) ============ */
 const INTRO_SC=[
@@ -1139,7 +1202,9 @@ function vTalkList(){const p=cur();const srt=nearSort(TALKS,p.grade,x=>x.g);let 
  const tile=s=>{const b=(p.talk||{})[s.id];return `<button class="tile" data-talk="${s.id}"><span class="grow"><h3>${s.t}</h3><span class="meta"><span class="en" dir="ltr">${s.e}</span> · ${s.turns.length} جمل${b!=null?' · أفضل نتيجة '+b+'%':''}</span></span><span class="go">‹</span></button>`};
  return header()+band('المحادثة الصوتية',g('تحدّث بالإنجليزي، والتطبيق يسمعك ويصحّح لك.','تحدّثي بالإنجليزي، والتطبيق يسمعكِ ويصحّح لكِ.'))+`<div class="sec">
  ${SR?'':'<div class="warn">هذا المتصفح لا يدعم التعرّف على الصوت، لذلك ستكتب إجاباتك. للتحدث بصوتك استخدم Chrome أو Safari.</div>'}
- <div class="card"><p style="margin:0;font-size:14px">التطبيق يقول جملة ويسألك. اضغط زر المايكروفون وأجب بصوتك. إذا لم يفهمك يطلب منك الإعادة مع تلميح، وإذا تكرر ذلك يعرض لك الإجابة المتوقعة لتكرّرها.</p></div>
+ <button class="talkcard" data-act="tkFree"><span class="tcmic">${MICSVG}</span><span class="grow"><b>${g('أنا أبدأ','أنا أبدأ')}: محادثة حرة</b><span>${g('ابدأ','ابدئي')} أنت بأي كلام بالإنجليزي، والتطبيق يرد ${g('عليك','عليكِ')} ويكمل معك</span></span><span class="go">‹</span></button>
+ <div class="card stack"><b style="font-size:15px">في المحادثات الجاهزة، من يبدأ؟</b><div class="seg"><button type="button" class="${p.talkFirst!=='me'?'on':''}" data-tkfirst="app">التطبيق يبدأ</button><button type="button" class="${p.talkFirst==='me'?'on':''}" data-tkfirst="me">أنا أبدأ</button></div>
+ <p class="note" style="margin:0">${g('أجب','أجيبي')} بأي جملة مفهومة بالإنجليزي، فليس مطلوباً كلام محدد. بعد كل إجابة يعرض التطبيق الرد المثالي ${g('لتتعلم','لتتعلّمي')} منه.</p></div>
  <h2>محادثات ${GRADES[p.grade]}</h2>${own.map(tile).join('')}
  <h2>محادثات أخرى</h2>${rest.map(tile).join('')}
  <button class="btn plain wide" data-go="en">رجوع</button></div>`}
@@ -1148,14 +1213,14 @@ function vTalkRun(){if(!TK)return vTalkList();const s=TK.sc,n=s.turns.length;
   :m.w==='me'?`<div class="bub me pop">${esc(m.t)}</div>`
   :`<div class="bub sys ${m.ok?'ok':''} pop">${m.h}${m.say?`<div><button class="x" data-say="${esc(m.say)}">${ICON.spk} استمع للإجابة</button></div>`:''}</div>`).join('');
  let ctl;
- if(TK.done){const pct=Math.round(100*TK.first/n);ctl=`<div class="card stack" style="text-align:center;align-items:center"><div class="big">${TK.first}/${n}</div><p style="margin:0">فهمتك من أول محاولة في ${TK.first} من ${n} جمل (${pct}%).</p>${TK.allDone?`<p style="margin:0;font-weight:700;color:var(--ok)">${g('أنهيت','أنهيتِ')} تدريب اليوم كاملاً. ${g('أحسنت','أحسنتِ')}!</p>`:''}
-  <div class="row" style="width:100%"><button class="btn grow" data-talk="${s.id}">إعادة المحادثة</button><button class="btn plain grow" data-act="tkList">محادثة أخرى</button></div><button class="btn plain wide" data-go="home">الرئيسية</button></div>`}
+ if(TK.done){const pct=Math.min(100,Math.round(100*TK.first/(TK.free?Math.max(TK.i,1):n)));ctl=`<div class="card stack" style="text-align:center;align-items:center"><div class="big">${TK.first}/${n}</div><p style="margin:0">${TK.free?`تحدّثت ${TK.i} مرات في محادثة حرة. ${g('أحسنت','أحسنتِ')}!`:`فهمتك من أول محاولة في ${TK.first} من ${n} جمل (${pct}%).`}</p>${TK.allDone?`<p style="margin:0;font-weight:700;color:var(--ok)">${g('أنهيت','أنهيتِ')} تدريب اليوم كاملاً. ${g('أحسنت','أحسنتِ')}!</p>`:''}
+  <div class="row" style="width:100%"><button class="btn grow" ${TK.free?'data-act="tkFree"':`data-talk="${s.id}"`}>إعادة المحادثة</button><button class="btn plain grow" data-act="tkList">محادثة أخرى</button></div><button class="btn plain wide" data-go="home">الرئيسية</button></div>`}
  else if(TK.waitNext)ctl=`<button class="btn wide" data-act="tkNext">${TK.i<n-1?'الجملة التالية':'عرض النتيجة'}</button>`;
  else ctl=`<div class="tkctl">${TK.typing?`<form id="tkform" class="row" style="width:100%"><input type="text" id="tkin" dir="ltr" autocomplete="off" placeholder="Type your answer…" class="grow"><button class="btn" type="submit">إرسال</button></form>${SR?'<button class="x" data-act="tkMicMode">العودة للتحدث بالصوت</button>':''}`
   :`<button class="mic ${TK.listening?'on':''}" data-act="tkMic" aria-label="${TK.listening?'إيقاف':'تكلّم'}">${MICSVG}</button><div class="tklive" id="tklive" dir="ltr">${TK.listening?'…':''}</div><p class="note" style="margin:0">${TK.listening?g('أستمع إليك… تكلّم الآن، ثم اضغط للإيقاف','أستمع إليكِ… تكلّمي الآن، ثم اضغطي للإيقاف'):g('اضغط وتكلّم بالإنجليزي','اضغطي وتكلّمي بالإنجليزي')}</p><button class="x" data-act="tkType">اكتب بدلاً من ذلك</button>`}
-  ${TK.attempts<2?'<button class="x" data-act="tkShow">لا أعرف، أظهر الإجابة</button>':''}</div>`;
+  ${TK.free?`<button class="x" data-act="tkEndFree">إنهاء المحادثة</button>`:TK.opener?'':TK.attempts<2?'<button class="x" data-act="tkShow">لا أعرف، أظهر الإجابة</button>':''}</div>`;
  return header()+`<div class="qhead"><h2>${s.t}</h2><button class="x" data-act="tkQuit">إنهاء</button></div>
- <div class="sec"><p class="prog">الجملة ${Math.min(TK.i+1,n)} من ${n}</p><div class="bar"><i style="width:${100*(TK.done?n:TK.i)/n}%"></i></div>
+ <div class="sec"><p class="prog">${TK.free?`ردودك: ${TK.i} من ${n}`:`الجملة ${Math.min(TK.i+1,n)} من ${n}`}</p><div class="bar"><i style="width:${100*(TK.done?n:TK.i)/n}%"></i></div>
  <div class="chat">${log}</div>${ctl}</div>`}
 
 /* ============ محتوى الصفوف من الأول الابتدائي إلى الثالث الثانوي ============ */
@@ -1557,6 +1622,8 @@ function act(a){const p=cur();if(cloudAct(a))return;
  case 'tkType':TK.typing=true;render();setTimeout(()=>{const i=$('#tkin');if(i)i.focus()},50);break;
  case 'tkMicMode':TK.typing=false;render();break;
  case 'tkNext':tkNext();break;
+ case 'tkFree':startFree();break;
+ case 'tkEndFree':try{REC&&REC.abort()}catch(e){}if(TK){TK.done=true;if(TK.i>0)tkFinish();render();tkScroll()}break;
  case 'tkShow':tkShow();break;
  case 'enTrain':startQuiz({title:'تدريب الإنجليزي',kind:'enTrain',back:'en',items:enTrainItems(p)});break;
  case 'goQ':lastQtab='q';go('qd');break;
@@ -1593,6 +1660,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
  if(d.say){speak(d.say);return}
  if(d.copy){const t=d.copy;try{navigator.clipboard.writeText(t).then(()=>toast(t.length>24?'تم نسخ الرابط':'تم النسخ: '+t),()=>toast(t))}catch(e){toast(t)}return}
  if(d.talk){startTalk(d.talk);return}
+ if(d.tkfirst){const q=cur();q.talkFirst=d.tkfirst;save();render();return}
  if(d.tktr){const a=b.closest('.bub').querySelector('.bubar');if(a)a.hidden=!a.hidden;return}
  if(d.go){if(view.name==='quiz'&&view.q)view.q.endAt=null;go(d.go);return}
  if(d.pick){S.active=d.pick;save();go('home');return}
