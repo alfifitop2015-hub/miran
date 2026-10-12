@@ -1043,6 +1043,40 @@ const FILLER=new Set(['uh','um','umm','hmm','ah','oh','er','eh','mm','huh']);
 function tWords(raw){return tnorm(raw).split(' ').filter(w=>w&&!FILLER.has(w))}
 // الكلام مفهوم: كلمتان إنجليزيتان على الأقل، أو كلمة واحدة إذا كانت الإجابة المثالية قصيرة
 function understood(raw,model){const w=tWords(raw);const mw=tnorm(model||'').split(' ').filter(Boolean).length;return w.length>=2||(w.length===1&&(mw<=3||w[0].length>=3))}
+/* ============ هل الإجابة لها علاقة بالسؤال؟ ============ */
+const STOPW=new Set('a an the is am are was were be been do does did to of in on at for and or but i you he she it we they my your his her our their me him us them this that these those what where when who why how which with from by about as so too very can could will would should have has had not no yes please there here just really like love want need think know go get make take see say tell come thing things some any well'.split(' '));
+const stem=w=>w.replace(/(ies)$/,'y').replace(/(ing|ed|es|s)$/,'').replace(/(.)\1$/,'$1');
+const cWords=t=>tnorm(t).split(' ').filter(w=>w.length>2&&!STOPW.has(w)).map(stem);
+const NUMRE=/\b(\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|hundred|half|few|many|lot|once|twice|no)\b/;
+const TIMERE=/\b(\d+|o clock|\d+ ?(am|pm)|morning|afternoon|evening|night|noon|day|days|week|weeks|month|months|year|years|hour|hours|minute|minutes|yesterday|today|tomorrow|ago|last|next|always|usually|often|sometimes|never|every|daily|weekend|monday|tuesday|wednesday|thursday|friday|saturday|sunday|seven|six|eight|nine|ten|five|four|three|two|one|once|twice)\b/;
+const PASTRE=/\b(\w+ed|went|saw|ate|had|was|were|did|made|took|got|came|met|bought|read|slept|swam|ran|played|visited|stayed|watched|spent|drove|flew|wrote|drank|gave|found|felt|left)\b/;
+const YNRE=/\b(yes|yeah|yep|no|nope|sure|of course|not|never|sometimes|maybe|a little|i do|i did|i will|i would|i can|definitely|absolutely|i am ready|i have it)\b/;
+const COURT=/\b(thank|thanks|you too|bye|goodbye|see you|ok|okay|sure|great|nice|good|yes|i will|i hope|wonderful|welcome|happy|glad|of course|here you are|here it is|cool|wow)\b/;
+function relevant(raw,turn){const t=tnorm(raw);if(!t)return false;
+ const q=tnorm(turn[0]),qRaw=String(turn[0]);
+ const pool=new Set([...cWords(turn[0]),...cWords(turn[3]),...cWords(turn[4].replace(/[|+]/g,' '))]);
+ const overlap=cWords(raw).some(w=>pool.has(w));
+ if(!/\?/.test(qRaw))return COURT.test(t)||overlap;          // ليست سؤالاً: تحية أو تعليق ختامي
+ const last=tnorm(qRaw.split(/(?<=[.!])\s+/).filter(x=>x.trim()).pop()||qRaw);
+ const has=re=>re.test(t);
+ if(/\bor\b/.test(q)&&!/^(what|where|when|who|why|how)/.test(q.split(' ').slice(-6).join(' '))){const opts=q.match(/(\w+) or (\w+)/);if(opts&&(t.includes(opts[1])||t.includes(opts[2])))return true}
+ if(/\byour name\b/.test(q))return /\b(my name|i am|call me|name is|it is)\b/.test(t)||tWords(raw).length<=2;
+ if(/\bhow (old|many|much)\b/.test(q))return has(NUMRE)||overlap;
+ if(/\bhow (long|often|far)\b|\bwhat time\b|\bwhen\b/.test(q))return has(TIMERE)||has(NUMRE)||overlap;
+ if(/\bwhere\b/.test(q))return /\b(in|at|from|to|near|home|city|country|school|house|street|riyadh|jeddah|makkah|mecca|madinah|dammam|abha|saudi|london|paris|dubai|cairo|egypt|america|usa|uk|japan|china|turkey|abroad|here|there)\b/.test(t)||/ [A-Z][a-z]+/.test(String(raw))||overlap;
+ if(/\bwho\b/.test(q))return /\b(my|he|she|his|her|friend|brother|sister|mother|father|mom|dad|cousin|family|alone|myself|teacher|uncle|aunt|grand\w*)\b/.test(t)||/ [A-Z][a-z]+/.test(String(raw))||overlap;
+ if(/\bwhy\b/.test(q))return /\b(because|so that|since|it makes|fun|interesting|important|help|helps|healthy|useful|exciting|enjoyable|i want to|dream)\b|^(to|so) /.test(t)||overlap;
+ if(/\bhow (do|does|did) (you|we|they|he|she) (go|get|come|travel)\b/.test(q))return /\b(by|walk|walking|bus|car|foot|drive|bike|taxi|train|metro|plane|father|dad|mother)\b/.test(t)||overlap;
+ if(/\bhow are you\b/.test(q))return /\b(fine|good|great|well|ok|okay|tired|sick|happy|sad|not bad|thank)\b/.test(t);
+ if(/\b(what did you|did you do|last (weekend|week|night|summer|year)|yesterday)\b/.test(q))return has(PASTRE)||overlap;
+ if(/\b(going to|will you|what will|plan|next weekend|tomorrow|future|want to be)\b/.test(q))return /\b(going to|will|want to|would like|plan|hope|wish|be a|be an|become|i am going)\b/.test(t)||overlap;
+ if(/\b(think|opinion|good or bad|agree)\b/.test(q))return /\b(think|believe|opinion|agree|disagree|good|bad|both|useful|harmful|helpful|important|because|yes|no)\b/.test(t)||overlap;
+ if(/\b(how can|what should|how should|what can)\b/.test(q))return /\b(should|can|must|we|by|use|stop|save|recycle|do not|never|always|turn off|plant|reduce|clean|keep|try)\b/.test(t)&&tWords(raw).length>=2||overlap;
+ if(/\b(like to do|free time|hobby|hobbies|weekend|do you do)\b/.test(q))return /\b(like|love|enjoy|play|playing|read|reading|watch|watching|go|going|visit|swim|draw|drawing|cook|ride|study|travel|spend|stay)\b/.test(t)||/\w+ing\b/.test(t)||overlap;
+ if(/\bweather\b/.test(q))return /\b(hot|cold|warm|cool|sunny|rain|raining|rainy|windy|cloudy|snow|nice|beautiful|humid|dusty)\b/.test(t)||overlap;
+ if(/^(do|does|did|is|are|was|were|can|could|will|would|have|has|should)\b/.test(last)&&!/\bor\b/.test(last))return has(YNRE)||overlap;
+ return overlap}
+
 const FAV={color:['blue','الأزرق'],colour:['blue','الأزرق'],food:['kabsa','الكبسة'],sport:['football','كرة القدم'],subject:['English','الإنجليزية'],animal:['the camel','الجمل'],season:['spring','الربيع'],book:['a story book','كتاب قصص'],game:['chess','الشطرنج'],fruit:['dates','التمر'],drink:['orange juice','عصير البرتقال'],day:['Friday','الجمعة'],place:['the beach','الشاطئ'],movie:['an animal film','فيلم عن الحيوانات']};
 const NUMW={one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18};
 const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
@@ -1119,7 +1153,8 @@ function tkEval(alts){if(TK.free)return tkFree(alts);
   render();tkScroll();setTimeout(()=>{speak(TK.log[TK.log.length-1].t);setTimeout(()=>{if(TK&&!TK.done)tkBot()},1800)},300);return}
  const t=tkTurn();let ok=false,exact=false,best=alts[0];
  for(const a of alts){if(tmatch(a,t)){ok=exact=true;best=a;break}}
- if(!ok)for(const a of alts){if(understood(a,t[3])){ok=true;best=a;break}}
+ let offTopic=false;
+ if(!ok)for(const a of alts){if(understood(a,t[3])){if(relevant(a,t)){ok=true;best=a;break}offTopic=true;best=a}}
  TK.log.push({w:'me',t:best});
  const notes=gnotes(best);
  if(ok){const first=TK.attempts===0;if(first)TK.first++;TK.score+=first?2:1;
@@ -1129,7 +1164,8 @@ function tkEval(alts){if(TK.free)return tkFree(alts);
   if(showModel)setTimeout(()=>speak(t[3]),600);
   TK.waitNext=true}
  else{TK.attempts++;
-  if(TK.attempts===1)tkSys(`<b>${g('لم أفهمك جيداً.','لم أفهمكِ جيداً.')}</b> ${g('أعد الكلام','أعيدي الكلام')} بنطق أوضح وجملة كاملة.<div class="tknote">تلميح: ${esc(t[2])}</div>${notes.length?`<div class="tknote">ملاحظة: ${notes.join(' ')}</div>`:''}`);
+  if(TK.attempts===1&&offTopic)tkSys(`<b>${g('كلامك مفهوم، لكنه لا يجيب عن السؤال.','كلامكِ مفهوم، لكنه لا يجيب عن السؤال.')}</b> ${g('استمع للسؤال مرة أخرى وأجب عنه.','استمعي للسؤال مرة أخرى وأجيبي عنه.')}<div class="tknote">تلميح: ${esc(t[2])}</div>${notes.length?`<div class="tknote">ملاحظة: ${notes.join(' ')}</div>`:''}`);
+  else if(TK.attempts===1)tkSys(`<b>${g('لم أفهمك جيداً.','لم أفهمكِ جيداً.')}</b> ${g('أعد الكلام','أعيدي الكلام')} بنطق أوضح وجملة كاملة.<div class="tknote">تلميح: ${esc(t[2])}</div>${notes.length?`<div class="tknote">ملاحظة: ${notes.join(' ')}</div>`:''}`);
   else if(TK.attempts===2){tkSys(`<b>ما زلت لا أفهم.</b> الإجابة المتوقعة هي:<div class="tkmodel" dir="ltr">${esc(t[3])}</div>${g('استمع إليها ثم كرّرها بصوتك.','استمعي إليها ثم كرّريها بصوتكِ.')}`,{say:t[3]});setTimeout(()=>speak(t[3]),500)}
   else{record({sec:'en',cat:'speak'},false,'practice',null);tkSys(`لا بأس، ننتقل للجملة التالية. ${g('تدرّب','تدرّبي')} على هذه الجملة لاحقاً:<div class="tkmodel" dir="ltr">${esc(t[3])}</div>`,{say:t[3]});TK.waitNext=true}}
  render();tkScroll()}
@@ -1204,7 +1240,7 @@ function vTalkList(){const p=cur();const srt=nearSort(TALKS,p.grade,x=>x.g);let 
  ${SR?'':'<div class="warn">هذا المتصفح لا يدعم التعرّف على الصوت، لذلك ستكتب إجاباتك. للتحدث بصوتك استخدم Chrome أو Safari.</div>'}
  <button class="talkcard" data-act="tkFree"><span class="tcmic">${MICSVG}</span><span class="grow"><b>${g('أنا أبدأ','أنا أبدأ')}: محادثة حرة</b><span>${g('ابدأ','ابدئي')} أنت بأي كلام بالإنجليزي، والتطبيق يرد ${g('عليك','عليكِ')} ويكمل معك</span></span><span class="go">‹</span></button>
  <div class="card stack"><b style="font-size:15px">في المحادثات الجاهزة، من يبدأ؟</b><div class="seg"><button type="button" class="${p.talkFirst!=='me'?'on':''}" data-tkfirst="app">التطبيق يبدأ</button><button type="button" class="${p.talkFirst==='me'?'on':''}" data-tkfirst="me">أنا أبدأ</button></div>
- <p class="note" style="margin:0">${g('أجب','أجيبي')} بأي جملة مفهومة بالإنجليزي، فليس مطلوباً كلام محدد. بعد كل إجابة يعرض التطبيق الرد المثالي ${g('لتتعلم','لتتعلّمي')} منه.</p></div>
+ <p class="note" style="margin:0">${g('أجب','أجيبي')} عن السؤال بكلامك أنت، فليس مطلوباً كلام محدد، المهم أن تكون الإجابة مفهومة ولها علاقة بالسؤال. بعد كل إجابة يعرض التطبيق الرد المثالي ${g('لتتعلم','لتتعلّمي')} منه.</p></div>
  <h2>محادثات ${GRADES[p.grade]}</h2>${own.map(tile).join('')}
  <h2>محادثات أخرى</h2>${rest.map(tile).join('')}
  <button class="btn plain wide" data-go="en">رجوع</button></div>`}
