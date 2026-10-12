@@ -407,39 +407,71 @@ const GNOTES = [
 ];
 const gnotes = raw => GNOTES.filter(([r]) => r.test(raw)).map(x => x[1]);
 
-/* تصحيح أدق عبر Claude عندما تُفتح الصفحة داخل Claude؛ بدونه يعمل التطبيق بالمطابقة المحلية */
-const samplePromise = window.claude && window.claude.use ? window.claude.use('sample') : Promise.resolve(null);
-let aiOff = false;
+/* ============ الذكاء الاصطناعي: يفهم معنى إجابة الطالب ============
+   Firebase AI Logic (Gemini) على مشروع مِران نفسه. إذا لم يكن مفعّلاً أو تعذّر الوصول إليه،
+   يرجع التطبيق إلى المطابقة المحلية بالكلمات المرتبطة بالسؤال. */
+const AI_SDK = 'https://www.gstatic.com/firebasejs/12.19.0/';
+const AI_MODELS = ['gemini-3.8-flash', 'gemini-flash-latest', 'gemini-2.5-flash'];
+const APPCHECK_SITE_KEY = '';   // مفتاح reCAPTCHA v3 للموقع (يُضاف بعد تفعيل App Check)
+let aiPromise = null, aiDown = false, aiFails = 0, aiModelIdx = 0, AIOK = false;
 const str = v => typeof v === 'string' ? v.trim() : '';
-async function aiCheck(turn, said){
-  if (aiOff || !hasHan(said)) return null;
-  const prompt = `You check one answer in a scripted Mandarin speaking drill for an Arabic-speaking learner.
-QUESTION (said by the app): ${turn[0]}
-EXAMPLE ANSWER: ${turn[4]}
-LEARNER SAID (speech transcript or typed text; a transcript may contain homophone mis-recognitions): ${said}
-
-Reply with ONLY one JSON object:
-{"fits":true,"corrected":"","pinyin":"","notes":[],"pronunciation":[{"said":"","said_pinyin":"","meant":"","meant_pinyin":"","tip":""}]}
-- "fits": true when the learner's answer is understandable Chinese and a sensible reply to the question. Any sensible content counts; it need not match the example.
-- "corrected": the learner's OWN answer with its mistakes fixed, in simplified characters, changing as little as possible. Identical to what the learner said when it is already correct. Empty string when fits is false.
-- "pinyin": pinyin with tone marks for "corrected".
-- "notes": 0-2 short explanations IN ARABIC of real grammar or word-choice mistakes, each naming the exact word. Never invent mistakes. Ignore punctuation.
-- "pronunciation": words that make no sense in context but sound like a sensible word (wrong tone or a similar sound). "tip" is one short ARABIC sentence on how to say it right. [] when nothing sounds off.`;
-  try{
-    const sample = await samplePromise;
-    if (!sample){ aiOff = true; return null; }
-    const r = await sample.json(prompt, {modelTier:'quick'});
-    if (!r || typeof r !== 'object') return null;
-    return {
-      fits: r.fits === true,
-      corrected: str(r.corrected), pinyin: str(r.pinyin),
-      notes: (Array.isArray(r.notes) ? r.notes : []).map(str).filter(Boolean).slice(0, 2),
-      pron: (Array.isArray(r.pronunciation) ? r.pronunciation : []).map(p => ({said:str(p && p.said), sp:str(p && p.said_pinyin), meant:str(p && p.meant), mp:str(p && p.meant_pinyin), tip:str(p && p.tip)})).filter(p => p.meant && p.said && p.meant !== p.said).slice(0, 3)
-    };
-  }catch(e){
-    if (e && ['not_granted','sampling_disabled','not_declared','capability_disabled','capability_removed'].includes(e.code)) aiOff = true;
-    return null;
+function aiInit(){
+  if (!aiPromise) aiPromise = (async () => {
+    const [{initializeApp}, AI] = await Promise.all([import(AI_SDK + 'firebase-app.js'), import(AI_SDK + 'firebase-ai.js')]);
+    const app = initializeApp(FB, 'nihao-ai');
+    if (APPCHECK_SITE_KEY){
+      const AC = await import(AI_SDK + 'firebase-app-check.js');
+      AC.initializeAppCheck(app, {provider:new AC.ReCaptchaV3Provider(APPCHECK_SITE_KEY), isTokenAutoRefreshEnabled:true});
+    }
+    return {ai:AI.getAI(app, {backend:new AI.GoogleAIBackend()}), getGenerativeModel:AI.getGenerativeModel};
+  })().catch(() => { aiDown = true; return null; });
+  return aiPromise;
+}
+async function aiAsk(prompt){
+  if (aiDown) return null;
+  const k = await aiInit(); if (!k) return null;
+  while (aiModelIdx < AI_MODELS.length){
+    try{
+      const model = k.getGenerativeModel(k.ai, {model:AI_MODELS[aiModelIdx], generationConfig:{responseMimeType:'application/json', temperature:0.2}});
+      const res = await Promise.race([model.generateContent(prompt), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 15000))]);
+      const out = JSON.parse(res.response.text());
+      aiFails = 0; AIOK = true;
+      return out && typeof out === 'object' ? out : null;
+    }catch(e){
+      const m = String((e && (e.message || e.code)) || e);
+      if (/not.?found|404|unsupported|is not supported/i.test(m)){ aiModelIdx++; continue; }
+      if (/api.?not.?enabled|permission|403|401|app.?check|unauthenticated|billing|quota/i.test(m) || ++aiFails >= 2) aiDown = true;
+      return null;
+    }
   }
+  aiDown = true; return null;
+}
+async function aiJudge(turn, said, me, scene){
+  if (!hasHan(said)) return null;
+  const common = `You check one spoken answer in a Mandarin speaking drill for an Arabic-speaking learner. Scenario: "${scene}". The learner's text is a speech-recognition transcript and may contain homophone mis-recognitions.`;
+  const fields = `"corrected": the learner's OWN sentence with its mistakes fixed, simplified characters, changing as little as possible (identical when already correct; empty when fits is false). "pinyin": tone-marked pinyin of "corrected". "notes": 0-2 short explanations IN ARABIC of real grammar or word mistakes, naming the exact word; never invent mistakes; ignore punctuation. "pronunciation": words that make no sense but sound like the intended word (wrong tone or similar sound) as {"said","said_pinyin","meant","meant_pinyin","tip"} with tip in ARABIC; [] if none.`;
+  const prompt = me
+    ? `${common}
+The learner starts the exchange and should say, in Chinese, a sentence meaning (Arabic): «${turn[2]}». Reference sentence: ${turn[0]}
+Learner said: ${said}
+You are the other person in the scenario. Reply ONLY with JSON:
+{"fits":true,"corrected":"","pinyin":"","notes":[],"pronunciation":[],"reply":{"zh":"","pinyin":"","ar":""}}
+"fits": true only when the learner's sentence is understandable Chinese that carries the requested meaning (any natural wording counts). ${fields} "reply": your short natural answer to the learner's sentence in simple Chinese, with pinyin and an Arabic translation; empty strings when fits is false.`
+    : `${common}
+The app asked: ${turn[0]} (Arabic: «${turn[2]}»). Example of a good answer: ${turn[4]}
+Learner said: ${said}
+Reply ONLY with JSON:
+{"fits":true,"corrected":"","pinyin":"","notes":[],"pronunciation":[]}
+"fits": true only when the learner's sentence is understandable Chinese AND a relevant, sensible answer to the question; its content may differ from the example. Off-topic, unrelated, or nonsense answers, or just repeating the question, are false. ${fields}`;
+  const r = await aiAsk(prompt);
+  if (!r || typeof r.fits !== 'boolean') return null;
+  const rp = r.reply || {};
+  return {
+    fits: r.fits, corrected: str(r.corrected), pinyin: str(r.pinyin),
+    notes: (Array.isArray(r.notes) ? r.notes : []).map(str).filter(Boolean).slice(0, 2),
+    pron: (Array.isArray(r.pronunciation) ? r.pronunciation : []).map(p => ({said:str(p && p.said), sp:str(p && p.said_pinyin), meant:str(p && p.meant), mp:str(p && p.meant_pinyin), tip:str(p && p.tip)})).filter(p => p.meant && p.said && p.meant !== p.said).slice(0, 3),
+    reply: {zh:str(rp.zh), pinyin:str(rp.pinyin), ar:str(rp.ar)}
+  };
 }
 
 /* ============ سير المحادثة ============ */
@@ -507,28 +539,34 @@ async function tkEval(alts){
   const run = TK, t = tkTurn(), me = TK.mode === 'me';
   const target = me ? t[0] : t[4], targetPy = me ? t[1] : t[5];
   const usable = alts.filter(a => hanCount(a) >= 1);
-  const pick = usable.find(a => !me && tmatch(a, t)) || usable.find(a => tsim(a, target) >= 0.6) || usable[0];
+  const rel = a => me ? tsim(a, t[0]) >= 0.5 : (tmatch(a, t) || tsim(a, t[4]) >= 0.5);
+  const pick = usable.find(rel) || usable[0];
   const best = pick || alts[0];
-  const echo = !me && pick && hanCount(pick) >= 3 && tsim(t[0], pick) >= 0.85 && tsim(t[4], pick) < 0.6;   // كرّر سؤال التطبيق بدل الإجابة
+  const echo = !me && pick && hanCount(pick) >= 3 && tsim(t[0], pick) >= 0.85 && tsim(t[4], pick) < 0.6;
   TK.log.push({w:'me', t:best});
   TK.busy = true; render(); tkScroll();
-  const ai = me || !pick ? null : await aiCheck(t, best);
+  const ai = pick && !echo ? await aiJudge(t, best, me, TK.sc.t) : null;
   if (TK !== run || tkTurn() !== t) return;
   TK.busy = false;
-  const ok = !!pick && !echo && !(ai && ai.fits === false && hanCount(best) < 2);
+  const ok = !!pick && !echo && (ai ? ai.fits : rel(pick));
   const notes = ai ? ai.notes : gnotes(best);
+  const replyBot = () => { const rz = ai && ai.fits && ai.reply.zh; TK.log.push(rz ? {w:'bot', t:ai.reply.zh, py:ai.reply.pinyin, ar:ai.reply.ar} : {w:'bot', t:t[4], py:t[5], ar:''}); const say = rz ? ai.reply.zh : t[4]; setTimeout(() => { if (TK === run) speak(say); }, 300); };
   if (ok){
     const first = TK.attempts === 0; if (first) TK.first++;
-    const perfect = tsim(best, target) >= 0.85 && tsim(target, best) >= 0.85;
+    const fixed = ai && ai.corrected && tnorm(ai.corrected) !== tnorm(best) ? ai.corrected : '';
+    const perfect = !fixed && (ai ? true : tsim(best, target) >= 0.85 && tsim(target, best) >= 0.85);
     const gain = award((first ? 10 : 5) * TK.sc.l);
-    const head = perfect ? 'ممتاز! جملة مثالية.' : first ? 'أحسنت! فهمتك.' : 'أحسنت! هذه المرة فهمتك.';
-    const show = perfect ? '' : ideal(me ? 'الصيغة المثالية للجملة:' : 'الرد المثالي:', target, targetPy);
-    tkSys(`<b>${head}</b>${gain ? `<span class="chip">+${gain} نقطة</span>` : ''}${fixHtml(ai, best, notes)}${show}`, {ok:true, say:perfect ? '' : target});
-    if (me){ TK.log.push({w:'bot', t:t[4], py:t[5], ar:''}); setTimeout(() => { if (TK === run) speak(t[4]); }, 300); }
+    const head = perfect ? 'ممتاز! جملة سليمة.' : first ? 'أحسنت! فهمتك.' : 'أحسنت! هذه المرة فهمتك.';
+    const show = fixed ? ideal('الرد المثالي لجملتك:', fixed, ai.pinyin) : perfect ? '' : ideal(me ? 'الصيغة المثالية للجملة:' : 'الرد المثالي:', target, targetPy);
+    const extra = ai && perfect && tsim(best, target) < 0.5 ? ideal(me ? 'صيغة أخرى صحيحة:' : 'رد آخر صحيح:', target, targetPy) : '';
+    tkSys(`<b>${head}</b>${gain ? `<span class="chip">+${gain} نقطة</span>` : ''}${notes.map(n => `<div class="tknote">${esc(n)}</div>`).join('')}${ai ? ai.pron.map(p => `<div class="tknote">النطق: سُمعت ${esc(p.said)} ${esc(p.sp)} والمقصود ${esc(p.meant)} ${esc(p.mp)}. ${esc(p.tip)}</div>`).join('') : ''}${show}${extra}`, {ok:true, say:fixed || (perfect ? '' : target)});
+    if (me) replyBot();
     TK.waitNext = true;
   } else {
     TK.attempts++;
-    const why = echo ? 'كرّرت السؤال نفسه. أجب عنه بجملة منك.' : 'لم أسمع كلاماً صينياً واضحاً. أعد الكلام بنطق أوضح.';
+    const why = !pick ? 'لم أسمع كلاماً صينياً واضحاً. أعد الكلام بنطق أوضح.'
+      : echo ? 'كرّرت السؤال نفسه. أجب عنه بجملة منك.'
+      : me ? 'جملتك لا تحمل المعنى المطلوب. حاول مرة أخرى.' : 'فهمت كلامك، لكنه لا يجيب عن السؤال. حاول مرة أخرى.';
     const tip = me ? `تبدأ الجملة بـ <span class="zh" lang="zh">${esc([...target].slice(0, 2).join(''))}</span>` : esc(t[3]);
     if (TK.attempts === 1) tkSys(`<b>${why}</b><div class="tknote">تلميح: ${tip}</div>`);
     else if (TK.attempts === 2){ tkSys(`<b>${why}</b> جرّب هذه الجملة:${ideal('', target, targetPy)}استمع إليها ثم كرّرها بصوتك.`, {say:target}); setTimeout(() => speak(target), 500); }
@@ -571,7 +609,7 @@ function vList(){
    ${X.admin && X.rows ? `<button class="tile" data-act="admin"><span class="grow"><h3>لوحة المشرف</h3><span class="meta">طلبات انضمام بانتظارك: ${X.rows.filter(r => r.status === 'pending').length}</span></span><span class="go">‹</span></button>` : ''}
    <button type="button" class="ivcard" data-act="intro"><span class="ivplay"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" fill="currentColor"/></svg></span><b>تعرّف على ني هاو</b><span class="ivfilm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3" fill="none"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4" fill="none"/></svg></span></button>
    ${vComp()}
-   ${allowed() ? `   <div class="card"><p style="margin:0;font-size:14px">${SAVE.mode === 'me' ? 'أنت تبدأ: يظهر لك معنى الجملة بالعربية، فتقولها بالصينية بصوتك، والتطبيق يرد عليك.' : 'التطبيق يسألك بصوته، وأنت تجيب بما تريد.'} أي كلام صيني مفهوم يُقبل منك، ثم يعرض لك التطبيق الرد المثالي لتقارن وتتعلّم.</p></div>
+   ${allowed() ? `   <div class="card"><p style="margin:0;font-size:14px">${SAVE.mode === 'me' ? 'أنت تبدأ: يظهر لك معنى الجملة بالعربية، فتقولها بالصينية بصوتك، والتطبيق يرد عليك.' : 'التطبيق يسألك بصوته، وأنت تجيب بما تريد.'} أي إجابة صينية مفهومة ولها علاقة بالسؤال تُقبل منك، ثم يعرض لك التطبيق الرد المثالي لتقارن وتتعلّم.</p></div>
    <div class="stack" style="gap:6px"><span class="lbl">من يبدأ الحوار؟</span>
     <div class="seg">${[['app','التطبيق يسأل وأنا أجيب'],['me','أنا أبدأ والتطبيق يرد']].map(([v, n]) => `<button class="${(SAVE.mode === 'me' ? 'me' : 'app') === v ? 'on' : ''}" data-mode="${v}" aria-pressed="${(SAVE.mode === 'me' ? 'me' : 'app') === v}">${n}</button>`).join('')}</div></div>
    <div class="stack" style="gap:6px"><span class="lbl">المستوى <small>(اختياري)</small></span>
@@ -602,7 +640,7 @@ function vRun(){
     : `<button class="mic ${TK.listening ? 'on' : ''}" data-act="tkMic" aria-label="${TK.listening ? 'إيقاف' : 'تكلّم'}">${MICSVG}</button><div class="tklive" id="tklive" lang="zh">${TK.listening ? '…' : ''}</div><p class="note">${TK.listening ? 'أستمع إليك… تكلّم الآن، ثم اضغط للإيقاف' : 'اضغط وتكلّم بالصينية'}</p><button class="x" data-act="tkType">اكتب بدلاً من ذلك</button>`}
     ${TK.attempts < 2 ? `<button class="x" data-act="tkShow">${TK.mode === 'me' ? 'لا أعرف، أظهر الجملة' : 'لا أعرف، اقترح رداً'}</button>` : ''}</div>`;
   return header() + `<div class="qhead"><h2>${s.t} <span class="zh" lang="zh" style="font-size:16px;color:var(--muted)">${s.z}</span></h2><button class="x" data-act="tkQuit">إنهاء</button></div>
-  <div class="sec"><p class="prog">الجملة ${Math.min(TK.i + 1, n)} من ${n} · المستوى ال${LV[s.l]} · ${TK.mode === 'me' ? 'أنت تبدأ' : 'التطبيق يبدأ'}</p><div class="bar"><i style="width:${100 * (TK.done ? n : TK.i) / n}%"></i></div>
+  <div class="sec"><p class="prog">الجملة ${Math.min(TK.i + 1, n)} من ${n} · المستوى ال${LV[s.l]} · ${TK.mode === 'me' ? 'أنت تبدأ' : 'التطبيق يبدأ'}${AIOK ? ' · تصحيح بالذكاء الاصطناعي' : ''}</p><div class="bar"><i style="width:${100 * (TK.done ? n : TK.i) / n}%"></i></div>
   <div class="chat" aria-live="polite">${log}</div>${ctl}</div>${CREDIT}`;
 }
 function render(){ app.innerHTML = view === 'run' && TK ? vRun() : view === 'admin' ? vAdmin() : vList(); }
