@@ -412,7 +412,7 @@ const gnotes = raw => GNOTES.filter(([r]) => r.test(raw)).map(x => x[1]);
    يرجع التطبيق إلى المطابقة المحلية بالكلمات المرتبطة بالسؤال. */
 const AI_SDK = 'https://www.gstatic.com/firebasejs/12.19.0/';
 const AI_MODELS = ['gemini-3.8-flash', 'gemini-flash-latest', 'gemini-2.5-flash'];
-const APPCHECK_SITE_KEY = '';   // مفتاح reCAPTCHA v3 للموقع (يُضاف بعد تفعيل App Check)
+const APPCHECK_SITE_KEY = '6LfGiOstAAAAAESfhLqvBOgqQsv6KE9K5QXQl-CE';   // مفتاح الموقع المسجّل في App Check (Fraud Defense)
 let aiPromise = null, aiDown = false, aiFails = 0, aiModelIdx = 0, AIOK = false;
 const str = v => typeof v === 'string' ? v.trim() : '';
 function aiInit(){
@@ -421,7 +421,7 @@ function aiInit(){
     const app = initializeApp(FB, 'nihao-ai');
     if (APPCHECK_SITE_KEY){
       const AC = await import(AI_SDK + 'firebase-app-check.js');
-      AC.initializeAppCheck(app, {provider:new AC.ReCaptchaV3Provider(APPCHECK_SITE_KEY), isTokenAutoRefreshEnabled:true});
+      AC.initializeAppCheck(app, {provider:new AC.ReCaptchaEnterpriseProvider(APPCHECK_SITE_KEY), isTokenAutoRefreshEnabled:true});
     }
     return {ai:AI.getAI(app, {backend:new AI.GoogleAIBackend()}), getGenerativeModel:AI.getGenerativeModel};
   })().catch(() => { aiDown = true; return null; });
