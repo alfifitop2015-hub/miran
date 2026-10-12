@@ -554,7 +554,7 @@ async function tkEval(alts){
   if (ok){
     const first = TK.attempts === 0; if (first) TK.first++;
     const fixed = ai && ai.corrected && tnorm(ai.corrected) !== tnorm(best) ? ai.corrected : '';
-    const perfect = !fixed && (ai ? true : tsim(best, target) >= 0.85 && tsim(target, best) >= 0.85);
+    const perfect = !fixed && (ai ? (hanCount(best) >= 4 || tsim(best, target) >= 0.6) : tsim(best, target) >= 0.85 && tsim(target, best) >= 0.85);   // إجابة من كلمة أو كلمتين تُقبل، لكن يُعرض معها الرد الكامل
     const gain = award((first ? 10 : 5) * TK.sc.l);
     const head = perfect ? 'ممتاز! جملة سليمة.' : first ? 'أحسنت! فهمتك.' : 'أحسنت! هذه المرة فهمتك.';
     const show = fixed ? ideal('الرد المثالي لجملتك:', fixed, ai.pinyin) : perfect ? '' : ideal(me ? 'الصيغة المثالية للجملة:' : 'الرد المثالي:', target, targetPy);
