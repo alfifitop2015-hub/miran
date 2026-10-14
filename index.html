@@ -1106,9 +1106,9 @@ function aiInit(){if(!FB||location.protocol==='file:'){aiDown=true;return Promis
   if(APPCHECK_SITE_KEY){const AC=await import(AI_SDK+'firebase-app-check.js');const ac=AC.initializeAppCheck(app,{provider:new AC.ReCaptchaEnterpriseProvider(APPCHECK_SITE_KEY),isTokenAutoRefreshEnabled:true});AC.getToken(ac).catch(()=>{})}
   return {ai:AI.getAI(app,{backend:new AI.GoogleAIBackend()}),getGenerativeModel:AI.getGenerativeModel}})().catch(()=>{aiDown=true;return null});
  return aiPromise}
-async function aiAsk(prompt){if(aiDown)return null;const k=await aiInit();if(!k)return null;
- while(aiModelIdx<AI_MODELS.length){try{const model=k.getGenerativeModel(k.ai,{model:AI_MODELS[aiModelIdx],generationConfig:{responseMimeType:'application/json',temperature:0.2,maxOutputTokens:400,...(aiNoThink?{thinkingConfig:{thinkingBudget:0}}:{})}});
-  const res=await Promise.race([model.generateContent(prompt),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),9000))]);
+async function aiAsk(prompt,opt){opt=opt||{};if(aiDown)return null;const k=await aiInit();if(!k)return null;
+ while(aiModelIdx<AI_MODELS.length){try{const model=k.getGenerativeModel(k.ai,{model:AI_MODELS[aiModelIdx],generationConfig:{responseMimeType:'application/json',temperature:opt.temp??0.2,maxOutputTokens:opt.max||400,...(aiNoThink?{thinkingConfig:{thinkingBudget:0}}:{})}});
+  const res=await Promise.race([model.generateContent(prompt),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),opt.timeout||9000))]);
   const out=JSON.parse(res.response.text());aiFails=0;AIOK=true;return out&&typeof out==='object'?out:null}
  catch(e){const m=String((e&&(e.message||e.code))||e);
   if(aiNoThink&&/thinking|budget|invalid.?argument|400/i.test(m)){aiNoThink=false;continue}
@@ -1579,7 +1579,7 @@ function loadPack(){if(location.protocol==='file:'||!FB)return;const d=new Date(
 
 /* ============ الحالة والتنقل ============ */
 let view={name:'who'};
-function go(name,extra){if(name!=='quranRun'){Q.flow=false;try{QREC&&QREC.abort()}catch(e){}try{QAUD&&QAUD.pause()}catch(e){}}view=Object.assign({name},extra||{});render();window.scrollTo(0,0)}
+function go(name,extra){if(name!=='quranRun'){Q.flow=false;try{QREC&&QREC.abort()}catch(e){}qMicOff();try{QAUD&&QAUD.pause()}catch(e){}}view=Object.assign({name},extra||{});render();window.scrollTo(0,0)}
 function touchDay(p){const k=dkey();if(p.lastDay!==k){p.streak=(p.lastDay===daysAgo(1))?p.streak+1:1;p.lastDay=k}p.days[k]=(p.days[k]||0)+1}
 function record(it,ok,mode,dt){const p=cur();if(!p)return;const l=lg(p);if(it.cat==='speed'){if(ok){p.points+=5;if(dt==null||dt>=700)l.sp++}touchDay(p);save();return}if(dt==null||dt>=2000){l.a++;if(ok)l.c++;if(qBoost(p))l.bz=(l.bz||0)+(ok?QBOOST_OK:QBOOST_NO)}const sec=it.sec;const st=p.stats[sec][it.cat]||(p.stats[sec][it.cat]={c:0,t:0});st.t++;if(ok){st.c++;p.points+=10}touchDay(p);
  if(it.word){const w=it.word.w;if(!ok)p.hard[w]={n:2};else if(p.hard[w]){p.hard[w].n--;if(p.hard[w].n<=0){delete p.hard[w];l.wm++}}}
@@ -1658,17 +1658,47 @@ function qAdvance(p){const q=qToday(p);const su=qSurah(Q.s);const last=Q.vs[Q.vs
  q.sp=q.sp||{};q.sp[Q.s]=last<su[2].length?last+1:1;
  if(Q.wird){if(last<su[2].length)q.pos={s:Q.s,a:last+1};else{const pool=qPool(p);const k=pool.indexOf(Q.s);q.pos={s:pool[(k+1)%pool.length]||pool[0],a:1}}}}
 function qPlay(k){const v=Q.vs[k];try{if(QAUD){QAUD.pause()}}catch(e){}const pad=n=>String(n).padStart(3,'0');QAUD=new Audio(`https://everyayah.com/data/Husary_Muallim_128kbps/${pad(Q.s)}${pad(v)}.mp3`);QAUD.play().catch(()=>toast('تعذّر تشغيل التلاوة'))}
-function qListen(){if(!SR){toast('التعرّف على الصوت غير متاح في هذا المتصفح. استخدم Chrome أو Safari.');return}
+function qListen(){const aiOk=qAIable();if(!SR&&!aiOk){toast('التعرّف على الصوت غير متاح في هذا المتصفح. استخدم Chrome أو Safari.');return}
  if(Q.flow){qStopFlow(true);return}
  try{QAUD&&QAUD.pause()}catch(e){}
- Q.flow=true;Q.fin='';Q.live='';Q.lastHeard=Date.now();qRecStart();render()}
+ Q.flow=true;Q.fin='';Q.live='';Q.lastHeard=Date.now();
+ if(aiOk)qMicStart().catch(()=>{if(!Q.flow)return;if(SR){Q.ai=false;qRecStart()}else{Q.flow=false;toast('اسمح للموقع باستخدام المايكروفون من إعدادات المتصفح.')}render()});else qRecStart();render()}
+// ===== الاستماع بالذكاء الاصطناعي: المايكروفون يبقى مفتوحاً طوال التلاوة (بلا نغمة بين الآيات)، وكل مقطع بعد وقفة يُرسل للتفريغ =====
+let QMIC=null;
+const qAIable=()=>!!(FB&&!aiDown&&navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&(window.AudioContext||window.webkitAudioContext));
+async function qMicStart(){const AC=window.AudioContext||window.webkitAudioContext;const ctx=new AC();try{await ctx.resume()}catch(e){}
+ const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+ if(!Q.flow){stream.getTracks().forEach(t=>t.stop());ctx.close();return}
+ const src=ctx.createMediaStreamSource(stream);const node=ctx.createScriptProcessor(4096,1,1);const sink=ctx.createGain();sink.gain.value=0;
+ const M=QMIC={ctx,stream,src,node,sink,buf:[],pre:[],speech:0,silence:0,floor:0.008,busy:0,queue:Promise.resolve(),rate:ctx.sampleRate};Q.ai=true;
+ node.onaudioprocess=e=>{if(QMIC!==M)return;const d=new Float32Array(e.inputBuffer.getChannelData(0));let sum=0;for(let i=0;i<d.length;i++)sum+=d[i]*d[i];const rms=Math.sqrt(sum/d.length);const dt=d.length/M.rate;
+  const loud=rms>Math.max(M.floor*2.6,0.012);if(!loud&&!M.speech)M.floor=M.floor*0.95+rms*0.05;
+  if(loud){if(!M.speech){M.buf=M.pre.slice()}M.speech+=dt;M.silence=0;Q.lastHeard=Date.now()}else if(M.speech){M.silence+=dt}
+  if(M.speech){M.buf.push(d);const tot=M.speech+M.silence;if((M.silence>=0.9&&M.speech>=0.35)||tot>=18)qMicCut(M);else if(M.silence>=0.9){M.speech=0;M.silence=0;M.buf=[]}}
+  else{M.pre.push(d);if(M.pre.length>3)M.pre.shift()}
+  if(Date.now()-Q.lastHeard>25000&&!M.busy){qStopFlow(true);toast('توقفت التلاوة. اضغط «ابدأ التلاوة» للمتابعة.')}};
+ src.connect(node);node.connect(sink);sink.connect(ctx.destination);const el=$('#qlive');if(el)el.textContent='🎙️ أستمع…'}
+function qMicCut(M){const chunks=M.buf;M.buf=[];M.speech=0;M.silence=0;if(!chunks.length)return;const wav=qWav(chunks,M.rate);M.busy++;qLiveMsg();
+ M.queue=M.queue.then(()=>qTranscribe(wav)).then(t=>{M.busy--;if(t===null){qAIFail();return}if(t&&Q.flow!==undefined&&!Q.done){Q.fin+=' '+t;Q.live=Q.fin.trim()}qFlowTry(!Q.flow&&!M.busy);qLiveMsg()})}
+function qLiveMsg(){const el=$('#qlive');if(!el)return;const M=QMIC;el.textContent=(Q.live?Q.live.split(' ').slice(-12).join(' '):'')+(M&&M.busy?' ⏳':'')||'🎙️ أستمع…'}
+function qMicOff(){const M=QMIC;QMIC=null;if(!M)return;try{M.node.disconnect();M.src.disconnect()}catch(e){}try{M.stream.getTracks().forEach(t=>t.stop())}catch(e){}try{M.ctx.close()}catch(e){}return M}
+function qAIFail(){if(!Q.flow&&!QMIC)return;qMicOff();Q.ai=false;if(Q.flow&&SR){toast('تعذّر الاتصال بالمصحّح الذكي، تحوّلنا للاستماع العادي.');qRecStart()}else if(Q.flow){Q.flow=false;toast('تعذّر التحقق من التلاوة الآن، حاول مرة أخرى.')}render()}
+function qWav(chunks,rate){const n=chunks.reduce((a,c)=>a+c.length,0);const all=new Float32Array(n);let o=0;chunks.forEach(c=>{all.set(c,o);o+=c.length});
+ const R=16000,ratio=rate/R,len=Math.floor(n/ratio);const dv=new DataView(new ArrayBuffer(44+len*2));const w=(p,str)=>{for(let i=0;i<str.length;i++)dv.setUint8(p+i,str.charCodeAt(i))};
+ w(0,'RIFF');dv.setUint32(4,36+len*2,true);w(8,'WAVE');w(12,'fmt ');dv.setUint32(16,16,true);dv.setUint16(20,1,true);dv.setUint16(22,1,true);dv.setUint32(24,R,true);dv.setUint32(28,R*2,true);dv.setUint16(32,2,true);dv.setUint16(34,16,true);w(36,'data');dv.setUint32(40,len*2,true);
+ for(let i=0;i<len;i++){const a=Math.floor(i*ratio),b=Math.min(n,Math.floor((i+1)*ratio));let v=0;for(let j=a;j<b;j++)v+=all[j];v/=Math.max(1,b-a);v=Math.max(-1,Math.min(1,v));dv.setInt16(44+i*2,v<0?v*0x8000:v*0x7FFF,true)}
+ const u=new Uint8Array(dv.buffer);let bin='';for(let i=0;i<u.length;i+=0x8000)bin+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(bin)}
+async function qTranscribe(b64){const r=await aiAsk([{inlineData:{mimeType:'audio/wav',data:b64}},{text:`This audio is a student reciting the Holy Quran in Arabic. Transcribe ONLY the Arabic words that are actually spoken in this audio, in order, as plain Arabic letters without diacritics. Do NOT complete, correct, guess or add any word that is not clearly spoken, even if you know the verse; a skipped or wrong word must stay skipped or wrong. If there is no clear speech, return an empty string. Reply ONLY with JSON: {"text":""}`}],{timeout:15000,max:600,temp:0});
+ if(!r)return null;return typeof r.text==='string'?r.text:''}
 function qRecStart(){if(!Q.flow||Q.done)return;const r=new SR();QREC=r;r.lang='ar-SA';r.interimResults=true;r.continuous=true;r.maxAlternatives=1;
  r.onresult=e=>{let it='';for(let i=e.resultIndex;i<e.results.length;i++){const x=e.results[i];if(x.isFinal)Q.fin+=' '+x[0].transcript;else it+=x[0].transcript}
   Q.lastHeard=Date.now();Q.live=(Q.fin+' '+it).trim();const el=$('#qlive');if(el)el.textContent=Q.live.split(' ').slice(-12).join(' ');qFlowTry(false)};
  r.onerror=e=>{if(/not-allowed|service-not-allowed|audio-capture/.test(e.error)){toast('اسمح للموقع باستخدام المايكروفون من إعدادات المتصفح.');Q.flow=false;render()}};
  r.onend=()=>{if(QREC!==r)return;QREC=null;if(Q.flow&&!Q.done){if(Date.now()-Q.lastHeard>25000){qStopFlow(true);toast('توقفت التلاوة. اضغط «ابدأ التلاوة» للمتابعة.');return}setTimeout(qRecStart,150)}};
  try{r.start()}catch(e){Q.flow=false;toast('تعذّر تشغيل المايكروفون');render()}}
-function qStopFlow(evalRest){Q.flow=false;const r=QREC;QREC=null;try{r&&r.abort()}catch(e){}if(evalRest)qFlowTry(true);Q.live='';render()}
+function qStopFlow(evalRest){Q.flow=false;const r=QREC;QREC=null;try{r&&r.abort()}catch(e){}
+ const M=QMIC;if(M){if(M.speech&&M.buf.length&&evalRest)qMicCut(M);qMicOff();if(M.busy&&evalRest){M.queue.then(()=>{if(!Q.done)qFlowTry(true)});render();return}}
+ if(evalRest)qFlowTry(true);Q.live='';render()}
 // يطابق ما قيل مع الآية الحالية، وينتقل تلقائياً للآية التالية عند صحتها
 function qFlowTry(final){let guard=0;while(Q.fin.trim()&&!Q.done&&guard++<20){const k=Q.i,v=Q.vs[k];const txt=qSurah(Q.s)[2][v-1];const res=qAlign(txt,Q.fin);const n=res.length;
   if(qPass(res)){const rest=QNORM(Q.fin).split(' ').filter(Boolean).slice(res.end||0).join(' ');qCommit(k,res,true);Q.fin=rest;continue}
