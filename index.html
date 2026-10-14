@@ -468,9 +468,11 @@ function subscribeBoard(){const p=cur();const bs=view.bs||'all';const key=bs+'|'
  let q=fb.collection('players');
  if(bs==='st')q=q.where('stage','==',stageOf(p.grade));else if(bs==='gr')q=q.where('grade','==',p.grade);else q=q.orderBy('total','desc').limit(100);
  unsub=q.onSnapshot(sn=>{boardRows=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>r.sid).sort((a,b)=>b.total-a.total).slice(0,100);renderBoard()},()=>{boardRows=[];renderBoard()})}
-function rankTitle(i,gd){const f=gd==='f';return i===1?['🥇',f?'فارسة المنافسة':'فارس المنافسة','r1']:i===2?['🥈',f?'منافسة شرسة':'منافس شرس','r2']:i===3?['🥉',f?'منافسة قوية':'منافس قوي','r3']:i===4?['🔥',f?'صاعدة بقوة':'صاعد بقوة','r4']:i===5?['🧭','في الاتجاه الصحيح','r5']:['🌱',f?'مبتدئة':'مبتدئ','r6']}
-function medal(i,tot){if(!(tot>0)||i>3)return '<span></span>';const m=[null,['gold','ذهبي'],['silver','فضي'],['bronze','برونزي']][i];return `<span class="medal ${m[0]}" title="المركز ${i}"><span class="disc"><b>${m[1]}</b></span><span class="rib"></span></span>`}
-function rankBadge(i,gd,tot){const t=tot>0?rankTitle(i,gd):null;return t?`<span class="rkt ${t[2]}">${t[0]} ${t[1]}</span>`:''}
+// اللقب يحتاج المركز والنقاط معاً: يُعطى أعلى لقب يحقق الطالب شرطيه
+const RANKT=[{r:1,p:3000,e:'🥇',m:'فارس المنافسة',f:'فارسة المنافسة',c:'r1',md:['gold','ذهبي']},{r:2,p:1000,e:'🥈',m:'منافس شرس',f:'منافسة شرسة',c:'r2',md:['silver','فضي']},{r:3,p:300,e:'🥉',m:'منافس قوي',f:'منافسة قوية',c:'r3',md:['bronze','برونزي']},{r:4,p:150,e:'🔥',m:'صاعد بقوة',f:'صاعدة بقوة',c:'r4'},{r:5,p:50,e:'🧭',m:'في الاتجاه الصحيح',f:'في الاتجاه الصحيح',c:'r5'},{r:1e9,p:1,e:'🌱',m:'مبتدئ',f:'مبتدئة',c:'r6'}];
+const rankT=(i,tot)=>RANKT.find(x=>i<=x.r&&tot>=x.p)||null;
+function medal(i,tot){const t=rankT(i,tot||0);if(!t||!t.md)return '<span></span>';return `<span class="medal ${t.md[0]}" title="${t.m}"><span class="disc"><b>${t.md[1]}</b></span><span class="rib"></span></span>`}
+function rankBadge(i,gd,tot){const t=rankT(i,tot||0);return t?`<span class="rkt ${t.c}">${t.e} ${gd==='f'?t.f:t.m}</span>`:''}
 function renderBoard(){const el=$('#board');if(!el)return;let rows,note='';const bs=view.bs||'all',me=cur();
  if(!fb){rows=S.profiles.filter(p=>p.online&&(bs==='all'||(bs==='st'?stageOf(p.grade)===stageOf(me.grade):p.grade===me.grade))).map(p=>({nick:p.nick||p.name,grade:p.grade,total:lifetime(p),me:p.id===S.active})).sort((a,b)=>b.total-a.total);
   note=FB?'جارٍ الاتصال بالترتيب الأونلاين…':'هذه نسخة تجريبية: الترتيب هنا لملفات هذا الجهاز فقط. الترتيب الأونلاين للجميع يعمل في النسخة المنشورة على الإنترنت.'}
@@ -1654,7 +1656,7 @@ function vComp(){const p=cur();const sc=scoreAll(p);const t=tierOf(sc.total);con
  <li>تمرين السرعة: نقطة لكل إجابة صحيحة.</li><li>مكافأة 50 نقطة عن كل أسبوع تتحسّن فيه الدقة 5% أو أكثر عن الأسبوع الذي قبله.</li>
  <li>المجموع يُضرب في معامل الدقة العام: من 0.7 عند دقة 0% إلى 1.3 عند دقة 100%.</li><li>الرصيد تراكمي ويُحدَّث في الترتيب خلال ثوانٍ من كل إجابة.</li><li>لا سقف للنقاط ولا حد يومي: كلما تدرّبت أكثر ارتفع رصيدك.</li>
  <li>الإجابة في أقل من ثانيتين لا تُحسب، حتى لا يُضغط عشوائياً.</li><li>الأسئلة تتكيّف مع صف كل طالب ومستواه، فالدقة تُقاس على أسئلة مناسبة له، ويمكن عرض الترتيب حسب المرحلة أو الصف.</li>
- <li>الألقاب: برونزي 300، فضي 1000، ذهبي 3000، ماسي 7000، أسطوري 15000 نقطة.</li></ul></details></div>`}
+ <li>ألقاب الرصيد: برونزي 300، فضي 1000، ذهبي 3000، ماسي 7000، أسطوري 15000 نقطة.</li><li>ألقاب الترتيب تحتاج المركز والنقاط معاً: فارس المنافسة ووسام ذهبي (الأول و3000 نقطة)، منافس شرس ووسام فضي (الثاني أو أعلى و1000 نقطة)، منافس قوي ووسام برونزي (الثالث أو أعلى و300 نقطة)، صاعد بقوة (الرابع أو أعلى و150 نقطة)، في الاتجاه الصحيح (الخامس أو أعلى و50 نقطة)، وغير ذلك مبتدئ. ومن لم يبلغ نقاط لقب مركزه يأخذ أعلى لقب بلغ نقاطه.</li></ul></details></div>`}
 
 function progressCard(p,self){const en=sumSt(p.stats.en),qd=sumSt(p.stats.qd),th=sumSt(p.stats.th);
  let weak=null;[...Object.entries(p.stats.qd).filter(([k])=>k!=='speed').map(([k,v])=>[catName(k),v]),...Object.entries(p.stats.th||{}).map(([k,v])=>[catName(k),v]),...Object.entries(p.stats.en).map(([k,v])=>[ECAT[k],v])].forEach(([n,v])=>{if(n&&v.t>=3){const a=v.c/v.t;if(!weak||a<weak[1])weak=[n,a]}});
