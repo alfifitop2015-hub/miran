@@ -95,6 +95,7 @@ h1{font-size:28px;font-weight:800}h2{font-size:21px;font-weight:700}h3{font-size
 .qcard{display:flex;align-items:center;gap:14px;width:100%;text-align:start;border:none;border-radius:18px;padding:16px;color:#fff;background:linear-gradient(135deg,#0E7C66,#C9A13B);cursor:pointer}.qcard b{display:block;font-family:var(--fd);font-size:21px}.qcard span span{display:block;font-size:13px;opacity:.95}.qcard .qi{font-size:30px}
 .qgrid{display:flex;flex-wrap:wrap;gap:6px}.qs{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:6px 12px;font:inherit;font-size:14px;cursor:pointer}
 .ajr{background:#FFFBEA;border-color:#EAD9A0;line-height:1.9}.ajr p{margin:6px 0}.boostc{border:2px dashed #C9A13B}
+.qpick{border:2px solid #C9A13B}.qs.sug{background:linear-gradient(135deg,#0E7C66,#C9A13B);color:#fff;border:none;font-weight:700;font-size:15px;padding:10px 14px}.qs small{opacity:.7}
 .qprompt{text-align:center;background:linear-gradient(135deg,#0E7C66,#2A5C8A)!important}
 .rkl{font-size:12px;font-weight:700;color:var(--cp)}.legend{padding:12px 14px}.lgrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}.lgrow .tb small{font-weight:600;opacity:.8;margin-inline-start:2px}.lgar{color:var(--muted);font-size:14px}
 .rk2{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;background:color-mix(in srgb,var(--cp) 10%,transparent);border-radius:99px;padding:3px 10px 3px 4px}.rk2 i{font-style:normal;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--card);font-size:11px}
@@ -1650,8 +1651,11 @@ function qToday(p){p.q=p.q||{pos:null,days:{}};const q=p.q;if(!q.pos){const pool
 function qStreak(p){const d=(p.q&&p.q.days)||{};let n=0;for(let i=0;i<400;i++){const k=daysAgo(i);if(d[k])n++;else if(i>0)break}return n}
 function qStart(s,a,wird){const p=cur();qData().then(()=>{const vs=qChunk(s,a);if(!vs.length){toast('تعذّر تحميل الآيات');return}
  Object.assign(Q,{s,a0:a,vs,i:0,res:{},tries:{},wird:!!wird,hafiz:!!Q.hafiz,flow:false,fin:'',live:'',pts:0,done:false,bonus:false,hint:null});go('quranRun')}).catch(()=>toast('تعذّر تحميل المصحف. تحقّق من الإنترنت.'))}
-function qWird(){const p=cur();const q=qToday(p);qStart(q.pos.s,q.pos.a,true)}
+function qWird(){go('quran');setTimeout(()=>{const el=$('#qpick');if(el)el.scrollIntoView({behavior:'smooth',block:'start'})},120)}
+const qNext=(p,s)=>{const q=qToday(p);q.sp=q.sp||{};return q.sp[s]||1};
+function qPickSurah(s){const p=cur();qData().then(()=>{const su=qSurah(s);let a=qNext(p,s);if(!su||a>su[2].length)a=1;qStart(s,a,true)})}
 function qAdvance(p){const q=qToday(p);const su=qSurah(Q.s);const last=Q.vs[Q.vs.length-1];
+ q.sp=q.sp||{};q.sp[Q.s]=last<su[2].length?last+1:1;
  if(Q.wird){if(last<su[2].length)q.pos={s:Q.s,a:last+1};else{const pool=qPool(p);const k=pool.indexOf(Q.s);q.pos={s:pool[(k+1)%pool.length]||pool[0],a:1}}}}
 function qPlay(k){const v=Q.vs[k];try{if(QAUD){QAUD.pause()}}catch(e){}const pad=n=>String(n).padStart(3,'0');QAUD=new Audio(`https://everyayah.com/data/Husary_Muallim_128kbps/${pad(Q.s)}${pad(v)}.mp3`);QAUD.play().catch(()=>toast('تعذّر تشغيل التلاوة'))}
 function qListen(){if(!SR){toast('التعرّف على الصوت غير متاح في هذا المتصفح. استخدم Chrome أو Safari.');return}
@@ -1687,11 +1691,13 @@ function vQuran(){const p=cur();if(!QFLAG)return vHome();const q=qToday(p);const
  return header()+band('📖 القرآن الكريم',`${g('اقرأ','اقرئي')} بصوتك، والتطبيق يتحقق من الكلمات.`)+`<div class="sec">${QAJR}
  <div class="card boostc"><b>🚀 ${g('ابدأ','ابدئي')} يومك بالقرآن</b><p style="margin:6px 0 0">القرآن يعطي أعلى النقاط في مِران، وبعد إكمال وِرد اليوم تصبح نقاطك <b>×1.5</b> في كل سؤال ${g('تجيبه','تجيبينه')} في الإنجليزي والقدرات والتحصيلي حتى نهاية اليوم.${done?` <b style="color:var(--ok)">✨ المضاعفة مفعّلة اليوم!</b>`:''}</p></div>
  ${st?`<div class="card" style="text-align:center"><b style="font-size:18px">📖 ${st} ${st===1?'يوم':'أيام'} متتالية مع القرآن</b></div>`:''}
- <button class="qcard" data-act="qWird"><span class="qi">📖</span><span class="grow"><b>${done?'وِرد إضافي':'وِرد اليوم'}</b><span>سورة ${su[1]} · الآيات ${vs[0]}–${vs[vs.length-1]}${done?' · ✓ أنهيت وِرد اليوم':` · +${QPTS.wird} نقطة عند إكماله`}</span></span><span class="go">‹</span></button>
- <div class="card stack"><b>${g('اختر','اختاري')} سورة بنفسك</b><div class="qgrid">${QD.slice().reverse().filter(x=>x[0]>=50||x[0]===1).map(x=>`<button class="qs" data-qsurah="${x[0]}">${x[1]}</button>`).join('')}</div></div>
+ <div class="card stack qpick" id="qpick"><b style="font-size:18px">📖 ${done?'وِرد إضافي':'وِرد اليوم'}: ${g('اختر','اختاري')} السورة أولاً</b>
+ <p class="note" style="margin:0">${done?'✓ أنهيت وِرد اليوم، ويمكنك القراءة أكثر لنقاط إضافية.':`${g('اختر','اختاري')} السورة التي ${g('ستقرؤها','ستقرئينها')}، وعند إكمال الآيات تحصل على +${QPTS.wird} نقطة ومضاعفة ×1.5.`} ${g('تكمل','تكملين')} كل سورة من حيث ${g('توقفت','توقفتِ')}.</p>
+ <button class="qs sug" data-qsurah="${su[0]}">⭐ مقترحة لك: سورة ${su[1]}${qNext(p,su[0])>1?` · من الآية ${qNext(p,su[0])}`:''}</button>
+ <div class="qgrid">${QD.slice().reverse().filter(x=>x[0]>=50||x[0]===1).map(x=>{const n=qNext(p,x[0]);return `<button class="qs" data-qsurah="${x[0]}">${x[1]}${n>1?` <small>· آية ${n}</small>`:''}</button>`}).join('')}</div></div>
  <details class="card"><summary>كيف تُحسب نقاط القرآن؟</summary><ul><li>آية صحيحة من أول مرة: ${QPTS.first} نقاط، وبعد الإعادة: ${QPTS.retry}.</li><li>آية من حفظك (النص مخفي): ${QPTS.hafiz} نقطة.</li><li>إكمال وِرد اليوم: ${QPTS.wird} نقطة إضافية، وبعده تصبح نقاط كل سؤال في بقية الأقسام ×1.5 حتى نهاية اليوم.</li><li>التطبيق يتحقق من الكلمات فقط، أما أحكام التجويد فتعلّمها بالاستماع للشيخ الحصري قبل القراءة.</li></ul></details></div>`}
 function vQuranRun(){const p=cur();if(!Q.vs)return vQuran();const su=qSurah(Q.s);
- const ctl=Q.done?`<div class="hero" style="text-align:center"><h2>🎉 ${g('أحسنت','أحسنتِ')}! أتممت الآيات</h2><p class="sub" style="margin:0">+${Q.pts} نقطة${Q.bonus?` (منها ${QPTS.wird} لإكمال وِرد اليوم)<br>✨ نقاطك الآن ×1.5 في بقية تدريب اليوم، ${g('انطلق','انطلقي')} للأقسام!`:''}</p><p class="sub" style="margin:6px 0 0">تقبّل الله منك، ولك بكل حرف حسنة.</p></div><div class="row"><button class="btn grow" data-act="qWird">الوِرد التالي</button><button class="btn plain grow" data-go="quran">رجوع</button></div>`
+ const ctl=Q.done?`<div class="hero" style="text-align:center"><h2>🎉 ${g('أحسنت','أحسنتِ')}! أتممت الآيات</h2><p class="sub" style="margin:0">+${Q.pts} نقطة${Q.bonus?` (منها ${QPTS.wird} لإكمال وِرد اليوم)<br>✨ نقاطك الآن ×1.5 في بقية تدريب اليوم، ${g('انطلق','انطلقي')} للأقسام!`:''}</p><p class="sub" style="margin:6px 0 0">تقبّل الله منك، ولك بكل حرف حسنة.</p></div><div class="row">${qNext(p,Q.s)>1?`<button class="btn grow" data-qsurah="${Q.s}">أكمل سورة ${su[1]}</button>`:''}<button class="btn ${qNext(p,Q.s)>1?'plain':''} grow" data-act="qWird">اختر سورة${qNext(p,Q.s)>1?' أخرى':''}</button></div>`
   :`<div class="qctl"><button class="btn plain" data-act="qPlay">🔊 استمع للآية</button><button class="btn wide qgo ${Q.flow?'on':''}" data-act="qMic">${Q.flow?'⏹ إيقاف التلاوة':'🎙️ ابدأ التلاوة'}</button><div class="tklive" id="qlive" dir="rtl">${Q.flow?'…':''}</div><p class="note" style="margin:0;text-align:center">${Q.flow?g('أستمع إليك… اقرأ الآيات متتالية، وسأنتقل للآية التالية تلقائياً.','أستمع إليكِ… اقرئي الآيات متتالية، وسأنتقل للآية التالية تلقائياً.'):g('اضغط مرة واحدة واقرأ الآيات كلها متتالية، والتطبيق يتابعك آية بعد آية.','اضغطي مرة واحدة واقرئي الآيات كلها متتالية، والتطبيق يتابعكِ آية بعد آية.')}</p>${Q.res[Q.i]&&!Q.res[Q.i].pass&&(Q.tries[Q.i]||0)>=3?`<button class="x" data-act="qSkip">تخطّ هذه الآية</button>`:''}
   </div>`;
  return header()+`<div class="qhead"><h2>سورة ${su[1]}</h2><button class="x" data-go="quran">إنهاء</button></div>
@@ -1932,7 +1938,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
  if(d.copy){const t=d.copy;try{navigator.clipboard.writeText(t).then(()=>toast(t.length>24?'تم نسخ الرابط':'تم النسخ: '+t),()=>toast(t))}catch(e){toast(t)}return}
  if(d.talk){startTalk(d.talk);return}
  if(d.qmode){Q.hafiz=d.qmode==='hafiz';Q.hint=null;render();return}
- if(d.qsurah){qStart(+d.qsurah,1,false);return}
+ if(d.qsurah){qPickSurah(+d.qsurah);return}
  if(d.tkfirst){const q=cur();q.talkFirst=d.tkfirst;save();render();return}
  if(d.tktr){const a=b.closest('.bub').querySelector('.bubar');if(a)a.hidden=!a.hidden;return}
  if(d.go){if(view.name==='quiz'&&view.q)view.q.endAt=null;go(d.go);return}
