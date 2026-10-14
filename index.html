@@ -1063,7 +1063,8 @@ async function aiAsk(prompt){if(aiDown)return null;const k=await aiInit();if(!k)
   if(/api.?not.?enabled|permission|403|401|app.?check|unauthenticated|billing|quota/i.test(m)||++aiFails>=2)aiDown=true;return null}}
  aiDown=true;return null}
 const aiLevel=()=>{const p=cur();return p?`The learner is a Saudi school student in ${['','grade 1','grade 2','grade 3','grade 4','grade 5','grade 6','grade 7','grade 8','grade 9','grade 10','grade 11','grade 12'][p.grade]||'school'}; keep your English simple for that level.`:''};
-const AI_FIELDS=`"corrected": the learner's OWN sentence with grammar/word mistakes fixed, changing as little as possible (identical when already correct; empty when understandable is false). "notes": 0-2 short explanations IN ARABIC of real grammar or vocabulary mistakes, naming the exact word; never invent mistakes; ignore capitalization and punctuation (the text is a speech transcript).`;
+const AI_RULE=` IMPORTANT: personal details are free and never a mistake: names, ages, numbers, quantities, prices, times, dates, places, colors, family members, likes and other personal facts may differ from the example/reference sentence; never require them to match, never correct them, and keep the learner's own details in "corrected" and "ideal".`;
+const AI_FIELDS=`"corrected": the learner's OWN sentence with grammar/word mistakes fixed, changing as little as possible (identical when already correct; empty when understandable is false). "notes": 0-2 short explanations IN ARABIC of real grammar or vocabulary mistakes, naming the exact word; never invent mistakes; ignore capitalization and punctuation (the text is a speech transcript).${AI_RULE}`;
 async function aiJudgeEn(turn,said,scene){
  const r=await aiAsk(`You check one spoken answer in an English speaking drill for an Arabic-speaking learner. Scenario: "${scene}". ${aiLevel()} The learner's text is a speech-recognition transcript and may contain mis-recognized words that sound alike.
 The app asked: ${turn[0]}
@@ -1210,12 +1211,12 @@ The learner starts this exchange and should say, in English, a sentence meaning 
 Learner said: ${said}
 You are the other person in the scenario. Reply ONLY with JSON:
 {"understandable":true,"fits":true,"corrected":"","notes":[],"reply":{"en":"","ar":""}}
-"understandable": true when the learner's words form understandable English. "fits": true only when the sentence is understandable English that carries the requested meaning (any natural wording counts). ${AI_FIELDS} "reply": your short natural answer to the learner's sentence (1 simple sentence, like "${turn[3]}"), with Arabic translation; do NOT ask the learner a question; empty strings when fits is false.`);
+"understandable": true when the learner's words form understandable English. "fits": true only when the sentence is understandable English that carries the requested meaning (any natural wording counts; different names, numbers or personal details still count as the same meaning). ${AI_FIELDS} "reply": your short natural answer to the learner's sentence (1 simple sentence, like "${turn[3]}"), with Arabic translation; do NOT ask the learner a question; empty strings when fits is false.`);
  if(!r||typeof r.fits!=='boolean')return null;const rp=r.reply||{};
  return {fits:r.fits,understandable:r.understandable!==false,corrected:aStr(r.corrected),notes:(Array.isArray(r.notes)?r.notes:[]).map(aStr).filter(Boolean).slice(0,2),reply:{en:aStr(rp.en),ar:aStr(rp.ar)}}}
 function tkMePrompt(){const t=tkTurn();TK.attempts=0;TK.waitNext=false;
  tkSys(`<b>${g('دورك:','دوركِ:')}</b> ${g('قل','قولي')} بالإنجليزي: «${esc(t[1])}»<div class="tknote">تلميح: تبدأ الجملة بـ <span dir="ltr">${esc(t[0].split(' ').slice(0,2).join(' '))} …</span></div>`);render();tkScroll()}
-const meLocal=(a,t)=>{const w=cWords(t[0]),s=new Set(cWords(a));return tsim(a,t[0])>=0.5||(w.length>0&&w.filter(x=>s.has(x)).length>=Math.max(1,Math.ceil(w.length/2)))};
+const meLocal=(a,t)=>{const NUMW2=/^(\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand)$/;const names=new Set((String(t[0]).match(/\b[A-Z][a-z]+/g)||[]).slice(1).map(x=>stem(x.toLowerCase())));const w=cWords(t[0]).filter(x=>!NUMW2.test(x)&&!names.has(x)),s=new Set(cWords(a));if(!w.length)return understood(a,t[0]);return tsim(a,t[0])>=0.5||(w.length>0&&w.filter(x=>s.has(x)).length>=Math.max(1,Math.ceil(w.length/2)))};
 async function tkEvalMe(alts){const run=TK,t=tkTurn();
  const pick=alts.filter(a=>understood(a,t[0])).sort((a,b)=>tsim(b,t[0])-tsim(a,t[0]))[0];const best=pick||alts[0];
  TK.log.push({w:'me',t:best});TK.busy=true;render();tkScroll();
@@ -1226,7 +1227,7 @@ async function tkEvalMe(alts){const run=TK,t=tkTurn();
  if(ok){const first=TK.attempts===0;if(first)TK.first++;TK.score+=first?2:1;record({sec:'en',cat:'speak'},true,'practice',null);
   const fixed=ai&&ai.corrected&&tnorm(ai.corrected)!==tnorm(best)?ai.corrected:'';
   const same=tnorm(best)===tnorm(t[0]);
-  tkSys(`<b>${same||!fixed?(first?g('ممتاز! فهمتك.','ممتازة! فهمتكِ.'):g('أحسنت! هذه المرة فهمتك.','أحسنتِ! هذه المرة فهمتكِ.')):g('جملتك مفهومة، أحسنت ✓','جملتكِ مفهومة، أحسنتِ ✓')}</b>${tkNotes(ai,best)}${fixed&&tnorm(fixed)!==tnorm(t[0])?tkIdeal('الصيغة الصحيحة لجملتك:',fixed):''}${same?'':tkIdeal('الصيغة المثالية للجملة:',t[0])}`,{ok:true,say:same?null:t[0]});
+  tkSys(`<b>${same||!fixed?(first?g('ممتاز! فهمتك.','ممتازة! فهمتكِ.'):g('أحسنت! هذه المرة فهمتك.','أحسنتِ! هذه المرة فهمتكِ.')):g('جملتك مفهومة، أحسنت ✓','جملتكِ مفهومة، أحسنتِ ✓')}</b>${tkNotes(ai,best)}${fixed&&tnorm(fixed)!==tnorm(t[0])?tkIdeal('الصيغة الصحيحة لجملتك:',fixed):''}${same||tsim(best,t[0])>=0.5?'':tkIdeal('صيغة أخرى صحيحة:',t[0])}`,{ok:true,say:same||tsim(best,t[0])>=0.5?null:t[0]});
   const rep=ai&&ai.reply.en?ai.reply:{en:t[3],ar:''};botSay(rep.en,rep.ar);TK.waitNext=true}
  else{TK.attempts++;
   const why=!pick||(ai&&!ai.understandable)?g('لم أفهمك جيداً. أعد الكلام بنطق أوضح.','لم أفهمكِ جيداً. أعيدي الكلام بنطق أوضح.'):g('جملتك لا تحمل المعنى المطلوب. حاول مرة أخرى.','جملتكِ لا تحمل المعنى المطلوب. حاولي مرة أخرى.');
@@ -1250,7 +1251,7 @@ async function tkEval(alts){if(TK.free)return tkFree(alts);if(TK.mode==='me')ret
   const ideal=(ai&&ai.ideal)||t[3];
   const same=tnorm(ideal)===tnorm(best);
   const head=same?(first?g('ممتاز! إجابة سليمة.','ممتازة! إجابة سليمة.'):g('أحسنت! هذه المرة فهمتك.','أحسنتِ! هذه المرة فهمتكِ.')):g('إجابتك مفهومة، أحسنت ✓','إجابتكِ مفهومة، أحسنتِ ✓');
-  tkSys(`<b>${head}</b>${tkNotes(ai,best)}${fixed&&tnorm(fixed)!==tnorm(ideal)?tkIdeal('الصيغة الصحيحة لجملتك:',fixed):''}${same?'':tkIdeal('الرد المثالي:',ideal)}`,{ok:true,say:same?null:ideal});
+  tkSys(`<b>${head}</b>${tkNotes(ai,best)}${fixed&&tnorm(fixed)!==tnorm(ideal)?tkIdeal('الصيغة الصحيحة لجملتك:',fixed):''}${same?'':tkIdeal(ai&&ai.ideal?'الرد المثالي:':'مثال لرد مثالي (التفاصيل الشخصية كالأسماء والأرقام تختلف من شخص لآخر):',ideal)}`,{ok:true,say:same?null:ideal});
   if(!same)setTimeout(()=>{if(TK===run)speak(ideal)},600);
   TK.waitNext=true}
  else{TK.attempts++;
