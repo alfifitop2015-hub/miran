@@ -17,7 +17,7 @@
 <title>مِران</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Lexend:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Baloo+Bhaijaan+2:wght@600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Lexend:wght@400;500;600&display=swap">
 <style>
 /* لوحة ألوان: لكل قسم لونه الخاص */
 :root{
@@ -83,6 +83,17 @@ h1{font-size:28px;font-weight:800}h2{font-size:21px;font-weight:700}h3{font-size
 .plan .n{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-family:var(--fd);font-weight:700;border:2px solid currentColor;flex:none}
 .plan button.done .n{background:var(--onacc)}.plan button.done .n i{color:var(--acc);font-style:normal}
 .plan .m2{font-size:12px;opacity:.85}
+.mushaf{background:#FFFDF6;border:1px solid #E8DDBF;border-radius:18px;padding:14px 16px;color:#1d1a12;box-shadow:inset 0 0 0 4px #FFF8E6}
+.mushaf,.qv .qtxt,.basm{font-family:"Amiri Quran","Amiri","Scheherazade New","Traditional Arabic",serif}
+.basm{text-align:center;font-size:24px;margin:2px 0 10px;color:#0E7C66}
+.qv{padding:8px 6px;border-radius:12px;margin:2px 0;line-height:2.3;font-size:25px}.qv.cur{background:#FFF1C9;box-shadow:0 0 0 2px #E9C46A inset}.qv.pass{opacity:.85}
+.qnum{color:#B8892E;font-size:20px;white-space:nowrap}.qok{color:#0E7C66}.qno{color:#C62828;text-decoration:underline wavy rgba(198,40,40,.5)}
+.qhide{font-family:var(--fb);font-size:15px;color:#8a7a50;display:inline-flex;flex-wrap:wrap;align-items:center;gap:8px}.qhintw{font-family:"Amiri Quran","Amiri",serif;font-size:24px;color:#0E7C66}
+.qmsg{font-family:var(--fb);font-size:13px;color:#a33;line-height:1.6}.qmsg.ok{color:#0E7C66;font-weight:700}
+.qctl{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:14px}.qhz{font-size:14px;display:flex;gap:8px;align-items:center}
+.qcard{display:flex;align-items:center;gap:14px;width:100%;text-align:start;border:none;border-radius:18px;padding:16px;color:#fff;background:linear-gradient(135deg,#0E7C66,#C9A13B);cursor:pointer}.qcard b{display:block;font-family:var(--fd);font-size:21px}.qcard span span{display:block;font-size:13px;opacity:.95}.qcard .qi{font-size:30px}
+.qgrid{display:flex;flex-wrap:wrap;gap:6px}.qs{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:6px 12px;font:inherit;font-size:14px;cursor:pointer}
+.qprompt{text-align:center;background:linear-gradient(135deg,#0E7C66,#2A5C8A)!important}
 .rkl{font-size:12px;font-weight:700;color:var(--cp)}.legend{padding:12px 14px}.lgrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}.lgrow .tb small{font-weight:600;opacity:.8;margin-inline-start:2px}.lgar{color:var(--muted);font-size:14px}
 .rk2{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;background:color-mix(in srgb,var(--cp) 10%,transparent);border-radius:99px;padding:3px 10px 3px 4px}.rk2 i{font-style:normal;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--card);font-size:11px}
 .tb{font-size:12px;font-weight:700;border-radius:99px;padding:3px 10px;white-space:nowrap;margin-inline-end:4px}
@@ -328,6 +339,8 @@ a.btn{text-decoration:none}
 </div></nav>
 
 <script>
+const QFLAG=true;
+
 /* ============ إعدادات الترتيب الأونلاين ============
    لتشغيل الترتيب للجميع: الصق هنا إعدادات مشروع Firebase بدل null، مثال:
    const FB={apiKey:"...",authDomain:"...",projectId:"...",appId:"..."};
@@ -455,18 +468,18 @@ function lg(p,k){k=k||dkey();p.log=p.log||{};return p.log[k]||(p.log[k]={a:0,c:0
 function weekStart(off){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-d.getDay()-7*(off||0));return d}
 const weekKey=off=>dkey(weekStart(off));
 function weekLogs(p,off){const s0=weekStart(off),out=[];for(let i=0;i<7;i++){const d=new Date(s0);d.setDate(s0.getDate()+i);const x=p.log&&p.log[dkey(d)];if(x)out.push(x)}return out}
-function score(p,off){off=off||0;let days=0,a=0,c=0,s=0,dc=0,mf=0,wm=0,ex=0,sp=0,pl=0;
- weekLogs(p,off).forEach(x=>{if(x.a||x.sp||x.s>=60)days++;a+=x.a;c+=x.c;s+=x.s;dc+=x.dc;mf+=x.mf;wm+=x.wm;ex+=x.ex;sp+=x.sp;pl+=x.pl||0});
- const mins=Math.floor(s/60),accv=a?c/a:0,reg=days*20,eff=a+mins,cor=c*2,ach=dc*15+mf*5+wm*3+ex*20+sp+pl*30;
+function score(p,off){off=off||0;let days=0,a=0,c=0,s=0,dc=0,mf=0,wm=0,ex=0,sp=0,pl=0,qp=0;
+ weekLogs(p,off).forEach(x=>{if(x.a||x.sp||x.q||x.s>=60)days++;a+=x.a;c+=x.c;s+=x.s;dc+=x.dc;mf+=x.mf;wm+=x.wm;ex+=x.ex;sp+=x.sp;pl+=x.pl||0;qp+=x.q||0});
+ const mins=Math.floor(s/60),accv=a?c/a:0,reg=days*20,eff=a+mins,cor=c*2,ach=dc*15+mf*5+wm*3+ex*20+sp+pl*30+qp;
  let pa=0,pc=0;weekLogs(p,off+1).forEach(x=>{pa+=x.a;pc+=x.c});const imp=(a>=20&&pa>=20&&accv-pc/pa>=.05)?50:0;
  const mult=a?.7+.6*accv:1;return{total:Math.round((reg+eff+cor+ach+imp)*mult),reg,eff,cor,ach,imp,accv,a,c,days,mins,mult,dc,mf,wm,ex,sp}}
 function scoreAll(p){const keys=Object.keys(p.log||{}).sort();let days=0,a=0,c=0,s=0,dc=0,mf=0,wm=0,ex=0,sp=0,imp=0;
- let pl=0;keys.forEach(k=>{const x=p.log[k];if(x.a||x.sp||x.s>=60)days++;a+=x.a;c+=x.c;s+=x.s;dc+=x.dc;mf+=x.mf;wm+=x.wm;ex+=x.ex;sp+=x.sp;pl+=x.pl||0});
+ let pl=0,qp=0;keys.forEach(k=>{const x=p.log[k];if(x.a||x.sp||x.q||x.s>=60)days++;a+=x.a;c+=x.c;s+=x.s;dc+=x.dc;mf+=x.mf;wm+=x.wm;ex+=x.ex;sp+=x.sp;pl+=x.pl||0;qp+=x.q||0});
  if(keys.length){const first=new Date(keys[0]+'T12:00:00');const weeks=Math.ceil((Date.now()-first)/6048e5)+1;for(let o=0;o<Math.min(weeks,260);o++)imp+=score(p,o).imp}
- const mins=Math.floor(s/60),accv=a?c/a:0,reg=days*20,eff=a+mins,cor=c*2,ach=dc*15+mf*5+wm*3+ex*20+sp+pl*30,mult=a?.7+.6*accv:1;
+ const mins=Math.floor(s/60),accv=a?c/a:0,reg=days*20,eff=a+mins,cor=c*2,ach=dc*15+mf*5+wm*3+ex*20+sp+pl*30+qp,mult=a?.7+.6*accv:1;
  return{total:Math.round((reg+eff+cor+ach+imp)*mult),reg,eff,cor,ach,imp,accv,a,c,days,mins,mult,dc,mf,wm,ex,sp}}
 const lifetime=p=>scoreAll(p).total;
-function todayGain(p){const x=(p.log||{})[dkey()];if(!x)return 0;const acc=scoreAll(p).mult;return Math.round(((x.a||x.sp||x.s>=60?20:0)+x.a+Math.floor(x.s/60)+x.c*2+x.dc*15+x.mf*5+x.wm*3+x.ex*20+x.sp+(x.pl||0)*30)*acc)}
+function todayGain(p){const x=(p.log||{})[dkey()];if(!x)return 0;const acc=scoreAll(p).mult;return Math.round(((x.a||x.sp||x.s>=60?20:0)+x.a+Math.floor(x.s/60)+x.c*2+x.dc*15+x.mf*5+x.wm*3+x.ex*20+x.sp+(x.pl||0)*30+(x.q||0))*acc)}
 const TIERS=[[0,'مبتدئ','🌱','t0'],[300,'برونزي','🥉','t1'],[1000,'فضي','🥈','t2'],[3000,'ذهبي','🥇','t3'],[7000,'بطل مِران','🏆','t4']];
 function tierOf(t){let i=0;TIERS.forEach((x,k)=>{if(t>=x[0])i=k});const nx=TIERS[i+1];return{i,em:TIERS[i][2],cls:TIERS[i][3],nextEm:nx&&nx[2],name:TIERS[i][1],next:nx&&nx[0],nextName:nx&&nx[1],pct:nx?Math.round(100*(t-TIERS[i][0])/(nx[0]-TIERS[i][0])):100}}
 
@@ -1563,7 +1576,7 @@ function loadPack(){if(location.protocol==='file:'||!FB)return;const d=new Date(
 
 /* ============ الحالة والتنقل ============ */
 let view={name:'who'};
-function go(name,extra){view=Object.assign({name},extra||{});render();window.scrollTo(0,0)}
+function go(name,extra){if(name!=='quranRun'){try{QREC&&QREC.abort()}catch(e){}try{QAUD&&QAUD.pause()}catch(e){}}view=Object.assign({name},extra||{});render();window.scrollTo(0,0)}
 function touchDay(p){const k=dkey();if(p.lastDay!==k){p.streak=(p.lastDay===daysAgo(1))?p.streak+1:1;p.lastDay=k}p.days[k]=(p.days[k]||0)+1}
 function record(it,ok,mode,dt){const p=cur();if(!p)return;const l=lg(p);if(it.cat==='speed'){if(ok){p.points+=5;if(dt==null||dt>=700)l.sp++}touchDay(p);save();return}if(dt==null||dt>=2000){l.a++;if(ok)l.c++}const sec=it.sec;const st=p.stats[sec][it.cat]||(p.stats[sec][it.cat]={c:0,t:0});st.t++;if(ok){st.c++;p.points+=10}touchDay(p);
  if(it.word){const w=it.word.w;if(!ok)p.hard[w]={n:2};else if(p.hard[w]){p.hard[w].n--;if(p.hard[w].n<=0){delete p.hard[w];l.wm++}}}
@@ -1605,11 +1618,81 @@ function vWho(){if(CLOUD&&C.mode==='student')return vStudentWho();return header(
  <button class="btn plain wide" data-act="parentFromWho">لوحة ولي الأمر</button></div>`}
 
 const SECS=[{k:'en',go:'en',c:'en',c2:'pink',i:'E',t:'الإنجليزي',items:['enDay','talk'],m:'كلمات اليوم · المحادثة الصوتية · تدريب إضافي · الكلمات الصعبة'},{k:'q',go:'goQ',c:'qd',c2:'home',i:'ق',t:'القدرات',items:['qTrain'],m:'كمي ولفظي · اختبار محاكي · دفتر الأخطاء'},{k:'t',go:'goT',c:'th',c2:'en',i:'ت',t:'التحصيلي',items:['tTrain'],m:'رياضيات وعلوم · اختبار محاكي · دفتر الأخطاء'}];
+/* ============ القرآن الكريم: مطابقة التلاوة بالكلمات ============ */
+const QNORM=s=>String(s||'').replace(/[ً-ٰٟۖ-ۭـ]/g,'').replace(/[ٱأإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه').replace(/ؤ/g,'و').replace(/ئ/g,'ي').replace(/ء/g,'').replace(/[^ء-ي\s]/g,' ').replace(/\s+/g,' ').trim();
+const QSKEL=w=>w.replace(/ا/g,'');
+function qLev(a,b){const m=a.length,n=b.length;if(!m)return n;if(!n)return m;let p=Array.from({length:n+1},(_,j)=>j);for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return p[n]}
+function qSim(a,b){const x=QSKEL(a),y=QSKEL(b);if(!x&&!y)return 1;if(x===y)return 1;const L=Math.max(x.length,y.length);return 1-qLev(x,y)/L}
+const qWords=t=>t.split(/\s+/).filter(w=>QNORM(w));
+// يرجع لكل كلمة في الآية: صحيحة أم لا
+function qAlign(verse,said){const V=qWords(verse).map(QNORM),S=QNORM(said).split(' ').filter(Boolean);const n=V.length,m=S.length;
+ const D=Array.from({length:n+1},()=>new Array(m+1).fill(0));for(let i=0;i<=n;i++)D[i][0]=i;for(let j=0;j<=m;j++)D[0][j]=0;
+ const ok=(i,j)=>qSim(V[i],S[j])>=0.7;
+ for(let i=1;i<=n;i++)for(let j=1;j<=m;j++)D[i][j]=Math.min(D[i-1][j]+1,D[i][j-1]+(i===n?0:0.35),D[i-1][j-1]+(ok(i-1,j-1)?0:1));
+ let best=0;for(let j=0;j<=m;j++)if(D[n][j]<D[n][best])best=j;
+ const res=new Array(n).fill(false);let i=n,j=best;
+ while(i>0&&j>0){if(D[i][j]===D[i-1][j-1]+(ok(i-1,j-1)?0:1)){res[i-1]=ok(i-1,j-1);i--;j--}else if(D[i][j]===D[i-1][j]+1){i--}else j--}
+ return res}
+function qPass(res){const n=res.length,miss=res.filter(x=>!x).length;return n<=3?miss===0:miss<=Math.floor(n*0.15)}
+/* ============ القرآن الكريم (نسخة تجريبية: تظهر فقط عند تفعيلها بالرابط ?quran=1) ============ */
+let QD=null,QDload=null;const Q={};let QREC=null,QAUD=null;
+function qData(){if(QD)return Promise.resolve(QD);if(!QDload)QDload=fetch('quran.json?v=1').then(r=>r.json()).then(d=>{QD=d;return d}).catch(e=>{QDload=null;throw e});return QDload}
+const qSurah=s=>QD&&QD.find(x=>x[0]===s);
+const QPTS={first:10,retry:5,hafiz:20,wird:50};
+function qPool(p){const lo=p.grade<=3?93:p.grade<=6?78:p.grade<=9?67:50;const a=[];for(let s=114;s>=lo;s--)a.push(s);return a}
+function qChunk(s,a){const su=qSurah(s);if(!su)return[];const out=[];let ch=0;for(let k=a;k<=su[2].length;k++){const t=su[2][k-1];if(out.length&&(ch+t.length>320||out.length>=7))break;out.push(k);ch+=t.length}return out}
+function qToday(p){p.q=p.q||{pos:null,days:{}};const q=p.q;if(!q.pos){const pool=qPool(p);q.pos={s:pool[0],a:1}}return q}
+function qStreak(p){const d=(p.q&&p.q.days)||{};let n=0;for(let i=0;i<400;i++){const k=daysAgo(i);if(d[k])n++;else if(i>0)break}return n}
+function qStart(s,a,wird){const p=cur();qData().then(()=>{const vs=qChunk(s,a);if(!vs.length){toast('تعذّر تحميل الآيات');return}
+ Object.assign(Q,{s,a0:a,vs,i:0,res:{},tries:{},wird:!!wird,hafiz:!!Q.hafiz,listening:false,live:'',pts:0,done:false});go('quranRun')}).catch(()=>toast('تعذّر تحميل المصحف. تحقّق من الإنترنت.'))}
+function qWird(){const p=cur();const q=qToday(p);qStart(q.pos.s,q.pos.a,true)}
+function qAdvance(p){const q=qToday(p);const su=qSurah(Q.s);const last=Q.vs[Q.vs.length-1];
+ if(Q.wird){if(last<su[2].length)q.pos={s:Q.s,a:last+1};else{const pool=qPool(p);const k=pool.indexOf(Q.s);q.pos={s:pool[(k+1)%pool.length]||pool[0],a:1}}}}
+function qPlay(k){const v=Q.vs[k];try{if(QAUD){QAUD.pause()}}catch(e){}const pad=n=>String(n).padStart(3,'0');QAUD=new Audio(`https://everyayah.com/data/Husary_Muallim_128kbps/${pad(Q.s)}${pad(v)}.mp3`);QAUD.play().catch(()=>toast('تعذّر تشغيل التلاوة'))}
+function qListen(){if(!SR){toast('التعرّف على الصوت غير متاح في هذا المتصفح. استخدم Chrome أو Safari.');return}
+ if(Q.listening){try{QREC&&QREC.stop()}catch(e){}return}
+ try{QAUD&&QAUD.pause()}catch(e){}
+ const r=new SR();QREC=r;r.lang='ar-SA';r.interimResults=true;r.continuous=true;r.maxAlternatives=1;let fin='',tm=null;
+ const quiet=()=>{clearTimeout(tm);tm=setTimeout(()=>{try{r.stop()}catch(e){}},2600)};
+ r.onresult=e=>{let it='';for(let i=e.resultIndex;i<e.results.length;i++){const x=e.results[i];if(x.isFinal)fin+=' '+x[0].transcript;else it+=x[0].transcript}Q.live=(fin+' '+it).trim();const el=$('#qlive');if(el)el.textContent=Q.live;quiet()};
+ r.onerror=e=>{if(/not-allowed|service-not-allowed|audio-capture/.test(e.error))toast('اسمح للموقع باستخدام المايكروفون من إعدادات المتصفح.')};
+ r.onend=()=>{clearTimeout(tm);Q.listening=false;QREC=null;const said=(Q.live||'').trim();Q.live='';if(said)qCheck(said);else{toast('لم أسمع تلاوة. اضغط وابدأ القراءة.');render()}};
+ try{r.start();Q.listening=true;Q.live='';render();quiet()}catch(e){toast('تعذّر تشغيل المايكروفون')}}
+function qCheck(said){const p=cur();const k=Q.i,v=Q.vs[k];const txt=qSurah(Q.s)[2][v-1];const res=qAlign(txt,said);const pass=qPass(res);
+ Q.tries[k]=(Q.tries[k]||0)+1;Q.res[k]={words:res,pass,said};
+ if(pass){const pts=Q.hafiz?(Q.hint===k?QPTS.first:QPTS.hafiz):Q.tries[k]===1?QPTS.first:QPTS.retry;Q.pts+=pts;const l=lg(p);l.q=(l.q||0)+pts;touchDay(p);
+  if(k<Q.vs.length-1){Q.i++}else{Q.done=true;qAdvance(p);const q=qToday(p);const today=dkey();if(Q.wird&&!q.days[today]){q.days[today]=1;l.q+=QPTS.wird;Q.pts+=QPTS.wird;Q.bonus=true}}
+  save()}
+ render();setTimeout(()=>{const el=document.querySelector('.qv.cur');if(el)el.scrollIntoView({behavior:'smooth',block:'center'})},80)}
+function qVerseHTML(k){const v=Q.vs[k];const t=qSurah(Q.s)[2][v-1];const r=Q.res[k];const words=t.split(/\s+/);let wi=0;
+ const hide=Q.hafiz&&!(r&&r.pass)&&k>=Q.i;
+ const body=hide?`<span class="qhide">${k===Q.i?`🙈 الآية ${v} مخفية: ${g('اقرأها','اقرئيها')} من حفظك ${Q.hint===k?`<span class="qhintw">${t.split(/\s+/)[0]} …</span>`:`<button type="button" class="x" data-act="qHint">💡 أول كلمة</button>`}`:'…'}</span>`:words.map(w=>{if(!QNORM(w))return w;const ok=r?r.words[wi]:null;wi++;return r?`<span class="${ok?'qok':'qno'}">${w}</span>`:w}).join(' ');
+ return `<div class="qv ${k===Q.i&&!Q.done?'cur':''} ${r&&r.pass?'pass':''}"><span class="qtxt">${body} <span class="qnum">﴿${v}﴾</span></span>${r&&!r.pass?`<div class="qmsg">بعض الكلمات (بالأحمر) لم تُسمع بوضوح أو اختلفت. استمع للآية ثم أعد قراءتها.</div>`:''}${r&&r.pass?`<div class="qmsg ok">✓ ${Q.hafiz?'من حفظك':Q.tries[k]===1?'من أول مرة':'أحسنت'}</div>`:''}</div>`}
+function vQuran(){const p=cur();if(!QFLAG)return vHome();const q=qToday(p);const st=qStreak(p);const done=q.days[dkey()];
+ if(!QD){qData().then(()=>render()).catch(()=>{});return header()+band('📖 القرآن الكريم','جارٍ تحميل المصحف…')}
+ const su=qSurah(q.pos.s);const vs=qChunk(q.pos.s,q.pos.a);
+ return header()+band('📖 القرآن الكريم',`${g('اقرأ','اقرئي')} بصوتك، والتطبيق يتحقق من الكلمات.`)+`<div class="sec">
+ ${st?`<div class="card" style="text-align:center"><b style="font-size:18px">📖 ${st} ${st===1?'يوم':'أيام'} متتالية مع القرآن</b></div>`:''}
+ <button class="qcard" data-act="qWird"><span class="qi">📖</span><span class="grow"><b>${done?'وِرد إضافي':'وِرد اليوم'}</b><span>سورة ${su[1]} · الآيات ${vs[0]}–${vs[vs.length-1]}${done?' · ✓ أنهيت وِرد اليوم':` · +${QPTS.wird} نقطة عند إكماله`}</span></span><span class="go">‹</span></button>
+ <div class="card stack"><b>${g('اختر','اختاري')} سورة بنفسك</b><div class="qgrid">${QD.slice().reverse().filter(x=>x[0]>=50||x[0]===1).map(x=>`<button class="qs" data-qsurah="${x[0]}">${x[1]}</button>`).join('')}</div></div>
+ <details class="card"><summary>كيف تُحسب نقاط القرآن؟</summary><ul><li>آية صحيحة من أول مرة: ${QPTS.first} نقاط، وبعد الإعادة: ${QPTS.retry}.</li><li>آية من حفظك (النص مخفي): ${QPTS.hafiz} نقطة.</li><li>إكمال وِرد اليوم: ${QPTS.wird} نقطة إضافية.</li><li>التطبيق يتحقق من الكلمات فقط، أما أحكام التجويد فتعلّمها بالاستماع للشيخ الحصري قبل القراءة.</li></ul></details></div>`}
+function vQuranRun(){const p=cur();if(!Q.vs)return vQuran();const su=qSurah(Q.s);
+ const ctl=Q.done?`<div class="hero" style="text-align:center"><h2>🎉 ${g('أحسنت','أحسنتِ')}! أتممت الآيات</h2><p class="sub" style="margin:0">+${Q.pts} نقطة${Q.bonus?` (منها ${QPTS.wird} لإكمال وِرد اليوم)`:''}</p></div><div class="row"><button class="btn grow" data-act="qWird">الوِرد التالي</button><button class="btn plain grow" data-go="quran">رجوع</button></div>`
+  :`<div class="qctl"><button class="btn plain" data-act="qPlay">🔊 استمع للآية</button><button class="mic ${Q.listening?'on':''}" data-act="qMic" aria-label="اقرأ">${MICSVG}</button><div class="tklive" id="qlive" dir="rtl">${Q.listening?'…':''}</div><p class="note" style="margin:0">${Q.listening?g('أستمع… اقرأ الآية، وسيتوقف تلقائياً بعد انتهائك','أستمع… اقرئي الآية، وسيتوقف تلقائياً بعد انتهائك'):g('اضغط واقرأ الآية بصوتك','اضغطي واقرئي الآية بصوتكِ')}</p>
+  </div>`;
+ return header()+`<div class="qhead"><h2>سورة ${su[1]}</h2><button class="x" data-go="quran">إنهاء</button></div>
+ <div class="sec">${Q.done?'':`<div class="seg"><button type="button" class="${Q.hafiz?'':'on'}" data-qmode="read">📖 أقرأ من المصحف</button><button type="button" class="${Q.hafiz?'on':''}" data-qmode="hafiz">🙈 أُسمّع من حفظي</button></div>
+ <p class="note" style="margin:0">${Q.hafiz?`الآيات مخفية: ${g('اقرأ','اقرئي')} الآية من حفظك، وتظهر بعد أن ${g('تقرأها','تقرئيها')} صحيحة. لكل آية ${QPTS.hafiz} نقطة. ${g('إذا نسيت','إذا نسيتِ')} اضغط «💡 أول كلمة».`:`الآيات ظاهرة أمامك. لكل آية صحيحة ${QPTS.first} نقاط، ومن الحفظ ${QPTS.hafiz} نقطة.`}</p>`}
+ <p class="prog">الآية ${Math.min(Q.i+1,Q.vs.length)} من ${Q.vs.length}${Q.pts?` · +${Q.pts} نقطة`:''}</p><div class="bar"><i style="width:${100*(Q.done?Q.vs.length:Q.i)/Q.vs.length}%"></i></div>
+ <div class="mushaf">${Q.a0===1&&Q.s!==1&&Q.s!==9?'<div class="basm">بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ</div>':''}${Q.vs.map((_,k)=>qVerseHTML(k)).join('')}</div>${ctl}</div>`}
+function qHomeCards(p){if(!QFLAG)return '';const q=qToday(p);const done=q.days[dkey()];const st=qStreak(p);const today=dkey();
+ const prompt=!done&&p.qPrompt!==today?`<div class="hero qprompt"><h2>🌙 ${g('ابدأ يومك بآيات','ابدئي يومكِ بآيات')}</h2><p class="sub" style="margin:0">وِرد قصير من القرآن، وهو أعلى نقاط في مِران.</p><div class="row" style="margin-top:10px"><button class="btn grow" data-act="qWird">📖 أقرأ الآن</button><button class="btn plain" data-act="qLater">لاحقاً</button></div></div>`:'';
+ return prompt+`<button class="seccard" data-go="quran" style="--c:#0E7C66;--c2:#C9A13B"><span class="sci">📖</span><span class="grow"><b>القرآن الكريم</b><span>وِرد يومي بصوتك · من حفظك · أعلى النقاط</span>${done?`<span class="scst">✓ ${g('قرأت','قرأتِ')} وِرد اليوم${st>1?` · ${st} أيام`:''}</span>`:''}</span><span class="go">‹</span></button>`}
 function celebrate(p){const t=tierOf(lifetime(p));if(p.tierSeen==null){p.tierSeen=t.i;return ''}if(t.i>p.tierSeen){p.tierSeen=t.i;setTimeout(save,0);return `<div class="hero celeb pop"><h2>🎉 مبروك! ${g('وصلت','وصلتِ')} إلى ${t.em} ${t.name}</h2><p class="sub" style="margin:0">${t.next?`المحطة التالية: ${t.nextEm} ${t.nextName} عند ${t.next.toLocaleString('en')} نقطة.`:g('أنت الآن بطل مِران!','أنتِ الآن بطلة مِران!')}</p></div>`}if(t.i<p.tierSeen)p.tierSeen=t.i;return ''}
 function vHome(){const p=cur();const pl=planOf(p);const st=planStep(p);const done=PLAN.filter(x=>pl[x.k]).length;const bs=view.bs||'all';
  const card=x=>{const d=x.items.filter(k=>pl[k]).length,all=d===x.items.length;return `<button class="seccard" ${x.go==='en'?'data-go="en"':`data-act="${x.go}"`} style="--c:var(--${x.c});--c2:var(--${x.c2})"><span class="sci">${x.i}</span><span class="grow"><b>${x.t}</b><span>${x.m}</span>${d?`<span class="scst">✓ ${g('تدرّبت','تدرّبتِ')} اليوم</span>`:''}</span><span class="go">‹</span></button>`};
  return header()+`<h1>أهلاً يا ${esc(p.name)}</h1>
- ${introCard(false)}${installCard()}<div class="homegrid"><div class="sec">${SECS.map(card).join('')}</div>
+ ${introCard(false)}${installCard()}<div class="homegrid"><div class="sec">${qHomeCards(p)}${SECS.map(card).join('')}</div>
  <div><p class="motto">${g('كلما تدرّبت أكثر زادت نقاطك','كلما تدرّبتِ أكثر زادت نقاطكِ')}</p>${celebrate(p)}${heroPath(p)}${CLOUD?`<div class="sec"><div class="row between"><h2>🏆 الترتيب</h2><button class="x" data-go="comp">عرض الكل</button></div><div class="card"><div class="seg">${['all','st','gr'].map(k=>`<button type="button" class="${bs===k?'on':''}" data-bs="${k}">${k==='all'?'الجميع':k==='st'?STAGES[stageOf(p.grade)]:'صفّي'}</button>`).join('')}</div><div id="board" style="margin-top:10px"></div></div></div>`:`<div class="sec"><button class="btn plain wide" data-go="comp">🏆 الترتيب</button><button class="btn plain wide" data-go="parent">لوحة ولي الأمر</button></div>`}</div></div>`}
 
 function vEn(){const p=cur();const hc=Object.keys(p.hard).length;const pl=planOf(p);
@@ -1683,7 +1766,7 @@ function vComp(){const p=cur();const sc=scoreAll(p);const t=tierOf(sc.total);con
  <details class="card"><summary>كيف تُحسب النقاط؟</summary><ul>
  <li>كل يوم تدريب: 20 نقطة.</li><li>كل سؤال محلول: نقطة، وكل دقيقة تدريب: نقطة.</li><li>كل إجابة صحيحة: نقطتان إضافيتان.</li>
  <li>إكمال تدريب اليوم الأربعة (كلمات اليوم، المحادثة الصوتية، القدرات، التحصيلي) في يوم واحد 30، كلمات اليوم 15، اختبار محاكي 20، تصحيح سؤال من دفتر الأخطاء 5، إتقان كلمة صعبة 3.</li>
- <li>تمرين السرعة: نقطة لكل إجابة صحيحة.</li><li>مكافأة 50 نقطة عن كل أسبوع تتحسّن فيه الدقة 5% أو أكثر عن الأسبوع الذي قبله.</li>
+ <li>تمرين السرعة: نقطة لكل إجابة صحيحة.</li><li>القرآن الكريم: آية صحيحة من أول مرة 10 نقاط، وبعد الإعادة 5، ومن الحفظ 20، وإكمال وِرد اليوم 50 نقطة إضافية.</li><li>مكافأة 50 نقطة عن كل أسبوع تتحسّن فيه الدقة 5% أو أكثر عن الأسبوع الذي قبله.</li>
  <li>المجموع يُضرب في معامل الدقة العام: من 0.7 عند دقة 0% إلى 1.3 عند دقة 100%.</li><li>الرصيد تراكمي ويُحدَّث في الترتيب خلال ثوانٍ من كل إجابة.</li><li>لا سقف للنقاط ولا حد يومي: كلما تدرّبت أكثر ارتفع رصيدك.</li>
  <li>الإجابة في أقل من ثانيتين لا تُحسب، حتى لا يُضغط عشوائياً.</li><li>الأسئلة تتكيّف مع صف كل طالب ومستواه، فالدقة تُقاس على أسئلة مناسبة له، ويمكن عرض الترتيب حسب المرحلة أو الصف.</li>
  <li>طريق البطل: 🌱 مبتدئ، ثم 🥉 برونزي عند 300 نقطة، ثم 🥈 فضي عند 1000، ثم 🥇 ذهبي عند 3000، والهدف النهائي 🏆 بطل مِران عند 7000 نقطة.</li><li>الترتيب من الأول إلى الأخير حسب الرصيد، ويظهر بجانب كل اسم وسام محطته.</li></ul></details></div>`}
@@ -1735,7 +1818,7 @@ const AUTHV=['start','plogin','loading'];
 function render(){if(CLOUD){if(!C.ready&&view.name!=='loading')view={name:'loading'};else if(C.ready&&!C.user&&!['start','plogin'].includes(view.name))view={name:'start'};else if(C.ready&&C.mode==='admin'&&!ADMV.includes(view.name))view={name:'admin'};else if(C.ready&&C.mode==='student'&&S.profiles.length&&cur()&&cur().status==='pending'&&!C.asAdmin)view={name:'wait'};else if(C.ready&&C.mode==='student'&&!S.profiles.length&&!['start','loading','plogin'].includes(view.name))view={name:'start'}}
  const p=cur();document.body.dataset.sec=secOf();if(!CLOUD&&!AUTHV.includes(view.name)&&!S.profiles.length&&view.name!=='setup'){view={name:'setup',rows:[{name:'',gender:'m',grade:1,term:1}]}}
  document.body.dataset.g=(view.name==='form'?view.f.gender:view.name==='setup'?'m':(p?p.gender:'m'));
- const map={talkList:vTalkList,wait:vWait,talkRun:vTalkRun,admin:vAdmin,adBoard:vAdBoard,start:vStart,plogin:vPlogin,loading:vLoading,who:vWho,home:vHome,en:vEn,qd:vQd,flash:vFlash,readList:vReadList,hard:vHard,mist:vMist,quiz:vQuiz,result:vResult,parent:vParent,form:vForm,setup:vSetup,comp:vComp};
+ const map={talkList:vTalkList,quran:vQuran,quranRun:vQuranRun,wait:vWait,talkRun:vTalkRun,admin:vAdmin,adBoard:vAdBoard,start:vStart,plogin:vPlogin,loading:vLoading,who:vWho,home:vHome,en:vEn,qd:vQd,flash:vFlash,readList:vReadList,hard:vHard,mist:vMist,quiz:vQuiz,result:vResult,parent:vParent,form:vForm,setup:vSetup,comp:vComp};
  app.innerHTML=(map[view.name]||vWho)();
  const nav=$('#nav');nav.hidden=true||!p||['who','form','quiz','setup','talkRun',...AUTHV,...ADMV].includes(view.name);document.body.classList.toggle('has-nav',!nav.hidden);
  nav.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.go===view.name||(b.dataset.go==='en'&&['flash','readList','hard','talkList','talkRun'].includes(view.name))||(b.dataset.go==='qd'&&view.name==='mist')));
@@ -1791,6 +1874,11 @@ function act(a){const p=cur();if(cloudAct(a))return;
  case 'tkMicMode':TK.typing=false;render();break;
  case 'tkNext':tkNext();break;
  case 'tkFree':startFree();break;
+ case 'qWird':qWird();break;
+ case 'qPlay':qPlay(Q.i);break;
+ case 'qMic':qListen();break;
+ case 'qLater':{const q=cur();q.qPrompt=dkey();save();render();break}
+ case 'qHint':Q.hint=Q.i;render();break;
  case 'tkEndFree':try{REC&&REC.abort()}catch(e){}if(TK){TK.done=true;if(TK.i>0)tkFinish();render();tkScroll()}break;
  case 'tkShow':tkShow();break;
  case 'enTrain':startQuiz({title:'تدريب الإنجليزي',kind:'enTrain',back:'en',items:enTrainItems(p)});break;
@@ -1828,6 +1916,8 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
  if(d.say){speak(d.say);return}
  if(d.copy){const t=d.copy;try{navigator.clipboard.writeText(t).then(()=>toast(t.length>24?'تم نسخ الرابط':'تم النسخ: '+t),()=>toast(t))}catch(e){toast(t)}return}
  if(d.talk){startTalk(d.talk);return}
+ if(d.qmode){Q.hafiz=d.qmode==='hafiz';Q.hint=null;render();return}
+ if(d.qsurah){qStart(+d.qsurah,1,false);return}
  if(d.tkfirst){const q=cur();q.talkFirst=d.tkfirst;save();render();return}
  if(d.tktr){const a=b.closest('.bub').querySelector('.bubar');if(a)a.hidden=!a.hidden;return}
  if(d.go){if(view.name==='quiz'&&view.q)view.q.endAt=null;go(d.go);return}
