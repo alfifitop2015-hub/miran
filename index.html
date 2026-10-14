@@ -138,7 +138,7 @@ h1{font-size:28px;font-weight:800}h2{font-size:21px;font-weight:700}h3{font-size
 
 .credit{text-align:center;font-size:12px;color:var(--muted);padding:18px 16px 26px;line-height:1.7}.credit b{font-weight:700}
 .rkt{display:inline-block;font-size:12px;font-weight:700;border-radius:99px;padding:1px 9px;margin-inline-start:4px;vertical-align:middle;white-space:nowrap}
-.rkt.r1{background:#FFE9A8;color:#7A5200}.rkt.r2{background:#E6E9F0;color:#3E4658}.rkt.r3{background:#F6D9C2;color:#7A3E12}.rkt.r4{background:color-mix(in srgb,var(--pink) 16%,transparent);color:var(--pink)}
+.rkt.r1{background:#FFE9A8;color:#7A5200}.rkt.r2{background:#E6E9F0;color:#3E4658}.rkt.r3{background:#F6D9C2;color:#7A3E12}.rkt.r4{background:color-mix(in srgb,var(--pink) 16%,transparent);color:var(--pink)}.rkt.r5{background:color-mix(in srgb,var(--en) 14%,transparent);color:var(--en)}.rkt.r6{background:color-mix(in srgb,var(--th) 14%,transparent);color:var(--th)}
 .seccard{display:flex;align-items:center;gap:16px;width:100%;text-align:start;border:none;border-radius:20px;padding:20px;color:#fff;background:linear-gradient(135deg,var(--c),var(--c2));box-shadow:0 14px 30px -14px var(--c);cursor:pointer}
 .seccard b{display:block;font-family:var(--fd);font-size:24px;line-height:1.2}.seccard span span{display:block;font-size:13px;opacity:.92;margin-top:3px}
 .seccard .scst{display:inline-block!important;margin-top:8px!important;background:rgba(255,255,255,.22);border-radius:99px;padding:3px 10px;font-weight:700;opacity:1!important}
@@ -468,7 +468,7 @@ function subscribeBoard(){const p=cur();const bs=view.bs||'all';const key=bs+'|'
  let q=fb.collection('players');
  if(bs==='st')q=q.where('stage','==',stageOf(p.grade));else if(bs==='gr')q=q.where('grade','==',p.grade);else q=q.orderBy('total','desc').limit(100);
  unsub=q.onSnapshot(sn=>{boardRows=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>r.sid).sort((a,b)=>b.total-a.total).slice(0,100);renderBoard()},()=>{boardRows=[];renderBoard()})}
-function rankTitle(i,gd){const f=gd==='f';return i===1?['🥇',f?'فارسة المنافسة':'فارس المنافسة','r1']:i===2?['🥈',f?'منافسة شرسة':'منافس شرس','r2']:i===3?['🥉',f?'منافسة قوية':'منافس قوي','r3']:i<=10?['🔥',f?'صاعدة بقوة':'صاعد بقوة','r4']:null}
+function rankTitle(i,gd){const f=gd==='f';return i===1?['🥇',f?'فارسة المنافسة':'فارس المنافسة','r1']:i===2?['🥈',f?'منافسة شرسة':'منافس شرس','r2']:i===3?['🥉',f?'منافسة قوية':'منافس قوي','r3']:i===4?['🔥',f?'صاعدة بقوة':'صاعد بقوة','r4']:i===5?['🧭','في الاتجاه الصحيح','r5']:['🌱',f?'مبتدئة':'مبتدئ','r6']}
 function medal(i,tot){if(!(tot>0)||i>3)return '<span></span>';const m=[null,['gold','ذهبي'],['silver','فضي'],['bronze','برونزي']][i];return `<span class="medal ${m[0]}" title="المركز ${i}"><span class="disc"><b>${m[1]}</b></span><span class="rib"></span></span>`}
 function rankBadge(i,gd,tot){const t=tot>0?rankTitle(i,gd):null;return t?`<span class="rkt ${t[2]}">${t[0]} ${t[1]}</span>`:''}
 function renderBoard(){const el=$('#board');if(!el)return;let rows,note='';const bs=view.bs||'all',me=cur();
