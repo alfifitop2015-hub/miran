@@ -83,6 +83,8 @@ h1{font-size:28px;font-weight:800}h2{font-size:21px;font-weight:700}h3{font-size
 .plan .n{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-family:var(--fd);font-weight:700;border:2px solid currentColor;flex:none}
 .plan button.done .n{background:var(--onacc)}.plan button.done .n i{color:var(--acc);font-style:normal}
 .plan .m2{font-size:12px;opacity:.85}
+.rkl{font-size:12px;font-weight:700;color:var(--cp)}.legend{padding:12px 14px}.lgrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}.lgrow .tb small{font-weight:600;opacity:.8;margin-inline-start:2px}.lgar{color:var(--muted);font-size:14px}
+.rk2{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;background:color-mix(in srgb,var(--cp) 10%,transparent);border-radius:99px;padding:3px 10px 3px 4px}.rk2 i{font-style:normal;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--card);font-size:11px}
 .tb{font-size:12px;font-weight:700;border-radius:99px;padding:3px 10px;white-space:nowrap;margin-inline-end:4px}
 .tb.t0{background:color-mix(in srgb,var(--th) 13%,transparent);color:var(--th)}.tb.t1{background:#F6DDCD;color:#7A3E12}.tb.t2{background:#E6E9F0;color:#3E4658}.tb.t3{background:#FFEDB0;color:#7A5200}.tb.t4{background:linear-gradient(90deg,#FFD86B,#F2780C);color:#3d2200}
 .brd .n.p1{background:#F5C542;color:#3d2a00;border-radius:50%;width:26px;height:26px;display:grid;place-items:center}.brd .n.p2{background:#C9CED8;color:#262b36;border-radius:50%;width:26px;height:26px;display:grid;place-items:center}.brd .n.p3{background:#D79B76;color:#3a1c0b;border-radius:50%;width:26px;height:26px;display:grid;place-items:center}
@@ -935,10 +937,14 @@ function adAs(id){flushSave();stopSub();if(unsub){unsub();unsub=null}boardKey=''
 function adBack(){flushSave();pushAll(true);stopSub();if(unsub){unsub();unsub=null}boardKey='';C.mode='admin';C.asAdmin=false;C.sid=null;S={profiles:[],active:null};C.ready=true;A.list=null;A.err=null;go('admin')}
 const AB={rows:null,st:'all'};
 function adBoardLoad(){AB.rows=null;render();fb.collection('players').orderBy('total','desc').limit(300).get().then(sn=>{AB.rows=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>r.sid);render()}).catch(e=>{AB.rows=[];toast(authErr(e));render()})}
+function tierLegend(){return `<div class="card legend"><b>🗺️ طريق البطل (حسب النقاط)</b>
+ <div class="lgrow">${TIERS.map((x,k)=>`<span class="tb ${x[3]}">${x[2]} ${x[1]} <small>${k?x[0].toLocaleString('en')+'+':'0+'}</small></span>`).join('')}</div>
+ <b style="margin-top:10px;display:block">🏁 ألقاب المركز (حسب الترتيب)</b>
+ <div class="lgrow">${CHASET.map((x,k)=>`<span class="rk2"><i>${k+1}</i>${x[0]} ${x[1]}</span>`).join('')}<span class="rk2"><i>6+</i>🌱 كل تدريب يقرّبه من القمة</span></div></div>`}
 function vAdBoard(){const sg=(k,l)=>`<button type="button" class="${AB.st===k?'on':''}" data-abst="${k}">${l}</button>`;
  const rows=(AB.rows||[]).filter(r=>(r.total||0)>0).filter(r=>AB.st==='all'||(r.stage||stageOf(r.grade))===AB.st);
  return startTop()+band('الترتيب','ترتيب كل الطلاب كما يظهر لهم في التطبيق.')+`<div class="sec"><div class="seg">${sg('all','الجميع')}${sg('p','ابتدائي')}${sg('m','متوسط')}${sg('s','ثانوي')}</div>
- ${AB.rows==null?'<div class="card">جارٍ التحميل…</div>':rows.length?`<div class="list">${rows.map((r,i)=>`<div class="brd"><span class="n p${i+1}">${i+1}</span><span>${esc(r.nick)}<br><span class="note">${GRADES[r.grade]||''}</span></span>${tierBadge(r.total)}<span class="sc">${(r.total||0).toLocaleString('en')}</span></div>`).join('')}</div>`:'<div class="card">لا يوجد متنافسون بعد.</div>'}
+ ${tierLegend()}${AB.rows==null?'<div class="card">جارٍ التحميل…</div>':rows.length?`<div class="list">${rows.map((r,i)=>`<div class="brd"><span class="n p${i+1}">${i+1}</span><span>${esc(r.nick)}<br><span class="note">${GRADES[r.grade]||''}</span>${CHASET[i]?`<br><span class="rkl">${CHASET[i][0]} ${r.gender==='f'?CHASET[i][2]:CHASET[i][1]}</span>`:''}</span>${tierBadge(r.total)}<span class="sc">${(r.total||0).toLocaleString('en')}</span></div>`).join('')}</div>`:'<div class="card">لا يوجد متنافسون بعد.</div>'}
  <button class="btn plain wide" data-act="adBoard">تحديث</button><button class="btn wide" data-act="adHome">رجوع لإدارة النظام</button></div>`}
 function adSync(){const n=$('#adn');if(A.form&&n)A.form.name=n.value}
 function bindAdmin(){const q=$('#adq');if(q)q.addEventListener('input',()=>{view.q=q.value;const l=$('#adlist');if(l)l.innerHTML=adFiltered().map(adRow).join('')||'<div class="card">لا يوجد منافسون بعد.</div>'});
