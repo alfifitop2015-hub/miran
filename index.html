@@ -937,10 +937,8 @@ function adAs(id){flushSave();stopSub();if(unsub){unsub();unsub=null}boardKey=''
 function adBack(){flushSave();pushAll(true);stopSub();if(unsub){unsub();unsub=null}boardKey='';C.mode='admin';C.asAdmin=false;C.sid=null;S={profiles:[],active:null};C.ready=true;A.list=null;A.err=null;go('admin')}
 const AB={rows:null,st:'all'};
 function adBoardLoad(){AB.rows=null;render();fb.collection('players').orderBy('total','desc').limit(300).get().then(sn=>{AB.rows=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>r.sid);render()}).catch(e=>{AB.rows=[];toast(authErr(e));render()})}
-function tierLegend(){return `<div class="card legend"><b>🗺️ طريق البطل (حسب النقاط)</b>
- <div class="lgrow">${TIERS.map((x,k)=>`<span class="tb ${x[3]}">${x[2]} ${x[1]} <small>${k?x[0].toLocaleString('en')+'+':'0+'}</small></span>`).join('')}</div>
- <b style="margin-top:10px;display:block">🏁 ألقاب المركز (حسب الترتيب)</b>
- <div class="lgrow">${CHASET.map((x,k)=>`<span class="rk2"><i>${k+1}</i>${x[0]} ${x[1]}</span>`).join('')}<span class="rk2"><i>6+</i>🌱 كل تدريب يقرّبه من القمة</span></div></div>`}
+function tierLegend(){return `<div class="card hpath"><div class="row between"><b>🗺️ طريق البطل</b><span class="note">حسب النقاط</span></div>
+ <div class="hsteps">${TIERS.map(x=>`<div class="hs done"><span class="hd">${x[2]}</span><span class="hn">${x[1]}</span><span class="hp">${x[0].toLocaleString('en')}</span></div>`).join('')}<i class="hline"><i style="width:100%"></i></i></div></div>`}
 function vAdBoard(){const sg=(k,l)=>`<button type="button" class="${AB.st===k?'on':''}" data-abst="${k}">${l}</button>`;
  const rows=(AB.rows||[]).filter(r=>(r.total||0)>0).filter(r=>AB.st==='all'||(r.stage||stageOf(r.grade))===AB.st);
  return startTop()+band('الترتيب','ترتيب كل الطلاب كما يظهر لهم في التطبيق.')+`<div class="sec"><div class="seg">${sg('all','الجميع')}${sg('p','ابتدائي')}${sg('m','متوسط')}${sg('s','ثانوي')}</div>
