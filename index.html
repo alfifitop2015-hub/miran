@@ -90,6 +90,7 @@ h1{font-size:28px;font-weight:800}h2{font-size:21px;font-weight:700}h3{font-size
 .qnum{color:#B8892E;font-size:20px;white-space:nowrap}.qok{color:#0E7C66}.qno{color:#C62828;text-decoration:underline wavy rgba(198,40,40,.5)}
 .qhide{font-family:var(--fb);font-size:15px;color:#8a7a50;display:inline-flex;flex-wrap:wrap;align-items:center;gap:8px}.qhintw{font-family:"Amiri Quran","Amiri",serif;font-size:24px;color:#0E7C66}
 .qmsg{font-family:var(--fb);font-size:13px;color:#a33;line-height:1.6}.qmsg.ok{color:#0E7C66;font-weight:700}
+.qgo{font-size:19px;padding:16px}.qgo.on{background:linear-gradient(135deg,#C62828,#E8468A)}
 .qctl{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:14px}.qhz{font-size:14px;display:flex;gap:8px;align-items:center}
 .qcard{display:flex;align-items:center;gap:14px;width:100%;text-align:start;border:none;border-radius:18px;padding:16px;color:#fff;background:linear-gradient(135deg,#0E7C66,#C9A13B);cursor:pointer}.qcard b{display:block;font-family:var(--fd);font-size:21px}.qcard span span{display:block;font-size:13px;opacity:.95}.qcard .qi{font-size:30px}
 .qgrid{display:flex;flex-wrap:wrap;gap:6px}.qs{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:6px 12px;font:inherit;font-size:14px;cursor:pointer}
@@ -1577,7 +1578,7 @@ function loadPack(){if(location.protocol==='file:'||!FB)return;const d=new Date(
 
 /* ============ الحالة والتنقل ============ */
 let view={name:'who'};
-function go(name,extra){if(name!=='quranRun'){try{QREC&&QREC.abort()}catch(e){}try{QAUD&&QAUD.pause()}catch(e){}}view=Object.assign({name},extra||{});render();window.scrollTo(0,0)}
+function go(name,extra){if(name!=='quranRun'){Q.flow=false;try{QREC&&QREC.abort()}catch(e){}try{QAUD&&QAUD.pause()}catch(e){}}view=Object.assign({name},extra||{});render();window.scrollTo(0,0)}
 function touchDay(p){const k=dkey();if(p.lastDay!==k){p.streak=(p.lastDay===daysAgo(1))?p.streak+1:1;p.lastDay=k}p.days[k]=(p.days[k]||0)+1}
 function record(it,ok,mode,dt){const p=cur();if(!p)return;const l=lg(p);if(it.cat==='speed'){if(ok){p.points+=5;if(dt==null||dt>=700)l.sp++}touchDay(p);save();return}if(dt==null||dt>=2000){l.a++;if(ok)l.c++;if(qBoost(p))l.bz=(l.bz||0)+(ok?QBOOST_OK:QBOOST_NO)}const sec=it.sec;const st=p.stats[sec][it.cat]||(p.stats[sec][it.cat]={c:0,t:0});st.t++;if(ok){st.c++;p.points+=10}touchDay(p);
  if(it.word){const w=it.word.w;if(!ok)p.hard[w]={n:2};else if(p.hard[w]){p.hard[w].n--;if(p.hard[w].n<=0){delete p.hard[w];l.wm++}}}
@@ -1633,7 +1634,7 @@ function qAlign(verse,said){const V=qWords(verse).map(QNORM),S=QNORM(said).split
  let best=0;for(let j=0;j<=m;j++)if(D[n][j]<D[n][best])best=j;
  const res=new Array(n).fill(false);let i=n,j=best;
  while(i>0&&j>0){if(D[i][j]===D[i-1][j-1]+(ok(i-1,j-1)?0:1)){res[i-1]=ok(i-1,j-1);i--;j--}else if(D[i][j]===D[i-1][j]+1){i--}else j--}
- return res}
+ res.end=best;return res}
 function qPass(res){const n=res.length,miss=res.filter(x=>!x).length;return n<=3?miss===0:miss<=Math.floor(n*0.15)}
 /* ============ القرآن الكريم (نسخة تجريبية: تظهر فقط عند تفعيلها بالرابط ?quran=1) ============ */
 let QD=null,QDload=null;const Q={};let QREC=null,QAUD=null;
@@ -1648,30 +1649,38 @@ function qChunk(s,a){const su=qSurah(s);if(!su)return[];const out=[];let ch=0;fo
 function qToday(p){p.q=p.q||{pos:null,days:{}};const q=p.q;if(!q.pos){const pool=qPool(p);q.pos={s:pool[0],a:1}}return q}
 function qStreak(p){const d=(p.q&&p.q.days)||{};let n=0;for(let i=0;i<400;i++){const k=daysAgo(i);if(d[k])n++;else if(i>0)break}return n}
 function qStart(s,a,wird){const p=cur();qData().then(()=>{const vs=qChunk(s,a);if(!vs.length){toast('تعذّر تحميل الآيات');return}
- Object.assign(Q,{s,a0:a,vs,i:0,res:{},tries:{},wird:!!wird,hafiz:!!Q.hafiz,listening:false,live:'',pts:0,done:false});go('quranRun')}).catch(()=>toast('تعذّر تحميل المصحف. تحقّق من الإنترنت.'))}
+ Object.assign(Q,{s,a0:a,vs,i:0,res:{},tries:{},wird:!!wird,hafiz:!!Q.hafiz,flow:false,fin:'',live:'',pts:0,done:false,bonus:false,hint:null});go('quranRun')}).catch(()=>toast('تعذّر تحميل المصحف. تحقّق من الإنترنت.'))}
 function qWird(){const p=cur();const q=qToday(p);qStart(q.pos.s,q.pos.a,true)}
 function qAdvance(p){const q=qToday(p);const su=qSurah(Q.s);const last=Q.vs[Q.vs.length-1];
  if(Q.wird){if(last<su[2].length)q.pos={s:Q.s,a:last+1};else{const pool=qPool(p);const k=pool.indexOf(Q.s);q.pos={s:pool[(k+1)%pool.length]||pool[0],a:1}}}}
 function qPlay(k){const v=Q.vs[k];try{if(QAUD){QAUD.pause()}}catch(e){}const pad=n=>String(n).padStart(3,'0');QAUD=new Audio(`https://everyayah.com/data/Husary_Muallim_128kbps/${pad(Q.s)}${pad(v)}.mp3`);QAUD.play().catch(()=>toast('تعذّر تشغيل التلاوة'))}
 function qListen(){if(!SR){toast('التعرّف على الصوت غير متاح في هذا المتصفح. استخدم Chrome أو Safari.');return}
- if(Q.listening){try{QREC&&QREC.stop()}catch(e){}return}
+ if(Q.flow){qStopFlow(true);return}
  try{QAUD&&QAUD.pause()}catch(e){}
- const r=new SR();QREC=r;r.lang='ar-SA';r.interimResults=true;r.continuous=true;r.maxAlternatives=1;let fin='',tm=null;
- const quiet=()=>{clearTimeout(tm);tm=setTimeout(()=>{try{r.stop()}catch(e){}},2600)};
- r.onresult=e=>{let it='';for(let i=e.resultIndex;i<e.results.length;i++){const x=e.results[i];if(x.isFinal)fin+=' '+x[0].transcript;else it+=x[0].transcript}Q.live=(fin+' '+it).trim();const el=$('#qlive');if(el)el.textContent=Q.live;quiet()};
- r.onerror=e=>{if(/not-allowed|service-not-allowed|audio-capture/.test(e.error))toast('اسمح للموقع باستخدام المايكروفون من إعدادات المتصفح.')};
- r.onend=()=>{clearTimeout(tm);Q.listening=false;QREC=null;const said=(Q.live||'').trim();Q.live='';if(said)qCheck(said);else{toast('لم أسمع تلاوة. اضغط وابدأ القراءة.');render()}};
- try{r.start();Q.listening=true;Q.live='';render();quiet()}catch(e){toast('تعذّر تشغيل المايكروفون')}}
-function qCheck(said){const p=cur();const k=Q.i,v=Q.vs[k];const txt=qSurah(Q.s)[2][v-1];const res=qAlign(txt,said);const pass=qPass(res);
- Q.tries[k]=(Q.tries[k]||0)+1;Q.res[k]={words:res,pass,said};
- if(pass){const pts=Q.hafiz?(Q.hint===k?QPTS.first:QPTS.hafiz):Q.tries[k]===1?QPTS.first:QPTS.retry;Q.pts+=pts;const l=lg(p);l.q=(l.q||0)+pts;touchDay(p);
-  if(k<Q.vs.length-1){Q.i++}else{Q.done=true;qAdvance(p);const q=qToday(p);const today=dkey();if(Q.wird&&!q.days[today]){q.days[today]=1;l.q+=QPTS.wird;Q.pts+=QPTS.wird;Q.bonus=true}}
-  save()}
+ Q.flow=true;Q.fin='';Q.live='';Q.lastHeard=Date.now();qRecStart();render()}
+function qRecStart(){if(!Q.flow||Q.done)return;const r=new SR();QREC=r;r.lang='ar-SA';r.interimResults=true;r.continuous=true;r.maxAlternatives=1;
+ r.onresult=e=>{let it='';for(let i=e.resultIndex;i<e.results.length;i++){const x=e.results[i];if(x.isFinal)Q.fin+=' '+x[0].transcript;else it+=x[0].transcript}
+  Q.lastHeard=Date.now();Q.live=(Q.fin+' '+it).trim();const el=$('#qlive');if(el)el.textContent=Q.live.split(' ').slice(-12).join(' ');qFlowTry(false)};
+ r.onerror=e=>{if(/not-allowed|service-not-allowed|audio-capture/.test(e.error)){toast('اسمح للموقع باستخدام المايكروفون من إعدادات المتصفح.');Q.flow=false;render()}};
+ r.onend=()=>{if(QREC!==r)return;QREC=null;if(Q.flow&&!Q.done){if(Date.now()-Q.lastHeard>25000){qStopFlow(true);toast('توقفت التلاوة. اضغط «ابدأ التلاوة» للمتابعة.');return}setTimeout(qRecStart,150)}};
+ try{r.start()}catch(e){Q.flow=false;toast('تعذّر تشغيل المايكروفون');render()}}
+function qStopFlow(evalRest){Q.flow=false;const r=QREC;QREC=null;try{r&&r.abort()}catch(e){}if(evalRest)qFlowTry(true);Q.live='';render()}
+// يطابق ما قيل مع الآية الحالية، وينتقل تلقائياً للآية التالية عند صحتها
+function qFlowTry(final){let guard=0;while(Q.fin.trim()&&!Q.done&&guard++<20){const k=Q.i,v=Q.vs[k];const txt=qSurah(Q.s)[2][v-1];const res=qAlign(txt,Q.fin);const n=res.length;
+  if(qPass(res)){const rest=QNORM(Q.fin).split(' ').filter(Boolean).slice(res.end||0).join(' ');qCommit(k,res,true);Q.fin=rest;continue}
+  const said=QNORM(Q.fin).split(' ').filter(Boolean).length;
+  if(final||said>n+6){qCommit(k,res,false);Q.fin='';}
+  break}
  render();setTimeout(()=>{const el=document.querySelector('.qv.cur');if(el)el.scrollIntoView({behavior:'smooth',block:'center'})},80)}
+function qCommit(k,res,pass){const p=cur();Q.tries[k]=(Q.tries[k]||0)+1;Q.res[k]={words:res,pass};
+ if(pass){const pts=Q.hafiz?(Q.hint===k?QPTS.first:QPTS.hafiz):Q.tries[k]===1?QPTS.first:QPTS.retry;Q.pts+=pts;const l=lg(p);l.q=(l.q||0)+pts;touchDay(p);
+  if(k<Q.vs.length-1){Q.i++}else{Q.done=true;if(Q.flow)qStopFlow(false);qAdvance(p);const q=qToday(p);const today=dkey();if(Q.wird&&!q.days[today]){q.days[today]=1;l.q+=QPTS.wird;Q.pts+=QPTS.wird;Q.bonus=true}}
+  save()}}
+function qCheck(said){Q.fin=said;qFlowTry(true)}
 function qVerseHTML(k){const v=Q.vs[k];const t=qSurah(Q.s)[2][v-1];const r=Q.res[k];const words=t.split(/\s+/);let wi=0;
  const hide=Q.hafiz&&!(r&&r.pass)&&k>=Q.i;
  const body=hide?`<span class="qhide">${k===Q.i?`🙈 الآية ${v} مخفية: ${g('اقرأها','اقرئيها')} من حفظك ${Q.hint===k?`<span class="qhintw">${t.split(/\s+/)[0]} …</span>`:`<button type="button" class="x" data-act="qHint">💡 أول كلمة</button>`}`:'…'}</span>`:words.map(w=>{if(!QNORM(w))return w;const ok=r?r.words[wi]:null;wi++;return r?`<span class="${ok?'qok':'qno'}">${w}</span>`:w}).join(' ');
- return `<div class="qv ${k===Q.i&&!Q.done?'cur':''} ${r&&r.pass?'pass':''}"><span class="qtxt">${body} <span class="qnum">﴿${v}﴾</span></span>${r&&!r.pass?`<div class="qmsg">بعض الكلمات (بالأحمر) لم تُسمع بوضوح أو اختلفت. استمع للآية ثم أعد قراءتها.</div>`:''}${r&&r.pass?`<div class="qmsg ok">✓ ${Q.hafiz?'من حفظك':Q.tries[k]===1?'من أول مرة':'أحسنت'}</div>`:''}</div>`}
+ return `<div class="qv ${k===Q.i&&!Q.done?'cur':''} ${r&&r.pass?'pass':''}"><span class="qtxt">${body} <span class="qnum">﴿${v}﴾</span></span>${r&&!r.pass?`<div class="qmsg">بعض الكلمات (بالأحمر) لم تُسمع بوضوح أو اختلفت. أعد قراءة هذه الآية${Q.flow?'، ما زلت أستمع':''}.</div>`:''}${r&&r.pass?`<div class="qmsg ok">✓ ${Q.hafiz?'من حفظك':Q.tries[k]===1?'من أول مرة':'أحسنت'}</div>`:''}</div>`}
 function vQuran(){const p=cur();if(!QFLAG)return vHome();const q=qToday(p);const st=qStreak(p);const done=q.days[dkey()];
  if(!QD){qData().then(()=>render()).catch(()=>{});return header()+band('📖 القرآن الكريم','جارٍ تحميل المصحف…')}
  const su=qSurah(q.pos.s);const vs=qChunk(q.pos.s,q.pos.a);
@@ -1683,7 +1692,7 @@ function vQuran(){const p=cur();if(!QFLAG)return vHome();const q=qToday(p);const
  <details class="card"><summary>كيف تُحسب نقاط القرآن؟</summary><ul><li>آية صحيحة من أول مرة: ${QPTS.first} نقاط، وبعد الإعادة: ${QPTS.retry}.</li><li>آية من حفظك (النص مخفي): ${QPTS.hafiz} نقطة.</li><li>إكمال وِرد اليوم: ${QPTS.wird} نقطة إضافية، وبعده تصبح نقاط كل سؤال في بقية الأقسام ×1.5 حتى نهاية اليوم.</li><li>التطبيق يتحقق من الكلمات فقط، أما أحكام التجويد فتعلّمها بالاستماع للشيخ الحصري قبل القراءة.</li></ul></details></div>`}
 function vQuranRun(){const p=cur();if(!Q.vs)return vQuran();const su=qSurah(Q.s);
  const ctl=Q.done?`<div class="hero" style="text-align:center"><h2>🎉 ${g('أحسنت','أحسنتِ')}! أتممت الآيات</h2><p class="sub" style="margin:0">+${Q.pts} نقطة${Q.bonus?` (منها ${QPTS.wird} لإكمال وِرد اليوم)<br>✨ نقاطك الآن ×1.5 في بقية تدريب اليوم، ${g('انطلق','انطلقي')} للأقسام!`:''}</p><p class="sub" style="margin:6px 0 0">تقبّل الله منك، ولك بكل حرف حسنة.</p></div><div class="row"><button class="btn grow" data-act="qWird">الوِرد التالي</button><button class="btn plain grow" data-go="quran">رجوع</button></div>`
-  :`<div class="qctl"><button class="btn plain" data-act="qPlay">🔊 استمع للآية</button><button class="mic ${Q.listening?'on':''}" data-act="qMic" aria-label="اقرأ">${MICSVG}</button><div class="tklive" id="qlive" dir="rtl">${Q.listening?'…':''}</div><p class="note" style="margin:0">${Q.listening?g('أستمع… اقرأ الآية، وسيتوقف تلقائياً بعد انتهائك','أستمع… اقرئي الآية، وسيتوقف تلقائياً بعد انتهائك'):g('اضغط واقرأ الآية بصوتك','اضغطي واقرئي الآية بصوتكِ')}</p>
+  :`<div class="qctl"><button class="btn plain" data-act="qPlay">🔊 استمع للآية</button><button class="btn wide qgo ${Q.flow?'on':''}" data-act="qMic">${Q.flow?'⏹ إيقاف التلاوة':'🎙️ ابدأ التلاوة'}</button><div class="tklive" id="qlive" dir="rtl">${Q.flow?'…':''}</div><p class="note" style="margin:0;text-align:center">${Q.flow?g('أستمع إليك… اقرأ الآيات متتالية، وسأنتقل للآية التالية تلقائياً.','أستمع إليكِ… اقرئي الآيات متتالية، وسأنتقل للآية التالية تلقائياً.'):g('اضغط مرة واحدة واقرأ الآيات كلها متتالية، والتطبيق يتابعك آية بعد آية.','اضغطي مرة واحدة واقرئي الآيات كلها متتالية، والتطبيق يتابعكِ آية بعد آية.')}</p>${Q.res[Q.i]&&!Q.res[Q.i].pass&&(Q.tries[Q.i]||0)>=3?`<button class="x" data-act="qSkip">تخطّ هذه الآية</button>`:''}
   </div>`;
  return header()+`<div class="qhead"><h2>سورة ${su[1]}</h2><button class="x" data-go="quran">إنهاء</button></div>
  <div class="sec">${Q.done?'':`<div class="seg"><button type="button" class="${Q.hafiz?'':'on'}" data-qmode="read">📖 أقرأ من المصحف</button><button type="button" class="${Q.hafiz?'on':''}" data-qmode="hafiz">🙈 أُسمّع من حفظي</button></div>
@@ -1884,6 +1893,7 @@ function act(a){const p=cur();if(cloudAct(a))return;
  case 'qMic':qListen();break;
  case 'qLater':{const q=cur();q.qPrompt=dkey();save();render();break}
  case 'qHint':Q.hint=Q.i;render();break;
+ case 'qSkip':if(Q.i<Q.vs.length-1){Q.i++;Q.fin='';render()}else{Q.done=true;qStopFlow(false);qAdvance(cur());save();render()}break;
  case 'tkEndFree':try{REC&&REC.abort()}catch(e){}if(TK){TK.done=true;if(TK.i>0)tkFinish();render();tkScroll()}break;
  case 'tkShow':tkShow();break;
  case 'enTrain':startQuiz({title:'تدريب الإنجليزي',kind:'enTrain',back:'en',items:enTrainItems(p)});break;
