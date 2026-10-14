@@ -882,10 +882,13 @@ function vPlogin(){return startTop()+band('دخول مدير النظام','هذ
  <label class="f" for="lpw">كلمة المرور<input type="password" id="lpw" dir="ltr" autocomplete="current-password" required></label>
  <p class="warn" id="lerr" hidden></p><button class="btn wide" type="submit" id="lbtn">دخول</button>
  <button type="button" class="x" data-act="reset" style="align-self:center">نسيت كلمة المرور؟</button><button type="button" class="btn plain wide" data-act="toStart">رجوع</button></form>`}
+let WC=false;
 function vWait(){const p=cur();return startTop()+band('طلبك قيد المراجعة',p&&p.role==='parent'?'يُفعّل حسابك فور موافقة مدير النظام.':'سيبدأ التدريب فور موافقة مدير النظام.')+`<div class="sec">
  <div class="card stack" style="align-items:center;text-align:center"><div style="font-size:46px">⏳</div><h3 style="margin:0">${p?esc(p.name):''}</h3><span class="note">${p?(p.role==='parent'?(p.gender==='f'?'أم':'أب')+' · ولي أمر':GRADES[p.grade]+' · '+TERMS[p.term]):''}</span>
  <p style="margin:0">${g('وصل طلبك','وصل طلبكِ')} إلى مدير النظام. أبقِ هذه الصفحة مفتوحة أو ${g('عد','عودي')} إليها لاحقاً، وستنتقل ${p&&p.role==='parent'?'لصفحة المتابعة':'للتدريب'} تلقائياً بعد الموافقة.</p></div>
- ${introCard(false)}</div>`}
+ ${introCard(false)}
+ ${WC?`<div class="warn stack">إلغاء الطلب يحذفه نهائياً، ويمكنك التسجيل من جديد.<div class="row"><button class="btn danger" data-act="wCancelOk">نعم، ألغِ الطلب</button><button class="btn plain" data-act="wCancelNo">رجوع</button></div></div>`:`<button type="button" class="btn plain wide" data-act="wCancel">إلغاء الطلب والرجوع للتسجيل</button>`}
+ <button type="button" class="x" data-act="wAdmin" style="align-self:center;margin-top:10px">دخول مدير النظام</button></div>`}
 function vStudentWho(){const p=cur();if(!p)return vLoading();const v=view;
  return header()+band('حسابي',esc(p.name)+' · '+(isPar()?'ولي أمر':GRADES[p.grade]+' · '+TERMS[p.term]))+`<div class="sec">${isPar()?'':progressCard(p,true)}
  <div class="card stack"><h3>استخدام حسابك على جهاز آخر</h3><p class="note" style="margin:0">أنشئ رابط النقل وافتحه على الجهاز الآخر، فيظهر حسابك بكل نقاطك. احتفظ به أيضاً لو تغيّر جوالك.</p>
@@ -1000,6 +1003,10 @@ function cloudAct(a){if(a==='intro'){openIntro();return true}if(a==='install'){d
  case 'adBoard':go('adBoard');adBoardLoad();return true;
  case 'adHome':go('admin');return true;
  case 'pbReload':pbLoad();return true;
+ case 'wCancel':WC=true;render();return true;
+ case 'wCancelNo':WC=false;render();return true;
+ case 'wCancelOk':{const id=C.sid;WC=false;stopSub();S={profiles:[],active:null};(async()=>{try{await stuRef(id).delete()}catch(e){}view={name:'start'};await logout()})();return true}
+ case 'wAdmin':stopSub();S={profiles:[],active:null};view={name:'plogin'};logout();return true;
  case 'adBack':adBack();return true;
  case 'adReload':A.list=null;A.err=null;adminLoad();return true;
  case 'adAdd':A.edit='new';A.del=null;A.form={name:'',gender:'m',grade:0,term:1};render();return true;
