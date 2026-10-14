@@ -397,7 +397,9 @@ function speak(t){
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
 const tnorm = s => String(s || '').toLowerCase().replace(/[^\p{Script=Han}0-9a-z]/gu, '');
 function tmatch(raw, turn){ const t = tnorm(raw); return !!t && turn[6].split('|').some(g => g.split('+').every(k => t.includes(tnorm(k)))); }
-function tsim(raw, model){ const m = [...tnorm(model)]; if (!m.length) return 0; const set = new Set([...tnorm(raw)]); return m.filter(c => set.has(c)).length / m.length; }
+const FREE = /[0-9零一二两三四五六七八九十百千万]|阿里|沙特|利雅得|叔叔/gu;   // أسماء وأعمار وأرقام وأماكن الأمثلة: حرّة للطالب
+const tfree = s => tnorm(s).replace(FREE, '');
+function tsim(raw, model){ raw = tfree(raw); model = tfree(model); const m = [...model]; if (!m.length) return 0; const set = new Set([...tnorm(raw)]); return m.filter(c => set.has(c)).length / m.length; }
 const hasHan = s => /\p{Script=Han}/u.test(s);
 const GNOTES = [
   [/是(很|非常|太)/, 'لا نضع 是 قبل الصفة: نقول 我很高兴 وليس 我是很高兴.'],
@@ -453,7 +455,8 @@ async function aiAsk(prompt){
 }
 async function aiJudge(turn, said, me, scene){
   if (!hasHan(said)) return null;
-  const common = `You check one spoken answer in a Mandarin speaking drill for an Arabic-speaking learner. Scenario: "${scene}". The learner's text is a speech-recognition transcript and may contain homophone mis-recognitions.`;
+  const freeRule = `PERSONAL DETAILS ARE FREE: names, ages, numbers, quantities, prices, dates, times, places, nationalities, jobs, foods and other personal details are the learner's own choice. Never treat a difference from the example in these details as a mistake, never mark it as not fitting, and never change them in "corrected" (fix only grammar or wrong words around them).`;
+  const common = `You check one spoken answer in a Mandarin speaking drill for an Arabic-speaking learner. Scenario: "${scene}". The learner's text is a speech-recognition transcript and may contain homophone mis-recognitions. ${freeRule}`;
   const fields = `"corrected": the learner's OWN sentence with its mistakes fixed, simplified characters, changing as little as possible (identical when already correct; empty when fits is false). "pinyin": tone-marked pinyin of "corrected". "notes": 0-2 short explanations IN ARABIC of real grammar or word mistakes, naming the exact word; never invent mistakes; ignore punctuation. "pronunciation": words that make no sense but sound like the intended word (wrong tone or similar sound) as {"said","said_pinyin","meant","meant_pinyin","tip"} with tip in ARABIC; [] if none.`;
   const prompt = me
     ? `${common}
