@@ -93,6 +93,7 @@ h1{font-size:28px;font-weight:800}h2{font-size:21px;font-weight:700}h3{font-size
 .qctl{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:14px}.qhz{font-size:14px;display:flex;gap:8px;align-items:center}
 .qcard{display:flex;align-items:center;gap:14px;width:100%;text-align:start;border:none;border-radius:18px;padding:16px;color:#fff;background:linear-gradient(135deg,#0E7C66,#C9A13B);cursor:pointer}.qcard b{display:block;font-family:var(--fd);font-size:21px}.qcard span span{display:block;font-size:13px;opacity:.95}.qcard .qi{font-size:30px}
 .qgrid{display:flex;flex-wrap:wrap;gap:6px}.qs{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:6px 12px;font:inherit;font-size:14px;cursor:pointer}
+.ajr{background:#FFFBEA;border-color:#EAD9A0;line-height:1.9}.ajr p{margin:6px 0}.boostc{border:2px dashed #C9A13B}
 .qprompt{text-align:center;background:linear-gradient(135deg,#0E7C66,#2A5C8A)!important}
 .rkl{font-size:12px;font-weight:700;color:var(--cp)}.legend{padding:12px 14px}.lgrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px}.lgrow .tb small{font-weight:600;opacity:.8;margin-inline-start:2px}.lgar{color:var(--muted);font-size:14px}
 .rk2{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;background:color-mix(in srgb,var(--cp) 10%,transparent);border-radius:99px;padding:3px 10px 3px 4px}.rk2 i{font-style:normal;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--card);font-size:11px}
@@ -469,17 +470,17 @@ function weekStart(off){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getD
 const weekKey=off=>dkey(weekStart(off));
 function weekLogs(p,off){const s0=weekStart(off),out=[];for(let i=0;i<7;i++){const d=new Date(s0);d.setDate(s0.getDate()+i);const x=p.log&&p.log[dkey(d)];if(x)out.push(x)}return out}
 function score(p,off){off=off||0;let days=0,a=0,c=0,s=0,dc=0,mf=0,wm=0,ex=0,sp=0,pl=0,qp=0;
- weekLogs(p,off).forEach(x=>{if(x.a||x.sp||x.q||x.s>=60)days++;a+=x.a;c+=x.c;s+=x.s;dc+=x.dc;mf+=x.mf;wm+=x.wm;ex+=x.ex;sp+=x.sp;pl+=x.pl||0;qp+=x.q||0});
+ weekLogs(p,off).forEach(x=>{if(x.a||x.sp||x.q||x.s>=60)days++;a+=x.a;c+=x.c;s+=x.s;dc+=x.dc;mf+=x.mf;wm+=x.wm;ex+=x.ex;sp+=x.sp;pl+=x.pl||0;qp+=(x.q||0)+(x.bz||0)});
  const mins=Math.floor(s/60),accv=a?c/a:0,reg=days*20,eff=a+mins,cor=c*2,ach=dc*15+mf*5+wm*3+ex*20+sp+pl*30+qp;
  let pa=0,pc=0;weekLogs(p,off+1).forEach(x=>{pa+=x.a;pc+=x.c});const imp=(a>=20&&pa>=20&&accv-pc/pa>=.05)?50:0;
  const mult=a?.7+.6*accv:1;return{total:Math.round((reg+eff+cor+ach+imp)*mult),reg,eff,cor,ach,imp,accv,a,c,days,mins,mult,dc,mf,wm,ex,sp}}
 function scoreAll(p){const keys=Object.keys(p.log||{}).sort();let days=0,a=0,c=0,s=0,dc=0,mf=0,wm=0,ex=0,sp=0,imp=0;
- let pl=0,qp=0;keys.forEach(k=>{const x=p.log[k];if(x.a||x.sp||x.q||x.s>=60)days++;a+=x.a;c+=x.c;s+=x.s;dc+=x.dc;mf+=x.mf;wm+=x.wm;ex+=x.ex;sp+=x.sp;pl+=x.pl||0;qp+=x.q||0});
+ let pl=0,qp=0;keys.forEach(k=>{const x=p.log[k];if(x.a||x.sp||x.q||x.s>=60)days++;a+=x.a;c+=x.c;s+=x.s;dc+=x.dc;mf+=x.mf;wm+=x.wm;ex+=x.ex;sp+=x.sp;pl+=x.pl||0;qp+=(x.q||0)+(x.bz||0)});
  if(keys.length){const first=new Date(keys[0]+'T12:00:00');const weeks=Math.ceil((Date.now()-first)/6048e5)+1;for(let o=0;o<Math.min(weeks,260);o++)imp+=score(p,o).imp}
  const mins=Math.floor(s/60),accv=a?c/a:0,reg=days*20,eff=a+mins,cor=c*2,ach=dc*15+mf*5+wm*3+ex*20+sp+pl*30+qp,mult=a?.7+.6*accv:1;
  return{total:Math.round((reg+eff+cor+ach+imp)*mult),reg,eff,cor,ach,imp,accv,a,c,days,mins,mult,dc,mf,wm,ex,sp}}
 const lifetime=p=>scoreAll(p).total;
-function todayGain(p){const x=(p.log||{})[dkey()];if(!x)return 0;const acc=scoreAll(p).mult;return Math.round(((x.a||x.sp||x.s>=60?20:0)+x.a+Math.floor(x.s/60)+x.c*2+x.dc*15+x.mf*5+x.wm*3+x.ex*20+x.sp+(x.pl||0)*30+(x.q||0))*acc)}
+function todayGain(p){const x=(p.log||{})[dkey()];if(!x)return 0;const acc=scoreAll(p).mult;return Math.round(((x.a||x.sp||x.s>=60?20:0)+x.a+Math.floor(x.s/60)+x.c*2+x.dc*15+x.mf*5+x.wm*3+x.ex*20+x.sp+(x.pl||0)*30+(x.q||0)+(x.bz||0))*acc)}
 const TIERS=[[0,'مبتدئ','🌱','t0'],[300,'برونزي','🥉','t1'],[1000,'فضي','🥈','t2'],[3000,'ذهبي','🥇','t3'],[7000,'بطل مِران','🏆','t4']];
 function tierOf(t){let i=0;TIERS.forEach((x,k)=>{if(t>=x[0])i=k});const nx=TIERS[i+1];return{i,em:TIERS[i][2],cls:TIERS[i][3],nextEm:nx&&nx[2],name:TIERS[i][1],next:nx&&nx[0],nextName:nx&&nx[1],pct:nx?Math.round(100*(t-TIERS[i][0])/(nx[0]-TIERS[i][0])):100}}
 
@@ -1578,7 +1579,7 @@ function loadPack(){if(location.protocol==='file:'||!FB)return;const d=new Date(
 let view={name:'who'};
 function go(name,extra){if(name!=='quranRun'){try{QREC&&QREC.abort()}catch(e){}try{QAUD&&QAUD.pause()}catch(e){}}view=Object.assign({name},extra||{});render();window.scrollTo(0,0)}
 function touchDay(p){const k=dkey();if(p.lastDay!==k){p.streak=(p.lastDay===daysAgo(1))?p.streak+1:1;p.lastDay=k}p.days[k]=(p.days[k]||0)+1}
-function record(it,ok,mode,dt){const p=cur();if(!p)return;const l=lg(p);if(it.cat==='speed'){if(ok){p.points+=5;if(dt==null||dt>=700)l.sp++}touchDay(p);save();return}if(dt==null||dt>=2000){l.a++;if(ok)l.c++}const sec=it.sec;const st=p.stats[sec][it.cat]||(p.stats[sec][it.cat]={c:0,t:0});st.t++;if(ok){st.c++;p.points+=10}touchDay(p);
+function record(it,ok,mode,dt){const p=cur();if(!p)return;const l=lg(p);if(it.cat==='speed'){if(ok){p.points+=5;if(dt==null||dt>=700)l.sp++}touchDay(p);save();return}if(dt==null||dt>=2000){l.a++;if(ok)l.c++;if(qBoost(p))l.bz=(l.bz||0)+(ok?QBOOST_OK:QBOOST_NO)}const sec=it.sec;const st=p.stats[sec][it.cat]||(p.stats[sec][it.cat]={c:0,t:0});st.t++;if(ok){st.c++;p.points+=10}touchDay(p);
  if(it.word){const w=it.word.w;if(!ok)p.hard[w]={n:2};else if(p.hard[w]){p.hard[w].n--;if(p.hard[w].n<=0){delete p.hard[w];l.wm++}}}
  if((sec==='qd'||sec==='th')&&it.cat!=='speed'){if(!ok&&!p.mist.some(x=>x.id===it.id)){p.mist.unshift({id:it.id,sec:it.sec,cat:it.cat,passage:it.passage,chLtr:it.chLtr,q:it.q,c:it.c,a:it.a,ex:it.ex,tip:it.tip});p.mist=p.mist.slice(0,40)}
   if(ok&&mode==='mist'&&p.mist.some(x=>x.id===it.id)){p.mist=p.mist.filter(x=>x.id!==it.id);l.mf++}}
@@ -1639,6 +1640,9 @@ let QD=null,QDload=null;const Q={};let QREC=null,QAUD=null;
 function qData(){if(QD)return Promise.resolve(QD);if(!QDload)QDload=fetch('quran.json?v=1').then(r=>r.json()).then(d=>{QD=d;return d}).catch(e=>{QDload=null;throw e});return QDload}
 const qSurah=s=>QD&&QD.find(x=>x[0]===s);
 const QPTS={first:10,retry:5,hafiz:20,wird:50};
+const QBOOST_OK=1.5,QBOOST_NO=0.5;
+const qBoost=p=>!!(p&&p.q&&p.q.days&&p.q.days[dkey()]);
+const QAJR=`<div class="card ajr"><b>🌟 الأجر قبل النقاط</b><p>قال رسول الله ﷺ: «مَن قرأ حرفًا من كتاب الله فله به حسنة، والحسنة بعشر أمثالها» <span class="note">(رواه الترمذي)</span>، وقال ﷺ: «خيرُكم مَن تعلَّم القرآنَ وعلَّمه» <span class="note">(رواه البخاري)</span>.</p><p style="margin:0">فاقرأ بنيّة الأجر من الله أولًا، والنقاط هديةٌ تشجيعية بعد ذلك.</p></div>`;
 function qPool(p){const lo=p.grade<=3?93:p.grade<=6?78:p.grade<=9?67:50;const a=[];for(let s=114;s>=lo;s--)a.push(s);return a}
 function qChunk(s,a){const su=qSurah(s);if(!su)return[];const out=[];let ch=0;for(let k=a;k<=su[2].length;k++){const t=su[2][k-1];if(out.length&&(ch+t.length>320||out.length>=7))break;out.push(k);ch+=t.length}return out}
 function qToday(p){p.q=p.q||{pos:null,days:{}};const q=p.q;if(!q.pos){const pool=qPool(p);q.pos={s:pool[0],a:1}}return q}
@@ -1671,13 +1675,14 @@ function qVerseHTML(k){const v=Q.vs[k];const t=qSurah(Q.s)[2][v-1];const r=Q.res
 function vQuran(){const p=cur();if(!QFLAG)return vHome();const q=qToday(p);const st=qStreak(p);const done=q.days[dkey()];
  if(!QD){qData().then(()=>render()).catch(()=>{});return header()+band('📖 القرآن الكريم','جارٍ تحميل المصحف…')}
  const su=qSurah(q.pos.s);const vs=qChunk(q.pos.s,q.pos.a);
- return header()+band('📖 القرآن الكريم',`${g('اقرأ','اقرئي')} بصوتك، والتطبيق يتحقق من الكلمات.`)+`<div class="sec">
+ return header()+band('📖 القرآن الكريم',`${g('اقرأ','اقرئي')} بصوتك، والتطبيق يتحقق من الكلمات.`)+`<div class="sec">${QAJR}
+ <div class="card boostc"><b>🚀 ${g('ابدأ','ابدئي')} يومك بالقرآن</b><p style="margin:6px 0 0">القرآن يعطي أعلى النقاط في مِران، وبعد إكمال وِرد اليوم تصبح نقاطك <b>×1.5</b> في كل سؤال ${g('تجيبه','تجيبينه')} في الإنجليزي والقدرات والتحصيلي حتى نهاية اليوم.${done?` <b style="color:var(--ok)">✨ المضاعفة مفعّلة اليوم!</b>`:''}</p></div>
  ${st?`<div class="card" style="text-align:center"><b style="font-size:18px">📖 ${st} ${st===1?'يوم':'أيام'} متتالية مع القرآن</b></div>`:''}
  <button class="qcard" data-act="qWird"><span class="qi">📖</span><span class="grow"><b>${done?'وِرد إضافي':'وِرد اليوم'}</b><span>سورة ${su[1]} · الآيات ${vs[0]}–${vs[vs.length-1]}${done?' · ✓ أنهيت وِرد اليوم':` · +${QPTS.wird} نقطة عند إكماله`}</span></span><span class="go">‹</span></button>
  <div class="card stack"><b>${g('اختر','اختاري')} سورة بنفسك</b><div class="qgrid">${QD.slice().reverse().filter(x=>x[0]>=50||x[0]===1).map(x=>`<button class="qs" data-qsurah="${x[0]}">${x[1]}</button>`).join('')}</div></div>
- <details class="card"><summary>كيف تُحسب نقاط القرآن؟</summary><ul><li>آية صحيحة من أول مرة: ${QPTS.first} نقاط، وبعد الإعادة: ${QPTS.retry}.</li><li>آية من حفظك (النص مخفي): ${QPTS.hafiz} نقطة.</li><li>إكمال وِرد اليوم: ${QPTS.wird} نقطة إضافية.</li><li>التطبيق يتحقق من الكلمات فقط، أما أحكام التجويد فتعلّمها بالاستماع للشيخ الحصري قبل القراءة.</li></ul></details></div>`}
+ <details class="card"><summary>كيف تُحسب نقاط القرآن؟</summary><ul><li>آية صحيحة من أول مرة: ${QPTS.first} نقاط، وبعد الإعادة: ${QPTS.retry}.</li><li>آية من حفظك (النص مخفي): ${QPTS.hafiz} نقطة.</li><li>إكمال وِرد اليوم: ${QPTS.wird} نقطة إضافية، وبعده تصبح نقاط كل سؤال في بقية الأقسام ×1.5 حتى نهاية اليوم.</li><li>التطبيق يتحقق من الكلمات فقط، أما أحكام التجويد فتعلّمها بالاستماع للشيخ الحصري قبل القراءة.</li></ul></details></div>`}
 function vQuranRun(){const p=cur();if(!Q.vs)return vQuran();const su=qSurah(Q.s);
- const ctl=Q.done?`<div class="hero" style="text-align:center"><h2>🎉 ${g('أحسنت','أحسنتِ')}! أتممت الآيات</h2><p class="sub" style="margin:0">+${Q.pts} نقطة${Q.bonus?` (منها ${QPTS.wird} لإكمال وِرد اليوم)`:''}</p></div><div class="row"><button class="btn grow" data-act="qWird">الوِرد التالي</button><button class="btn plain grow" data-go="quran">رجوع</button></div>`
+ const ctl=Q.done?`<div class="hero" style="text-align:center"><h2>🎉 ${g('أحسنت','أحسنتِ')}! أتممت الآيات</h2><p class="sub" style="margin:0">+${Q.pts} نقطة${Q.bonus?` (منها ${QPTS.wird} لإكمال وِرد اليوم)<br>✨ نقاطك الآن ×1.5 في بقية تدريب اليوم، ${g('انطلق','انطلقي')} للأقسام!`:''}</p><p class="sub" style="margin:6px 0 0">تقبّل الله منك، ولك بكل حرف حسنة.</p></div><div class="row"><button class="btn grow" data-act="qWird">الوِرد التالي</button><button class="btn plain grow" data-go="quran">رجوع</button></div>`
   :`<div class="qctl"><button class="btn plain" data-act="qPlay">🔊 استمع للآية</button><button class="mic ${Q.listening?'on':''}" data-act="qMic" aria-label="اقرأ">${MICSVG}</button><div class="tklive" id="qlive" dir="rtl">${Q.listening?'…':''}</div><p class="note" style="margin:0">${Q.listening?g('أستمع… اقرأ الآية، وسيتوقف تلقائياً بعد انتهائك','أستمع… اقرئي الآية، وسيتوقف تلقائياً بعد انتهائك'):g('اضغط واقرأ الآية بصوتك','اضغطي واقرئي الآية بصوتكِ')}</p>
   </div>`;
  return header()+`<div class="qhead"><h2>سورة ${su[1]}</h2><button class="x" data-go="quran">إنهاء</button></div>
@@ -1686,8 +1691,8 @@ function vQuranRun(){const p=cur();if(!Q.vs)return vQuran();const su=qSurah(Q.s)
  <p class="prog">الآية ${Math.min(Q.i+1,Q.vs.length)} من ${Q.vs.length}${Q.pts?` · +${Q.pts} نقطة`:''}</p><div class="bar"><i style="width:${100*(Q.done?Q.vs.length:Q.i)/Q.vs.length}%"></i></div>
  <div class="mushaf">${Q.a0===1&&Q.s!==1&&Q.s!==9?'<div class="basm">بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ</div>':''}${Q.vs.map((_,k)=>qVerseHTML(k)).join('')}</div>${ctl}</div>`}
 function qHomeCards(p){if(!QFLAG)return '';const q=qToday(p);const done=q.days[dkey()];const st=qStreak(p);const today=dkey();
- const prompt=!done&&p.qPrompt!==today?`<div class="hero qprompt"><h2>🌙 ${g('ابدأ يومك بآيات','ابدئي يومكِ بآيات')}</h2><p class="sub" style="margin:0">وِرد قصير من القرآن، وهو أعلى نقاط في مِران.</p><div class="row" style="margin-top:10px"><button class="btn grow" data-act="qWird">📖 أقرأ الآن</button><button class="btn plain" data-act="qLater">لاحقاً</button></div></div>`:'';
- return prompt+`<button class="seccard" data-go="quran" style="--c:#0E7C66;--c2:#C9A13B"><span class="sci">📖</span><span class="grow"><b>القرآن الكريم</b><span>وِرد يومي بصوتك · من حفظك · أعلى النقاط</span>${done?`<span class="scst">✓ ${g('قرأت','قرأتِ')} وِرد اليوم${st>1?` · ${st} أيام`:''}</span>`:''}</span><span class="go">‹</span></button>`}
+ const prompt=!done&&p.qPrompt!==today?`<div class="hero qprompt"><h2>🌙 ${g('ابدأ يومك بآيات','ابدئي يومكِ بآيات')}</h2><p class="sub" style="margin:0">وِرد قصير بأعلى نقاط في مِران، وبعده تصبح نقاطك ×1.5 في بقية تدريب اليوم. وقبل ذلك كله: أجرٌ عظيم من الله، بكل حرف حسنة.</p><div class="row" style="margin-top:10px"><button class="btn grow" data-act="qWird">📖 أقرأ الآن</button><button class="btn plain" data-act="qLater">لاحقاً</button></div></div>`:'';
+ return prompt+`<button class="seccard" data-go="quran" style="--c:#0E7C66;--c2:#C9A13B"><span class="sci">📖</span><span class="grow"><b>القرآن الكريم</b><span>🏆 أعلى نقاط في مِران · ${g('ابدأ','ابدئي')} به لتزيد نقاطك في بقية التدريب · والأهم: الأجر العظيم من الله</span>${done?`<span class="scst">✨ ${g('قرأت','قرأتِ')} وِرد اليوم: نقاطك مضاعفة ×1.5 في بقية تدريب اليوم${st>1?` · 📖 ${st} أيام`:''}</span>`:`<span class="scst">${g('اقرأ','اقرئي')} وِرد اليوم ${g('لتحصل','لتحصلي')} على نقاط ×1.5 في كل الأقسام</span>`}</span><span class="go">‹</span></button>`}
 function celebrate(p){const t=tierOf(lifetime(p));if(p.tierSeen==null){p.tierSeen=t.i;return ''}if(t.i>p.tierSeen){p.tierSeen=t.i;setTimeout(save,0);return `<div class="hero celeb pop"><h2>🎉 مبروك! ${g('وصلت','وصلتِ')} إلى ${t.em} ${t.name}</h2><p class="sub" style="margin:0">${t.next?`المحطة التالية: ${t.nextEm} ${t.nextName} عند ${t.next.toLocaleString('en')} نقطة.`:g('أنت الآن بطل مِران!','أنتِ الآن بطلة مِران!')}</p></div>`}if(t.i<p.tierSeen)p.tierSeen=t.i;return ''}
 function vHome(){const p=cur();const pl=planOf(p);const st=planStep(p);const done=PLAN.filter(x=>pl[x.k]).length;const bs=view.bs||'all';
  const card=x=>{const d=x.items.filter(k=>pl[k]).length,all=d===x.items.length;return `<button class="seccard" ${x.go==='en'?'data-go="en"':`data-act="${x.go}"`} style="--c:var(--${x.c});--c2:var(--${x.c2})"><span class="sci">${x.i}</span><span class="grow"><b>${x.t}</b><span>${x.m}</span>${d?`<span class="scst">✓ ${g('تدرّبت','تدرّبتِ')} اليوم</span>`:''}</span><span class="go">‹</span></button>`};
@@ -1738,7 +1743,7 @@ function vQuiz(){const Q=view.q;if(Q.pause){const sc=Q.sections[Q.secIdx];return
  const tm=Q.endAt?`<span class="timer" id="timer"></span>`:'';
  let fb='';if(answered&&Q.mode!=='speed'){const ok=r===it.a;fb=`<div class="fb ${ok?'ok':'bad'} pop"><h3>${ok?g('أحسنت!','أحسنتِ!'):'الإجابة الصحيحة: '+(it.chLtr?`<span class="en" dir="ltr">${it.c[it.a]}</span>`:it.c[it.a])}</h3>${it.ex&&it.ex.length?`<ol>${it.ex.map(s=>`<li>${s}</li>`).join('')}</ol>`:''}${it.tip?`<div class="tip">${it.tip}</div>`:''}</div>
   <button class="btn wide" data-act="next">${Q.i<Q.items.length-1?'السؤال التالي':'عرض النتيجة'}</button>`}
- return header()+`<div class="qhead"><h2>${Q.title}</h2>${tm}<button class="x" data-act="quit">إنهاء</button></div>
+ return header()+`<div class="qhead"><h2>${Q.title}${qBoost(cur())?' <span class="chip" title="بركة وِرد القرآن">✨ ×1.5</span>':''}</h2>${tm}<button class="x" data-act="quit">إنهاء</button></div>
  <div class="sec">${Q.mode==='speed'?`<p class="prog">الصحيحة: <b>${Q.res.filter((x,k)=>x===Q.items[k].a).length}</b></p>`:`<p class="prog">${Q.sections?`القسم ${Q.secIdx+1} من ${Q.sections.length} (${Q.sections[Q.secIdx].name}) · السؤال ${Q.i-Q.sections[Q.secIdx].start+1} من ${Q.sections[Q.secIdx].end-Q.sections[Q.secIdx].start}`:`السؤال ${Q.i+1} من ${Q.items.length}`}${it.cat&&it.cat!=='speed'?' · '+catName(it.cat):''}</p><div class="bar"><i style="width:${Q.sections?100*(Q.i-Q.sections[Q.secIdx].start)/(Q.sections[Q.secIdx].end-Q.sections[Q.secIdx].start):100*(Q.i)/Q.items.length}%"></i></div>`}
  ${it.passage?`<div class="passage${it.passage.ar?' ar':''}"><h3>${esc(it.passage.t)}</h3>${esc(it.passage.p)}</div>`:''}
  <div class="card stack pop"><div class="qtext">${it.q}</div>${it.ltr?`<button type="button" class="qen" data-say="${esc(it.ltr.replace(/_+/g,'blank'))}" aria-label="استمع">${esc(it.ltr)} <span class="sp">${ICON.spk}</span></button>`:''}${it.speak&&canSpeak?`<div><button class="speak" data-say="${esc(it.speak)}">${ICON.spk}استمع</button></div>`:''}${it.speak&&!canSpeak&&it.cat==='listen'?`<div class="warn">النطق غير متاح على هذا المتصفح.</div>`:''}</div>
@@ -1766,7 +1771,7 @@ function vComp(){const p=cur();const sc=scoreAll(p);const t=tierOf(sc.total);con
  <details class="card"><summary>كيف تُحسب النقاط؟</summary><ul>
  <li>كل يوم تدريب: 20 نقطة.</li><li>كل سؤال محلول: نقطة، وكل دقيقة تدريب: نقطة.</li><li>كل إجابة صحيحة: نقطتان إضافيتان.</li>
  <li>إكمال تدريب اليوم الأربعة (كلمات اليوم، المحادثة الصوتية، القدرات، التحصيلي) في يوم واحد 30، كلمات اليوم 15، اختبار محاكي 20، تصحيح سؤال من دفتر الأخطاء 5، إتقان كلمة صعبة 3.</li>
- <li>تمرين السرعة: نقطة لكل إجابة صحيحة.</li><li>القرآن الكريم: آية صحيحة من أول مرة 10 نقاط، وبعد الإعادة 5، ومن الحفظ 20، وإكمال وِرد اليوم 50 نقطة إضافية.</li><li>مكافأة 50 نقطة عن كل أسبوع تتحسّن فيه الدقة 5% أو أكثر عن الأسبوع الذي قبله.</li>
+ <li>تمرين السرعة: نقطة لكل إجابة صحيحة.</li><li>القرآن الكريم: آية صحيحة من أول مرة 10 نقاط، وبعد الإعادة 5، ومن الحفظ 20، وإكمال وِرد اليوم 50 نقطة إضافية، وبعده تصبح نقاط الأسئلة ×1.5 لبقية اليوم.</li><li>مكافأة 50 نقطة عن كل أسبوع تتحسّن فيه الدقة 5% أو أكثر عن الأسبوع الذي قبله.</li>
  <li>المجموع يُضرب في معامل الدقة العام: من 0.7 عند دقة 0% إلى 1.3 عند دقة 100%.</li><li>الرصيد تراكمي ويُحدَّث في الترتيب خلال ثوانٍ من كل إجابة.</li><li>لا سقف للنقاط ولا حد يومي: كلما تدرّبت أكثر ارتفع رصيدك.</li>
  <li>الإجابة في أقل من ثانيتين لا تُحسب، حتى لا يُضغط عشوائياً.</li><li>الأسئلة تتكيّف مع صف كل طالب ومستواه، فالدقة تُقاس على أسئلة مناسبة له، ويمكن عرض الترتيب حسب المرحلة أو الصف.</li>
  <li>طريق البطل: 🌱 مبتدئ، ثم 🥉 برونزي عند 300 نقطة، ثم 🥈 فضي عند 1000، ثم 🥇 ذهبي عند 3000، والهدف النهائي 🏆 بطل مِران عند 7000 نقطة.</li><li>الترتيب من الأول إلى الأخير حسب الرصيد، ويظهر بجانب كل اسم وسام محطته.</li></ul></details></div>`}
