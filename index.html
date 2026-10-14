@@ -1412,8 +1412,10 @@ function installCard(){if(!FB||isStandalone())return '';
  if(isIOS)return `<details class="instcard ios"><summary><span class="ic2">📲</span><b>ثبّت مِران على جهازك</b></summary><p>في Safari اضغط زر المشاركة <b>⬆︎</b> أسفل الشاشة، ثم اختر <b>«إضافة إلى الشاشة الرئيسية»</b>، ثم <b>«إضافة»</b>.</p></details>`;
  return ''}
 let INSTH=false;
-const instTop=()=>FB&&!isStandalone()?`<button type="button" class="insttop" data-act="install" aria-label="تثبيت مِران كتطبيق على الجوال"><span>📲</span>تثبيت</button>`:'';
-function instHelp(){if(!INSTH||isStandalone())return '';
+const instTop=()=>FB?`<button type="button" class="insttop" data-act="install" aria-label="تثبيت مِران كتطبيق على الجوال"><span>📲</span>تثبيت</button>`:'';
+const APPURL='https://alfifitop2015-hub.github.io/miran/';
+function instHelp(){if(!INSTH)return '';
+ if(isStandalone())return `<div class="card insthelp"><div class="row between"><b>✓ مِران مثبّت على جهازك</b><button type="button" class="x" data-act="install">إغلاق</button></div><p>تفتحه الآن كتطبيق. لتثبيته عند غيرك أرسل له الرابط، فيفتحه ويضغط زر «📲 تثبيت» أعلى الصفحة.</p><div class="row" style="margin-top:8px"><button class="btn plain grow" data-copy="${APPURL}">نسخ الرابط</button><a class="btn grow" href="${esc(wa('حمّل تطبيق مِران للتدريب على الإنجليزي والقدرات والتحصيلي:\n'+APPURL))}" target="_blank" rel="noopener">واتساب</a></div></div>`;
  return `<div class="card insthelp"><div class="row between"><b>📲 ثبّت مِران على جوالك</b><button type="button" class="x" data-act="install">إغلاق</button></div>${isIOS
  ?'<p>في <b>Safari</b> اضغط زر المشاركة <b>⬆︎</b> أسفل الشاشة، ثم اختر <b>«إضافة إلى الشاشة الرئيسية»</b>، ثم <b>«إضافة»</b>.</p>'
  :'<p>افتح قائمة المتصفح <b>⋮</b> أعلى الشاشة، ثم اختر <b>«تثبيت التطبيق»</b> أو <b>«إضافة إلى الشاشة الرئيسية»</b>.</p><p class="note" style="margin:0">إذا ظهر لك أنه مثبّت، فابحث عن أيقونة مِران بين تطبيقات جوالك.</p>'}</div>`}
