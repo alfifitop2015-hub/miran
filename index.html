@@ -83,6 +83,11 @@ h1{font-size:28px;font-weight:800}h2{font-size:21px;font-weight:700}h3{font-size
 .plan .n{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-family:var(--fd);font-weight:700;border:2px solid currentColor;flex:none}
 .plan button.done .n{background:var(--onacc)}.plan button.done .n i{color:var(--acc);font-style:normal}
 .plan .m2{font-size:12px;opacity:.85}
+.medal{display:inline-flex;flex-direction:column;align-items:center;flex:none;margin-inline-start:auto;margin-inline-end:6px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.18))}
+.medal .disc{position:relative;z-index:1;width:50px;height:50px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,var(--m1),var(--m2) 70%,var(--m3));box-shadow:inset 0 0 0 3px var(--m2),inset 0 0 0 5px rgba(255,255,255,.55)}
+.medal .disc b{font-family:var(--fd);font-weight:800;font-size:12.5px;letter-spacing:-.2px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.35);line-height:1}
+.medal .rib{width:28px;height:18px;margin-top:-6px;background:linear-gradient(180deg,#c94a3d,#a8352b);clip-path:polygon(0 0,100% 0,100% 100%,50% 72%,0 100%)}
+.medal.gold{--m1:#F7DE86;--m2:#C9A13B;--m3:#8E6A1E}.medal.silver{--m1:#F4F4F4;--m2:#B5B5B5;--m3:#7E7E7E}.medal.bronze{--m1:#D99A7C;--m2:#9A5A42;--m3:#5E3122}
 .instcard{display:flex;align-items:center;gap:12px;width:100%;text-align:start;border:2px dashed color-mix(in srgb,var(--th) 55%,transparent);border-radius:16px;padding:10px 14px;background:color-mix(in srgb,var(--th) 9%,var(--card));color:var(--ink);cursor:pointer;margin:6px 0 4px;font:inherit}
 .instcard b{font-family:var(--fd);font-size:18px;color:var(--th)}.instcard .ic2{font-size:24px}
 .instcard.ios{display:block}.instcard.ios summary{display:flex;align-items:center;gap:12px;list-style:none;cursor:pointer}.instcard.ios summary::-webkit-details-marker{display:none}.instcard.ios p{margin:10px 0 2px;line-height:1.8}.instcard p b{font-family:inherit;font-size:inherit;color:var(--ink)}
@@ -220,7 +225,7 @@ nav.nav button{background:none;border:none;padding:10px 2px 8px;line-height:1.3;
 nav.nav button svg{width:22px;height:22px}
 nav.nav button.on{color:var(--c,var(--acc));font-weight:700}
 nav.nav button.on svg{filter:drop-shadow(0 3px 6px color-mix(in srgb,var(--c) 45%,transparent))}
-.brd{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.brd{display:grid;grid-template-columns:28px 1fr auto auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
 .brd:last-child{border-bottom:none}.brd.me{background:var(--accsoft);border-radius:10px;padding-inline:8px;border-bottom-color:transparent}
 .brd .n{font-family:var(--fd);font-weight:700;text-align:center;font-variant-numeric:tabular-nums}
 .brd .sc{text-align:left;font-family:var(--fd);font-weight:700;font-size:18px;font-variant-numeric:tabular-nums}
@@ -464,6 +469,7 @@ function subscribeBoard(){const p=cur();const bs=view.bs||'all';const key=bs+'|'
  if(bs==='st')q=q.where('stage','==',stageOf(p.grade));else if(bs==='gr')q=q.where('grade','==',p.grade);else q=q.orderBy('total','desc').limit(100);
  unsub=q.onSnapshot(sn=>{boardRows=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>r.sid).sort((a,b)=>b.total-a.total).slice(0,100);renderBoard()},()=>{boardRows=[];renderBoard()})}
 function rankTitle(i,gd){const f=gd==='f';return i===1?['🥇',f?'فارسة المنافسة':'فارس المنافسة','r1']:i===2?['🥈',f?'منافسة شرسة':'منافس شرس','r2']:i===3?['🥉',f?'منافسة قوية':'منافس قوي','r3']:i<=10?['🔥',f?'صاعدة بقوة':'صاعد بقوة','r4']:null}
+function medal(i,tot){if(!(tot>0)||i>3)return '<span></span>';const m=[null,['gold','ذهبي'],['silver','فضي'],['bronze','برونزي']][i];return `<span class="medal ${m[0]}" title="المركز ${i}"><span class="disc"><b>${m[1]}</b></span><span class="rib"></span></span>`}
 function rankBadge(i,gd,tot){const t=tot>0?rankTitle(i,gd):null;return t?`<span class="rkt ${t[2]}">${t[0]} ${t[1]}</span>`:''}
 function renderBoard(){const el=$('#board');if(!el)return;let rows,note='';const bs=view.bs||'all',me=cur();
  if(!fb){rows=S.profiles.filter(p=>p.online&&(bs==='all'||(bs==='st'?stageOf(p.grade)===stageOf(me.grade):p.grade===me.grade))).map(p=>({nick:p.nick||p.name,grade:p.grade,total:lifetime(p),me:p.id===S.active})).sort((a,b)=>b.total-a.total);
@@ -471,7 +477,7 @@ function renderBoard(){const el=$('#board');if(!el)return;let rows,note='';const
  else if(boardRows==null){el.innerHTML='<p class="note">جارٍ تحميل الترتيب…</p>';return}
  else{rows=boardRows.filter(r=>(r.total||0)>0).map((r,i)=>Object.assign({},r,{me:r.id===C.sid,rk:i+1}));if(!rows.length)note='لا يوجد متنافسون بعد في هذه القائمة. كن أول من يبدأ.';else if(!rows.some(r=>r.me))note=g('ابدأ التدريب ليظهر اسمك في الترتيب.','ابدئي التدريب ليظهر اسمكِ في الترتيب.');
   if(view.name==='home'&&rows.length>10){const mi=rows.findIndex(r=>r.me);rows=rows.slice(0,10).concat(mi>=10?[rows[mi]]:[])}}
- el.innerHTML=(rows.length?`<div class="list">${rows.map((r,i)=>`<div class="brd ${r.me?'me':''}"><span class="n">${r.rk||i+1}</span><span>${esc(r.nick)}${r.me?' <span class="note">(أنت)</span>':''} ${fb?rankBadge(r.rk||i+1,r.gender,r.total||0):''}<br><span class="note">${GRADES[r.grade]||''}</span> <span class="tier">${tierOf(r.total||0).name}</span></span><span class="sc">${r.total||0}</span></div>`).join('')}</div>`:'')+(note?`<p class="note" style="margin:8px 0 0">${note}</p>`:'')}
+ el.innerHTML=(rows.length?`<div class="list">${rows.map((r,i)=>`<div class="brd ${r.me?'me':''}"><span class="n">${r.rk||i+1}</span><span>${esc(r.nick)}${r.me?' <span class="note">(أنت)</span>':''} ${fb?rankBadge(r.rk||i+1,r.gender,r.total||0):''}<br><span class="note">${GRADES[r.grade]||''}</span></span>${medal(r.rk||i+1,r.total||0)}<span class="sc">${r.total||0}</span></div>`).join('')}</div>`:'')+(note?`<p class="note" style="margin:8px 0 0">${note}</p>`:'')}
 
 function sumSt(o){let c=0,t=0;Object.values(o||{}).forEach(s=>{c+=s.c;t+=s.t});return{c,t}}
 
@@ -905,7 +911,7 @@ function adBoardLoad(){AB.rows=null;render();fb.collection('players').orderBy('t
 function vAdBoard(){const sg=(k,l)=>`<button type="button" class="${AB.st===k?'on':''}" data-abst="${k}">${l}</button>`;
  const rows=(AB.rows||[]).filter(r=>(r.total||0)>0).filter(r=>AB.st==='all'||(r.stage||stageOf(r.grade))===AB.st);
  return startTop()+band('الترتيب','ترتيب كل الطلاب كما يظهر لهم في التطبيق.')+`<div class="sec"><div class="seg">${sg('all','الجميع')}${sg('p','ابتدائي')}${sg('m','متوسط')}${sg('s','ثانوي')}</div>
- ${AB.rows==null?'<div class="card">جارٍ التحميل…</div>':rows.length?`<div class="list">${rows.map((r,i)=>`<div class="brd"><span class="n">${i+1}</span><span>${esc(r.nick)} ${rankBadge(i+1,r.gender,r.total||0)}<br><span class="note">${GRADES[r.grade]||''}</span> <span class="tier">${tierOf(r.total||0).name}</span></span><span class="sc">${r.total||0}</span></div>`).join('')}</div>`:'<div class="card">لا يوجد متنافسون بعد.</div>'}
+ ${AB.rows==null?'<div class="card">جارٍ التحميل…</div>':rows.length?`<div class="list">${rows.map((r,i)=>`<div class="brd"><span class="n">${i+1}</span><span>${esc(r.nick)} ${rankBadge(i+1,r.gender,r.total||0)}<br><span class="note">${GRADES[r.grade]||''}</span></span>${medal(i+1,r.total||0)}<span class="sc">${r.total||0}</span></div>`).join('')}</div>`:'<div class="card">لا يوجد متنافسون بعد.</div>'}
  <button class="btn plain wide" data-act="adBoard">تحديث</button><button class="btn wide" data-act="adHome">رجوع لإدارة النظام</button></div>`}
 function adSync(){const n=$('#adn');if(A.form&&n)A.form.name=n.value}
 function bindAdmin(){const q=$('#adq');if(q)q.addEventListener('input',()=>{view.q=q.value;const l=$('#adlist');if(l)l.innerHTML=adFiltered().map(adRow).join('')||'<div class="card">لا يوجد منافسون بعد.</div>'});
