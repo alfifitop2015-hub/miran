@@ -10,13 +10,16 @@ service cloud.firestore {
     // ملف الطالب وتقدّمه: للطالب نفسه وللمدير
     function stuPath(sid) { return /databases/$(database)/documents/students/$(sid); }
     function approved(sid) { return get(stuPath(sid)).data.get('status', 'approved') != 'pending'; }
+    // ولي الأمر للاطلاع فقط: لا يدخل لوحة الترتيب
+    function competitor(sid) { return get(stuPath(sid)).data.get('role', 'student') != 'parent'; }
 
     // ملف الطالب: يُنشأ بحالة «بانتظار الموافقة»، ولا يستطيع الطالب تغيير حالته بنفسه
     match /students/{sid} {
       allow read, delete: if isOwner(sid);
       allow create: if isOwner(sid) && request.resource.data.status == 'pending';
       allow update: if isOwner(sid)
-        && request.resource.data.get('status', 'approved') == resource.data.get('status', 'approved');
+        && request.resource.data.get('status', 'approved') == resource.data.get('status', 'approved')
+        && request.resource.data.get('role', 'student') == resource.data.get('role', 'student');
     }
 
     // رمز رابط النقل لجهاز آخر
@@ -35,7 +38,7 @@ service cloud.firestore {
     // لوحة الترتيب
     match /players/{id} {
       allow read: if true;
-      allow create, update: if isOwner(id) && approved(id)
+      allow create, update: if isOwner(id) && approved(id) && competitor(id)
         && request.resource.data.sid == id
         && request.resource.data.nick is string
         && request.resource.data.nick.size() > 0
