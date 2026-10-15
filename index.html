@@ -506,7 +506,8 @@ function subscribeBoard(){const p=cur();const bs=view.bs||'all';const key=bs+'|'
 const RANKT=[{r:1,p:3000,e:'🥇',m:'فارس المنافسة',f:'فارسة المنافسة',c:'r1',md:['gold','ذهبي']},{r:2,p:1000,e:'🥈',m:'منافس شرس',f:'منافسة شرسة',c:'r2',md:['silver','فضي']},{r:3,p:300,e:'🥉',m:'منافس قوي',f:'منافسة قوية',c:'r3',md:['bronze','برونزي']},{r:4,p:150,e:'🔥',m:'صاعد بقوة',f:'صاعدة بقوة',c:'r4'},{r:5,p:50,e:'🧭',m:'في الاتجاه الصحيح',f:'في الاتجاه الصحيح',c:'r5'},{r:1e9,p:1,e:'🌱',m:'مبتدئ',f:'مبتدئة',c:'r6'}];
 const rankT=(i,tot)=>RANKT.find(x=>i<=x.r&&tot>=x.p)||null;
 // لقب المركز بشرطيه (المركز + النقاط)، ولا يُعطى لمن لم يبلغ النقاط المطلوبة
-const rkTitle=(rk,tot,gd)=>{const t=rankT(rk,tot||0);return t&&t.c!=='r6'?t.e+' '+(gd==='f'?t.f:t.m):''};
+// لقب المركز حسب الترتيب (الخمسة الأوائل)، ونقاط المستوى تظهر في شارة طريق البطل
+const rkTitle=(rk,tot,gd)=>{const x=CHASET[rk-1];return x&&(tot||0)>0?x[0]+' '+(gd==='f'?x[2]:x[1]):''};
 function medal(i,tot){const t=rankT(i,tot||0);if(!t||!t.md)return '<span></span>';return `<span class="medal ${t.md[0]}" title="${t.m}"><span class="disc"><b>${t.md[1]}</b></span><span class="rib"></span></span>`}
 function rankBadge(i,gd,tot){const t=rankT(i,tot||0);return t?`<span class="rkt ${t.c}">${t.e} ${gd==='f'?t.f:t.m}</span>`:''}
 const tierBadge=tot=>{const t=tierOf(tot||0);return `<span class="tb ${t.cls}">${t.em} ${t.name}</span>`};
