@@ -610,17 +610,25 @@ function tkShow(){
 
 /* ============ الصفحات ============ */
 const standalone = () => { try{ return matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; }catch(e){ return false; } };
-const header = () => `<div class="top"><div class="brand">ني هاو</div>${standalone() ? '' : `<button type="button" class="instbtn" data-act="install" aria-label="ثبّت التطبيق على جوالك"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3" fill="none"/><path d="M12 7v7M9 11l3 3 3-3M10 18h4" fill="none"/></svg><span>ثبّت التطبيق</span></button>`}</div>`;
+const header = () => `<div class="top"><div class="brand">ني هاو</div>${`<button type="button" class="instbtn" data-act="install" aria-label="ثبّت التطبيق على جوالك"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3" fill="none"/><path d="M12 7v7M9 11l3 3 3-3M10 18h4" fill="none"/></svg><span>ثبّت التطبيق</span></button>`}</div>`;
 function installHelp(){
   closeIntro();
   const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const URL0 = 'https://alfifitop2015-hub.github.io/miran/chinese/';
+  const msg = 'حمّل تطبيق «ني هاو» للمحادثة بالصينية والمنافسة:\n' + URL0;
+  const share = `<div class="row"><button type="button" class="btn plain grow" id="cplink">نسخ الرابط</button><a class="btn grow" href="https://wa.me/?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener" style="text-decoration:none">واتساب</a></div>`;
   const steps = ios
     ? ['افتح الصفحة في متصفح <b>Safari</b>.', 'اضغط زر <b>المشاركة</b> (المربع والسهم للأعلى) أسفل الشاشة.', 'اختر <b>«إضافة إلى الشاشة الرئيسية»</b> ثم <b>«إضافة»</b>.']
     : ['افتح الصفحة في متصفح <b>Chrome</b>.', 'اضغط <b>القائمة</b> (النقاط الثلاث) أعلى الشاشة.', 'اختر <b>«تثبيت التطبيق»</b> أو <b>«إضافة إلى الشاشة الرئيسية»</b>، ثم <b>«تثبيت»</b>.'];
   const el = document.createElement('div');
   el.id = 'intro'; el.className = 'iv-ov'; el.dir = 'rtl'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'تثبيت التطبيق');
-  el.innerHTML = `<div class="iv-box"><div class="card stack"><div class="row"><img src="zh-icon-192.png" alt="" style="width:56px;height:56px;border-radius:14px"><div class="grow"><h2>ثبّت «ني هاو» على جوالك</h2><p class="sub" style="margin:0">يظهر بأيقونته بين تطبيقاتك ويفتح مباشرة.</p></div></div><ol style="margin:0;padding-inline-start:22px;display:flex;flex-direction:column;gap:8px;font-size:15px">${steps.map(x => `<li>${x}</li>`).join('')}</ol><button type="button" class="btn wide" id="ivclose">حسناً</button></div></div>`;
-  el.addEventListener('click', e => { if (e.target === el || e.target.id === 'ivclose') closeIntro(); });
+  el.innerHTML = `<div class="iv-box"><div class="card stack"><div class="row"><img src="zh-icon-192.png" alt="" style="width:56px;height:56px;border-radius:14px"><div class="grow"><h2>${standalone() ? '«ني هاو» مثبّت على جهازك' : 'ثبّت «ني هاو» على جوالك'}</h2><p class="sub" style="margin:0">${standalone() ? 'تفتحه الآن كتطبيق.' : 'يظهر بأيقونته بين تطبيقاتك ويفتح مباشرة.'}</p></div></div>${standalone()
+    ? `<p style="margin:0;font-size:15px">لتثبيته عند غيرك أرسل له الرابط، فيفتحه ويضغط «ثبّت التطبيق» أعلى الصفحة.</p>${share}`
+    : `<ol style="margin:0;padding-inline-start:22px;display:flex;flex-direction:column;gap:8px;font-size:15px">${steps.map(x => `<li>${x}</li>`).join('')}</ol><p class="note" style="text-align:start">إذا ظهر لك أنه مثبّت، فابحث عن أيقونة «ني هاو» بين تطبيقات جوالك. ولإرساله لغيرك:</p>${share}`}<button type="button" class="btn plain wide" id="ivclose">إغلاق</button></div></div>`;
+  el.addEventListener('click', e => {
+    if (e.target === el || e.target.id === 'ivclose') closeIntro();
+    if (e.target.id === 'cplink'){ try{ navigator.clipboard.writeText(URL0).then(() => toast('تم نسخ الرابط'), () => toast(URL0)); }catch(x){ toast(URL0); } }
+  });
   document.body.appendChild(el); document.body.style.overflow = 'hidden';
 }
 const CREDIT = '<p class="credit">© الحقوق محفوظة · فكرة وتنفيذ <b dir="ltr">alfifitop2015</b> · بواسطة <b>Claude</b></p>';
