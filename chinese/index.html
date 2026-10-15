@@ -139,6 +139,8 @@ label.f{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:14p
 .bub.sys.ask{background:var(--accsoft)}
 .credit{text-align:center;font-size:12.5px;color:var(--muted);margin:26px 0 4px;line-height:1.9}
 .credit b{font-weight:600;color:var(--ink)}
+.instbtn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:999px;padding:7px 14px 7px 12px;background:linear-gradient(135deg,var(--acc),var(--acc2));color:var(--onacc);font-weight:700;font-size:14px;box-shadow:0 6px 16px -8px var(--acc);white-space:nowrap}
+.instbtn svg{width:20px;height:20px}
 .toast{position:fixed;inset-inline:16px;bottom:calc(20px + env(safe-area-inset-bottom,0px));margin-inline:auto;max-width:420px;background:var(--ink);color:var(--paper);padding:12px 16px;border-radius:12px;font-size:14px;text-align:center;z-index:20;direction:rtl}
 @media (min-width:720px){.wrap{max-width:680px;padding-inline:28px}h1{font-size:30px}}
 </style>
@@ -607,7 +609,20 @@ function tkShow(){
 }
 
 /* ============ الصفحات ============ */
-const header = () => `<div class="top"><div class="brand">ني هاو</div></div>`;
+const standalone = () => { try{ return matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; }catch(e){ return false; } };
+const header = () => `<div class="top"><div class="brand">ني هاو</div>${standalone() ? '' : `<button type="button" class="instbtn" data-act="install" aria-label="ثبّت التطبيق على جوالك"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3" fill="none"/><path d="M12 7v7M9 11l3 3 3-3M10 18h4" fill="none"/></svg><span>ثبّت التطبيق</span></button>`}</div>`;
+function installHelp(){
+  closeIntro();
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const steps = ios
+    ? ['افتح الصفحة في متصفح <b>Safari</b>.', 'اضغط زر <b>المشاركة</b> (المربع والسهم للأعلى) أسفل الشاشة.', 'اختر <b>«إضافة إلى الشاشة الرئيسية»</b> ثم <b>«إضافة»</b>.']
+    : ['افتح الصفحة في متصفح <b>Chrome</b>.', 'اضغط <b>القائمة</b> (النقاط الثلاث) أعلى الشاشة.', 'اختر <b>«تثبيت التطبيق»</b> أو <b>«إضافة إلى الشاشة الرئيسية»</b>، ثم <b>«تثبيت»</b>.'];
+  const el = document.createElement('div');
+  el.id = 'intro'; el.className = 'iv-ov'; el.dir = 'rtl'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'تثبيت التطبيق');
+  el.innerHTML = `<div class="iv-box"><div class="card stack"><div class="row"><img src="zh-icon-192.png" alt="" style="width:56px;height:56px;border-radius:14px"><div class="grow"><h2>ثبّت «ني هاو» على جوالك</h2><p class="sub" style="margin:0">يظهر بأيقونته بين تطبيقاتك ويفتح مباشرة.</p></div></div><ol style="margin:0;padding-inline-start:22px;display:flex;flex-direction:column;gap:8px;font-size:15px">${steps.map(x => `<li>${x}</li>`).join('')}</ol><button type="button" class="btn wide" id="ivclose">حسناً</button></div></div>`;
+  el.addEventListener('click', e => { if (e.target === el || e.target.id === 'ivclose') closeIntro(); });
+  document.body.appendChild(el); document.body.style.overflow = 'hidden';
+}
 const CREDIT = '<p class="credit">© الحقوق محفوظة · فكرة وتنفيذ <b dir="ltr">alfifitop2015</b> · بواسطة <b>Claude</b></p>';
 function vList(){
   const lv = SAVE.level || 0;
@@ -627,7 +642,6 @@ function vList(){
    <div class="stack" style="gap:6px"><span class="lbl">المستوى <small>(اختياري)</small></span>
     <div class="seg">${[[0,'الكل'],[1,'بسيط'],[2,'متوسط'],[3,'صعب']].map(([v, n]) => `<button class="${lv === v ? 'on' : ''}" data-lv="${v}" aria-pressed="${lv === v}">${n}</button>`).join('')}</div></div>
    ${groups}` : lockNote()}
-   ${installEvt ? '<button class="btn wide" data-act="install">تثبيت التطبيق على جهازك</button>' : ''}
    ${X.off || X.admin ? '' : '<div class="foot"><button class="x" data-act="admin">دخول المشرف</button></div>'}
    ${CREDIT}
   </div>`;
@@ -687,7 +701,7 @@ app.addEventListener('click', e => {
   if (b.dataset.act === 'home'){ X.err = ''; X.confirm = ''; go('list'); return; }
   if (b.dataset.act === 'adminOut'){ if (authA) authA.signOut(); go('list'); return; }
   if (b.dataset.act === 'full'){ X.full = !X.full; render(); return; }
-  if (b.dataset.act === 'install'){ const ev = installEvt; if (ev){ installEvt = null; ev.prompt(); render(); } return; }
+  if (b.dataset.act === 'install'){ const ev = installEvt; if (ev){ installEvt = null; ev.prompt(); render(); } else installHelp(); return; }
   const act = b.dataset.act; if (!act || (!TK && act !== 'tkList')) return;
   if (act === 'tkMic') tkListen();
   else if (act === 'tkType'){ tkStopRec(); typingMode = true; render(); const i = $('#tkin'); if (i) i.focus(); }
