@@ -944,9 +944,8 @@ function adRow(s){if(A.edit===s.id)return adForm(s.id);const l=A.links[s.id];
 async function adminApprove(id){await stuRef(id).update({status:'approved',approvedAt:Date.now()})}
 function adPendRow(s){return `<div class="card stack" style="border:2px solid #FFCB5C"><div class="row"><span class="av ${s.gender}">${esc((s.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(s.name)}</b><br><span class="note">${s.role==='parent'?`👨‍👩‍👧 ولي أمر (${s.gender==='f'?'أم':'أب'}) · للاطلاع فقط`:`${s.gender==='f'?'طالبة':'طالب'} · ${GRADES[s.grade]} · ${TERMS[s.term]||''}`}${s.created?' · '+new Date(s.created).toLocaleDateString('ar-SA'):''}</span></span></div>
  <div class="row"><button class="btn grow" data-adok="${s.id}">✓ قبول</button><button class="btn plain grow" style="color:var(--bad)" data-adno="${s.id}">رفض</button></div></div>`}
-function adParRow(s){const l=A.links[s.id];return `<div class="card stack" style="box-shadow:none"><div class="row"><span class="av ${s.gender}">${esc((s.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(s.name)}</b><br><span class="note">${s.gender==='f'?'أم':'أب'} · ولي أمر${s.created?' · '+new Date(s.created).toLocaleDateString('ar-SA'):''}</span></span></div>
- ${l?`<div class="tklink" dir="ltr">${esc(l)}</div><div class="row"><button class="btn plain grow" data-copy="${esc(l)}">نسخ الرابط</button><a class="btn grow" href="${esc(wa('رابط دخولك إلى مِران:\n'+l))}" target="_blank" rel="noopener">واتساب</a></div>`:''}
- ${A.del===s.id?`<div class="warn stack">حذف حساب ولي الأمر ${esc(s.name)} نهائياً؟<div class="row"><button class="btn danger" data-addelok="${s.id}">نعم، احذف</button><button class="btn plain" data-act="adCancel">إلغاء</button></div></div>`:`<div class="row" style="flex-wrap:wrap"><button class="x" data-adlink="${s.id}">رابط دخول</button><button class="x" style="color:var(--bad)" data-addel="${s.id}">حذف</button></div>`}</div>`}
+function adParRow(s){return `<div class="card stack" style="box-shadow:none"><div class="row"><span class="av ${s.gender}">${esc((s.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(s.name)}</b><br><span class="note">${s.gender==='f'?'أم':'أب'} · ولي أمر${s.created?' · '+new Date(s.created).toLocaleDateString('ar-SA'):''}</span></span></div>
+ ${A.del===s.id?`<div class="warn stack">حذف حساب ولي الأمر ${esc(s.name)} نهائياً؟<div class="row"><button class="btn danger" data-addelok="${s.id}">نعم، احذف</button><button class="btn plain" data-act="adCancel">إلغاء</button></div></div>`:`<div class="row"><button class="x" style="color:var(--bad)" data-addel="${s.id}">حذف</button></div>`}</div>`}
 function adFiltered(){const q=(view.q||'').trim().toLowerCase();return(A.list||[]).filter(s=>s.status!=='pending'&&s.role!=='parent').filter(s=>(A.st==='all'||stageOf(s.grade)===A.st)&&(!q||s.name.toLowerCase().includes(q)))}
 function vAdmin(){let body;
  if(A.err)body=`<div class="warn stack">${esc(A.err)}<span class="note">تأكد أنك نشرت قواعد الحماية الجديدة في Firebase.</span><button class="btn plain" data-act="adReload">إعادة المحاولة</button></div>`;
@@ -1024,7 +1023,7 @@ function cloudClick(d){if(!CLOUD)return false;
  if(d.adedit){const s=A.list.find(x=>x.id===d.adedit);if(!s)return true;A.edit=s.id;A.del=null;A.form={name:s.name,gender:s.gender,grade:s.grade,term:s.term||1};render();return true}
  if(d.adset){adSync();A.form[d.adset]=d.adset==='gender'?d.v:+d.v;render();return true}
  if(d.addel){A.del=d.addel;A.rst=null;A.edit=null;render();return true}
- if(d.adok){const id=d.adok;adBusy(()=>adminApprove(id),'تمت الموافقة');return true}
+ if(d.adok){const id=d.adok;const it=(A.list||[]).find(x=>x.id===id);adBusy(()=>adminApprove(id),it&&it.role==='parent'?'تمت الموافقة، ويدخل ولي الأمر مباشرة دون رابط':'تمت الموافقة، ويدخل مباشرة من جهازه');return true}
  if(d.adno){const id=d.adno;adBusy(()=>adminDel(id),'رُفض الطلب');return true}
  if(d.adrst){A.rst=d.adrst;A.del=null;A.edit=null;render();return true}
  if(d.adrstok){const id=d.adrstok;adBusy(()=>adminReset(id),'صُفّر الرصيد').then(()=>{A.rst=null;render()});return true}
