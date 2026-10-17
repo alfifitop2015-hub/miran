@@ -362,6 +362,23 @@ a.btn{text-decoration:none}
 .av .spark{opacity:0}.tutor.happy .av .spark{opacity:1;animation:avsp 1.2s ease both}
 @keyframes avsp{from{transform:scale(.4);opacity:0}40%{opacity:1}to{transform:scale(1.1);opacity:0}}
 .tutor.think .av .head{transform:rotate(5deg)}.tutor.think .av .mc{transform:translateX(2px)}
+
+.tutor .avw{width:104px;height:104px}
+.av .body{animation:avbreath 3.4s ease-in-out infinite;transform-origin:60px 120px}
+@keyframes avbreath{50%{transform:translateY(-1px) scaleY(1.01)}}
+.av .hand{transform-origin:100px 124px;transform:rotate(18deg) translateY(16px);transition:transform .4s}
+.tutor.talk .av .hand{transform:rotate(0) translateY(0);animation:avgest 1.8s ease-in-out .4s infinite}
+.tutor.happy .av .hand{transform:rotate(-8deg) translateY(-2px)}
+@keyframes avgest{0%,100%{transform:rotate(0)}35%{transform:rotate(-10deg) translateY(-2px)}70%{transform:rotate(6deg)}}
+.av .eyes{transform-box:fill-box;transform-origin:center;animation:avblink2 4.6s infinite}
+.av .eyes ellipse{animation:none}
+@keyframes avblink2{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+.av .pupils{animation:avlook 7s ease-in-out infinite}
+@keyframes avlook{0%,30%,100%{transform:translate(0,0)}38%,52%{transform:translate(-1.4px,.3px)}60%,72%{transform:translate(1.3px,-.2px)}}
+.tutor.listen .av .pupils{animation:none;transform:translate(1.2px,-.4px)}
+.tutor.talk .av .pupils{animation:avlook 3s ease-in-out infinite}
+.av .mouth{transition:d .09s}
+.tutor.happy .av .eyes{animation:none;transform:scaleY(.75)}
 @media (prefers-reduced-motion:reduce){.tutor *{animation:none!important}}
 </style>
 
@@ -1520,30 +1537,48 @@ function vTalkList(){const p=cur();aiInit();const srt=nearSort(TALKS,p.grade,x=>
 
 /* ============ المعلّم المتحرك: يتكلم ويستمع ويتفاعل أثناء المحادثة ============ */
 let AVS='',AVT=null;
-function avSet(st,ms){AVS=st||'';clearTimeout(AVT);const el=document.querySelector('.tutor');if(el){el.classList.remove('talk','listen','happy','think');if(AVS)el.classList.add(AVS);const t=el.querySelector('.ts span');if(t)t.textContent=avLabel(AVS)}if(ms)AVT=setTimeout(()=>avSet(''),ms)}
+function avSet(st,ms){AVS=st||'';clearTimeout(AVT);const el=document.querySelector('.tutor');avMouth(AVS);if(el){el.classList.remove('talk','listen','happy','think');if(AVS)el.classList.add(AVS);const t=el.querySelector('.ts span');if(t)t.textContent=avLabel(AVS)}if(ms)AVT=setTimeout(()=>avSet(''),ms)}
 function avLabel(st){const f=avF();return st==='talk'?(f?'تتحدث…':'يتحدث…'):st==='listen'?(f?'تستمع إليك…':'يستمع إليك…'):st==='happy'?'أحسنت! 👏':st==='think'?'حاول مرة أخرى 🙂':(f?'معلّمتك للمحادثة':'معلّمك للمحادثة')}
 const avF=()=>{const p=cur();return !!(p&&p.gender==='f')};
-function avSVG(f){const skin='#F1C6A0',skin2='#E2AE86',shirt=f?'#3B5BDB':'#1E5FB8';
- return `<svg class="av" viewBox="0 0 120 120" aria-hidden="true"><defs><radialGradient id="avbg" cx="40%" cy="30%" r="75%"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="${f?'#FBD9E8':'#D6E6FF'}"/></radialGradient></defs>
- <circle cx="60" cy="60" r="58" fill="url(#avbg)"/>
- <g class="spark" style="transform-origin:60px 40px"><path d="M18 30l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#FFC53D"/><path d="M98 22l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#FFC53D"/></g>
- <path d="M18 120c3-24 20-34 42-34s39 10 42 34z" fill="${shirt}"/>
- ${f?'':`<path d="M50 86l10 12 10-12" fill="#fff"/><path d="M60 98l-3 22h6z" fill="#F5B83D"/>`}
+const AVM={rest:'M53 68Q60 71.5 67 68Q60 70 53 68Z',s:'M54 67.6Q60 70.6 66 67.6Q60 72.8 54 67.6Z',o:'M53.6 67.2Q60 69.6 66.4 67.2Q60 76.5 53.6 67.2Z',w:'M51.8 67.6Q60 69.6 68.2 67.6Q60 73.6 51.8 67.6Z',u:'M56.2 67Q60 65.8 63.8 67Q65 72.4 60 73.4Q55 72.4 56.2 67Z',e:'M52.6 67.8Q60 68.8 67.4 67.8Q60 71.4 52.6 67.8Z',happy:'M51.5 66Q60 67.6 68.5 66Q60 77.5 51.5 66Z'};
+let AVMT=null;
+function avMouth(st){clearInterval(AVMT);const m=document.querySelector('.tutor .mouth');const tt=document.querySelector('.tutor .teeth');if(!m)return;
+ if(st==='talk'){const seq=['s','o','w','u','e','o','s','w','rest','o','e'];let k=0;AVMT=setInterval(()=>{const el=document.querySelector('.tutor .mouth');if(!el||AVS!=='talk'){clearInterval(AVMT);return}k=(k+1+Math.floor(Math.random()*3))%seq.length;el.setAttribute('d',AVM[seq[k]]);const t2=document.querySelector('.tutor .teeth');if(t2)t2.style.opacity=seq[k]==='w'||seq[k]==='o'?1:0},115);return}
+ m.setAttribute('d',st==='happy'?AVM.happy:AVM.rest);if(tt)tt.style.opacity=st==='happy'?1:0}
+function avSVG(f){const shirtA=f?'#3FA7C9':'#3B8BEB',shirtB=f?'#22789F':'#1D4FA8';
+ return `<svg class="av" viewBox="0 0 120 120" aria-hidden="true"><defs>
+ <radialGradient id="avbg${f?1:0}" cx="40%" cy="30%" r="75%"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="${f?'#FBD3E6':'#CFE2FF'}"/></radialGradient>
+ <radialGradient id="avsk" cx="45%" cy="38%" r="65%"><stop offset="0" stop-color="#FBDCBE"/><stop offset=".7" stop-color="#F1C29C"/><stop offset="1" stop-color="#E2A982"/></radialGradient>
+ <linearGradient id="avsh${f?1:0}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shirtA}"/><stop offset="1" stop-color="${shirtB}"/></linearGradient>
+ <linearGradient id="avhr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4A3020"/><stop offset="1" stop-color="#1E130C"/></linearGradient>
+ <linearGradient id="avhj" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8A6CC8"/><stop offset="1" stop-color="#4E3388"/></linearGradient>
+ <clipPath id="avcl"><circle cx="60" cy="60" r="58"/></clipPath></defs>
+ <circle cx="60" cy="60" r="58" fill="url(#avbg${f?1:0})"/>
+ <g clip-path="url(#avcl)"><g class="body">
+ <path d="M14 122c2-25 20-36 46-36s44 11 46 36z" fill="url(#avsh${f?1:0})"/>
+ <path d="M24 104c6-9 14-13 22-15" stroke="#fff" stroke-opacity=".18" stroke-width="3" fill="none" stroke-linecap="round"/>
+ ${f?`<path d="M36 90c7 7 15 10 24 10s17-3 24-10l5 9c-9 8-19 11-29 11s-20-3-29-11z" fill="url(#avhj)"/>`
+ :`<path d="M48 87l12 13 12-13-4-3H52z" fill="#fff"/><path d="M57.5 99h5l2 23h-9z" fill="#F4B23E"/><path d="M57 96h6l-1 4h-4z" fill="#E09A22"/>`}
+ <g class="hand"><path d="M96 124c-2-12 0-20 4-24" stroke="url(#avsh${f?1:0})" stroke-width="13" fill="none" stroke-linecap="round"/><circle cx="101" cy="97" r="6.5" fill="url(#avsk)"/><path d="M97 93.5q2-4 5-4.5M100.5 92.5q2-4 5-3.5" stroke="#E2A982" stroke-width="2.2" fill="none" stroke-linecap="round"/></g>
+ </g></g>
+ <g class="spark"><path d="M17 28l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#FFC53D"/><path d="M99 18l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#FFC53D"/></g>
  <g class="head">
- ${f?`<path d="M30 60c-2-28 14-42 30-42s32 14 30 42c-1 14-6 24-14 30H44c-8-6-13-16-14-30z" fill="#5B3F8C"/><path d="M40 88c6 6 14 8 20 8s14-2 20-8l4 10c-8 6-16 8-24 8s-16-2-24-8z" fill="#4A3375"/>`
- :`<rect x="52" y="72" width="16" height="16" rx="6" fill="${skin2}"/><ellipse cx="37.5" cy="56" rx="4.5" ry="6" fill="${skin2}"/><ellipse cx="82.5" cy="56" rx="4.5" ry="6" fill="${skin2}"/>`}
- <ellipse cx="60" cy="56" rx="${f?20:22}" ry="${f?23:25}" fill="${skin}"/>
- ${f?`<path d="M38 50c2-14 11-21 22-21s20 7 22 21c-6-7-13-10-22-10s-16 3-22 10z" fill="#5B3F8C"/>`
- :`<path d="M37 52c-2-18 9-28 23-28 15 0 26 9 23 28-3-8-9-13-15-14-4 4-14 6-24 4-3 3-6 6-7 10z" fill="#2B1D14"/><path d="M38.5 57C40 72 49 79.5 60 79.5S80 72 81.5 57C79 65 73 71.5 66 72.5Q60 74 54 72.5C47 71.5 41 65 38.5 57Z" fill="#4A3426"/><path d="M53 64.6q7-2.8 14 0q-7 1.6-14 0z" fill="#4A3426"/>`}
- <g class="brow"><path d="M46 46q5-3 10 0" stroke="#3A2A1E" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M64 46q5-3 10 0" stroke="#3A2A1E" stroke-width="2.2" fill="none" stroke-linecap="round"/></g>
- <g class="eyes" fill="#2A2238"><ellipse cx="51" cy="54" rx="2.8" ry="3.4"/><ellipse cx="69" cy="54" rx="2.8" ry="3.4"/></g><circle cx="52" cy="52.8" r=".9" fill="#fff"/><circle cx="70" cy="52.8" r=".9" fill="#fff"/>
- <circle cx="46" cy="63" r="3.5" fill="#F28B9B" opacity=".35"/><circle cx="74" cy="63" r="3.5" fill="#F28B9B" opacity=".35"/>
- <path d="M60 57q-2 5 0 6" stroke="${skin2}" stroke-width="2" fill="none" stroke-linecap="round"/>
- <path class="mc" d="M53 68q7 5 14 0" stroke="#A3443F" stroke-width="2.4" fill="none" stroke-linecap="round"/>
- <ellipse class="mo" cx="60" cy="69" rx="5" ry="4" fill="#8E2F36"/>
- <path class="mh" d="M52 67q8 9 16 0z" fill="#8E2F36" stroke="#8E2F36" stroke-width="1.5" stroke-linejoin="round"/>
+ ${f?`<path d="M29 60c-2-29 14-44 31-44s33 15 31 44c-1 15-7 25-15 31H44c-8-6-14-16-15-31z" fill="url(#avhj)"/><path d="M38 30c6-8 14-11 22-11" stroke="#fff" stroke-opacity=".3" stroke-width="3" fill="none" stroke-linecap="round"/>`
+ :`<path d="M52 70h16v15c0 4-16 4-16 0z" fill="#E2A982"/><ellipse cx="37.6" cy="56" rx="4.6" ry="6.2" fill="#EDB892"/><ellipse cx="82.4" cy="56" rx="4.6" ry="6.2" fill="#EDB892"/><path d="M36.5 54q1.5-2 2.6 1" stroke="#D69A74" stroke-width="1.2" fill="none"/>`}
+ <ellipse cx="60" cy="56" rx="${f?20:22}" ry="${f?23:25}" fill="url(#avsk)"/>
+ ${f?`<path d="M38 51c2-15 11-22 22-22s20 7 22 22c-6-8-13-11-22-11s-16 3-22 11z" fill="url(#avhj)"/>`
+ :`<path d="M36.8 53c-3-19 9-30 23.5-30 15.5 0 26.5 10 23 30-2-8-8-14-15-15.5-5 4.5-15 6.5-25 4.5-3 3-5.5 6.5-6.5 11z" fill="url(#avhr)"/><path d="M46 29q8-4 18-2" stroke="#fff" stroke-opacity=".22" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+ <path d="M38.6 58C40 72.5 49 79.6 60 79.6S80 72.5 81.4 58C79 65.5 73 71.5 66 72.4Q60 73.8 54 72.4C47 71.5 41 65.5 38.6 58Z" fill="#4A3426" opacity=".92"/><path d="M53 64.5q7-2.6 14 0q-7 1.5-14 0z" fill="#4A3426"/>`}
+ <g class="brow"><path d="M45.5 45.5q5.5-3.4 11 0" stroke="#3A2A1E" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M63.5 45.5q5.5-3.4 11 0" stroke="#3A2A1E" stroke-width="2.4" fill="none" stroke-linecap="round"/></g>
+ <g class="eyes"><ellipse cx="51" cy="54" rx="4.2" ry="4.6" fill="#fff"/><ellipse cx="69" cy="54" rx="4.2" ry="4.6" fill="#fff"/>
+ <g class="pupils"><circle cx="51.3" cy="54.4" r="2.9" fill="#5A3A24"/><circle cx="69.3" cy="54.4" r="2.9" fill="#5A3A24"/><circle cx="51.3" cy="54.4" r="1.5" fill="#1B120C"/><circle cx="69.3" cy="54.4" r="1.5" fill="#1B120C"/><circle cx="52.3" cy="53.2" r=".95" fill="#fff"/><circle cx="70.3" cy="53.2" r=".95" fill="#fff"/></g>
+ <path d="M46.6 51.6q4.4-3.4 8.8 0M64.6 51.6q4.4-3.4 8.8 0" stroke="#2A1C14" stroke-width="1.3" fill="none" stroke-linecap="round"/></g>
+ <ellipse cx="45" cy="63" rx="4" ry="2.6" fill="#F28B9B" opacity=".35"/><ellipse cx="75" cy="63" rx="4" ry="2.6" fill="#F28B9B" opacity=".35"/>
+ <path d="M60.5 56.5q-2.6 4.6-.4 6.2q1.8.6 3-.4" stroke="#D99A74" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+ <path class="mouth" d="${AVM.rest}" fill="#8E2F36" stroke="#8E2F36" stroke-width="1.2" stroke-linejoin="round"/>
+ <path class="teeth" d="M54.5 67.4Q60 68.6 65.5 67.4l-.6 1.6Q60 69.8 55.1 69z" fill="#fff" style="opacity:0"/>
  </g>
- <g class="waves" stroke="#E8468A" stroke-width="2.4" fill="none" stroke-linecap="round"><path d="M96 48q5 8 0 16"/><path d="M102 43q8 13 0 26"/></g></svg>`}
+ <g class="waves" stroke="#E8468A" stroke-width="2.4" fill="none" stroke-linecap="round"><path d="M96 46q5 8 0 16"/><path d="M102 41q8 13 0 26"/></g></svg>`}
 function tutorCard(){const f=avF();const st=TK&&TK.listening?'listen':AVS;return `<div class="tutor ${st}"><div class="avw">${avSVG(f)}</div><div class="tn"><b dir="ltr">${f?'Ms. Lina':'Mr. Adam'}</b><span class="ts"><i></i><span>${avLabel(st)}</span></span></div></div>`}
 function vTalkRun(){if(!TK)return vTalkList();const s=TK.sc,n=s.turns.length;
  const log=TK.log.map(m=>m.w==='bot'?`<div class="bub bot pop"><div>${esc(m.t)}</div><div class="bubtools"><button class="x" data-say="${esc(m.t)}">${ICON.spk} استمع</button><button class="x" data-tktr="1">ترجمة</button></div><div class="bubar" hidden>${esc(m.ar)}</div></div>`
