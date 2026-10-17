@@ -141,6 +141,54 @@ label.f{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:14p
 .credit b{font-weight:600;color:var(--ink)}
 .instbtn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:999px;padding:7px 14px 7px 12px;background:linear-gradient(135deg,var(--acc),var(--acc2));color:var(--onacc);font-weight:700;font-size:14px;box-shadow:0 6px 16px -8px var(--acc);white-space:nowrap}
 .instbtn svg{width:20px;height:20px}
+/* المعلّمة المتحركة (من مِران) */
+.tutor{margin-bottom:4px;display:flex;align-items:center;gap:14px;padding:10px 14px;border-radius:20px;background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 14%,var(--card)),color-mix(in srgb,var(--pink) 12%,var(--card)));border:1px solid var(--line);position:sticky;top:6px;z-index:5;box-shadow:0 10px 24px -18px var(--acc)}
+.tutor .avw{width:92px;height:92px;flex:none;position:relative}
+.tutor svg.av{width:100%;height:100%;overflow:visible}
+.tutor .tn b{display:block;font-family:var(--fd);font-size:18px;color:var(--ink)}
+.tutor .ts{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:700;color:var(--muted);margin-top:4px}
+.tutor .ts i{width:8px;height:8px;border-radius:50%;background:#B8B4CC}
+.tutor.talk .ts i{background:#1E7BF2;animation:tsp .8s infinite}.tutor.listen .ts i{background:#E8468A;animation:tsp .8s infinite}.tutor.happy .ts i{background:#0E9F77}
+@keyframes tsp{50%{transform:scale(1.6);opacity:.5}}
+.av .head{transform-origin:60px 80px;transition:transform .35s}
+.av .eyes ellipse{transform-box:fill-box;transform-origin:center;animation:avblink 4.2s infinite}
+@keyframes avblink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+.av .mo{transform-box:fill-box;transform-origin:center;opacity:0}
+.av .mc{transition:opacity .15s}
+.tutor.talk .av .mo{opacity:1;animation:avtalk .26s infinite alternate}.tutor.talk .av .mc{opacity:0}
+@keyframes avtalk{0%{transform:scaleY(.25) scaleX(.9)}60%{transform:scaleY(1)}100%{transform:scaleY(.55) scaleX(1.05)}}
+.tutor.talk .av .head{animation:avnod 1.6s ease-in-out infinite}
+@keyframes avnod{0%,100%{transform:rotate(0)}30%{transform:rotate(-2deg) translateY(-.5px)}70%{transform:rotate(2deg)}}
+.tutor.listen .av .head{transform:rotate(-6deg)}
+.av .waves{opacity:0;transition:opacity .25s}.tutor.listen .av .waves{opacity:1}
+.av .waves path{animation:avwave 1.2s infinite}.av .waves path:nth-child(2){animation-delay:.3s}
+@keyframes avwave{0%{opacity:.2}50%{opacity:1}100%{opacity:.2}}
+.av .brow{transition:transform .3s}.tutor.listen .av .brow{transform:translateY(-2px)}.tutor.happy .av .brow{transform:translateY(-2.5px)}
+.av .mh{opacity:0}.tutor.happy .av .mh{opacity:1}.tutor.happy .av .mc,.tutor.happy .av .mo{opacity:0;animation:none}
+.tutor.happy .avw{animation:avhop .6s ease 2}
+@keyframes avhop{40%{transform:translateY(-6px)}}
+.av .spark{opacity:0}.tutor.happy .av .spark{opacity:1;animation:avsp 1.2s ease both}
+@keyframes avsp{from{transform:scale(.4);opacity:0}40%{opacity:1}to{transform:scale(1.1);opacity:0}}
+.tutor.think .av .head{transform:rotate(5deg)}.tutor.think .av .mc{transform:translateX(2px)}
+
+.tutor .avw{width:104px;height:104px}
+.av .body{animation:avbreath 3.4s ease-in-out infinite;transform-origin:60px 120px}
+@keyframes avbreath{50%{transform:translateY(-1px) scaleY(1.01)}}
+.av .hand{transform-origin:100px 124px;transform:rotate(18deg) translateY(16px);transition:transform .4s}
+.tutor.talk .av .hand{transform:rotate(0) translateY(0);animation:avgest 1.8s ease-in-out .4s infinite}
+.tutor.happy .av .hand{transform:rotate(-8deg) translateY(-2px)}
+@keyframes avgest{0%,100%{transform:rotate(0)}35%{transform:rotate(-10deg) translateY(-2px)}70%{transform:rotate(6deg)}}
+.av .eyes{transform-box:fill-box;transform-origin:center;animation:avblink2 4.6s infinite}
+.av .eyes ellipse{animation:none}
+@keyframes avblink2{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+.av .pupils{animation:avlook 7s ease-in-out infinite}
+@keyframes avlook{0%,30%,100%{transform:translate(0,0)}38%,52%{transform:translate(-1.4px,.3px)}60%,72%{transform:translate(1.3px,-.2px)}}
+.tutor.listen .av .pupils{animation:none;transform:translate(1.2px,-.4px)}
+.tutor.talk .av .pupils{animation:avlook 3s ease-in-out infinite}
+.av .mouth{transition:d .09s}
+.tutor.happy .av .eyes{animation:none;transform:scaleY(.75)}
+@media (prefers-reduced-motion:reduce){.tutor *{animation:none!important}}
+.tutor.wait .ts i{background:var(--chalk);animation:tsp .8s infinite}.tutor.wait .av .head{transform:rotate(4deg)}.tutor.wait .av .pupils{transform:translate(-1.2px,-.6px)}
 .toast{position:fixed;inset-inline:16px;bottom:calc(20px + env(safe-area-inset-bottom,0px));margin-inline:auto;max-width:420px;background:var(--ink);color:var(--paper);padding:12px 16px;border-radius:12px;font-size:14px;text-align:center;z-index:20;direction:rtl}
 @media (min-width:720px){.wrap{max-width:680px;padding-inline:28px}h1{font-size:30px}}
 </style>
@@ -388,12 +436,60 @@ function speak(t){
     const v = zhVoice();
     if (v) u.voice = v;
     u.lang = v ? v.lang : 'zh-CN'; u.rate = .85; u.volume = 1;
-    u.onstart = () => { started = true; };
-    u.onerror = e => { if (id === sayId && !started && e.error !== 'interrupted' && e.error !== 'canceled') toast(soundHelp()); };
+    u.onstart = () => { started = true; avSet('talk'); };
+    u.onend = () => { if (AVS === 'talk') avSet(''); };
+    u.onerror = e => { if (AVS === 'talk') avSet(''); if (id === sayId && !started && e.error !== 'interrupted' && e.error !== 'canceled') toast(soundHelp()); };
     speechSynthesis.resume(); speechSynthesis.speak(u);
     setTimeout(() => { if (id === sayId && !started && !speechSynthesis.speaking) toast(soundHelp()); }, 2500);
   }catch(e){ toast(soundHelp()); }
 }
+
+/* ============ المعلّمة المتحركة: تتكلم وتستمع وتتفاعل ============ */
+let AVS='',AVT=null;
+function avSet(st,ms){AVS=st||'';clearTimeout(AVT);const el=document.querySelector('.tutor');avMouth(AVS);if(el){el.classList.remove('talk','listen','happy','think','wait');if(AVS)el.classList.add(AVS);const t=el.querySelector('.ts span');if(t)t.textContent=avLabel(AVS)}if(ms)AVT=setTimeout(()=>avSet(''),ms)}
+function avLabel(st){const f=avF();return st==='talk'?(f?'تتحدث…':'يتحدث…'):st==='listen'?(f?'تستمع إليك…':'يستمع إليك…'):st==='happy'?'أحسنت! 👏':st==='think'?'حاول مرة أخرى 🙂':st==='wait'?'تقرأ إجابتك…':'معلّمتك للمحادثة الصينية'}
+// صوت النطق أنثوي، فالمعلّمة امرأة محجبة للجميع
+const avF=()=>true;
+const AVM={rest:'M53 68Q60 71.5 67 68Q60 70 53 68Z',s:'M54 67.6Q60 70.6 66 67.6Q60 72.8 54 67.6Z',o:'M53.6 67.2Q60 69.6 66.4 67.2Q60 76.5 53.6 67.2Z',w:'M51.8 67.6Q60 69.6 68.2 67.6Q60 73.6 51.8 67.6Z',u:'M56.2 67Q60 65.8 63.8 67Q65 72.4 60 73.4Q55 72.4 56.2 67Z',e:'M52.6 67.8Q60 68.8 67.4 67.8Q60 71.4 52.6 67.8Z',happy:'M51.5 66Q60 67.6 68.5 66Q60 77.5 51.5 66Z'};
+let AVMT=null;
+function avMouth(st){clearInterval(AVMT);const m=document.querySelector('.tutor .mouth');const tt=document.querySelector('.tutor .teeth');if(!m)return;
+ if(st==='talk'){const seq=['s','o','w','u','e','o','s','w','rest','o','e'];let k=0;AVMT=setInterval(()=>{const el=document.querySelector('.tutor .mouth');if(!el||AVS!=='talk'){clearInterval(AVMT);return}k=(k+1+Math.floor(Math.random()*3))%seq.length;el.setAttribute('d',AVM[seq[k]]);const t2=document.querySelector('.tutor .teeth');if(t2)t2.style.opacity=seq[k]==='w'||seq[k]==='o'?1:0},115);return}
+ m.setAttribute('d',st==='happy'?AVM.happy:AVM.rest);if(tt)tt.style.opacity=st==='happy'?1:0}
+function avSVG(f){const shirtA='#D3202A',shirtB='#8E1219';
+ return `<svg class="av" viewBox="0 0 120 120" aria-hidden="true"><defs>
+ <radialGradient id="avbg${f?1:0}" cx="40%" cy="30%" r="75%"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#FFE3D6"/></radialGradient>
+ <radialGradient id="avsk" cx="45%" cy="38%" r="65%"><stop offset="0" stop-color="#FBDCBE"/><stop offset=".7" stop-color="#F1C29C"/><stop offset="1" stop-color="#E2A982"/></radialGradient>
+ <linearGradient id="avsh${f?1:0}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${shirtA}"/><stop offset="1" stop-color="${shirtB}"/></linearGradient>
+ <linearGradient id="avhr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4A3020"/><stop offset="1" stop-color="#1E130C"/></linearGradient>
+ <linearGradient id="avhj" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3A4670"/><stop offset="1" stop-color="#1C2340"/></linearGradient>
+ <clipPath id="avcl"><circle cx="60" cy="60" r="58"/></clipPath></defs>
+ <circle cx="60" cy="60" r="58" fill="url(#avbg${f?1:0})"/>
+ <g clip-path="url(#avcl)"><g class="body">
+ <path d="M14 122c2-25 20-36 46-36s44 11 46 36z" fill="url(#avsh${f?1:0})"/>
+ <path d="M24 104c6-9 14-13 22-15" stroke="#fff" stroke-opacity=".18" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M60 101c4 3 10 4 16 3" stroke="#F5B82E" stroke-width="2.4" fill="none" stroke-linecap="round"/><g fill="#F5B82E"><circle cx="70" cy="108" r="2"/><circle cx="74" cy="115" r="2"/></g><path d="M66 108h8M70 115h8" stroke="#F5B82E" stroke-width="1.6" stroke-linecap="round"/>
+ ${f?`<path d="M36 90c7 7 15 10 24 10s17-3 24-10l5 9c-9 8-19 11-29 11s-20-3-29-11z" fill="url(#avhj)"/>`
+ :`<path d="M48 87l12 13 12-13-4-3H52z" fill="#fff"/><path d="M57.5 99h5l2 23h-9z" fill="#F4B23E"/><path d="M57 96h6l-1 4h-4z" fill="#E09A22"/>`}
+ <g class="hand"><path d="M96 124c-2-12 0-20 4-24" stroke="url(#avsh${f?1:0})" stroke-width="13" fill="none" stroke-linecap="round"/><circle cx="101" cy="97" r="6.5" fill="url(#avsk)"/><path d="M97 93.5q2-4 5-4.5M100.5 92.5q2-4 5-3.5" stroke="#E2A982" stroke-width="2.2" fill="none" stroke-linecap="round"/></g>
+ </g></g>
+ <g class="spark"><path d="M17 28l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#FFC53D"/><path d="M99 18l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#FFC53D"/></g>
+ <g class="head">
+ ${f?`<path d="M29 60c-2-29 14-44 31-44s33 15 31 44c-1 15-7 25-15 31H44c-8-6-14-16-15-31z" fill="url(#avhj)"/><path d="M38 30c6-8 14-11 22-11" stroke="#fff" stroke-opacity=".3" stroke-width="3" fill="none" stroke-linecap="round"/>`
+ :`<path d="M52 70h16v15c0 4-16 4-16 0z" fill="#E2A982"/><ellipse cx="37.6" cy="56" rx="4.6" ry="6.2" fill="#EDB892"/><ellipse cx="82.4" cy="56" rx="4.6" ry="6.2" fill="#EDB892"/><path d="M36.5 54q1.5-2 2.6 1" stroke="#D69A74" stroke-width="1.2" fill="none"/>`}
+ <ellipse cx="60" cy="56" rx="${f?20:22}" ry="${f?23:25}" fill="url(#avsk)"/>
+ ${f?`<path d="M38 51c2-15 11-22 22-22s20 7 22 22c-6-8-13-11-22-11s-16 3-22 11z" fill="url(#avhj)"/>`
+ :`<path d="M36.8 53c-3-19 9-30 23.5-30 15.5 0 26.5 10 23 30-2-8-8-14-15-15.5-5 4.5-15 6.5-25 4.5-3 3-5.5 6.5-6.5 11z" fill="url(#avhr)"/><path d="M46 29q8-4 18-2" stroke="#fff" stroke-opacity=".22" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+ <path d="M38.6 58C40 72.5 49 79.6 60 79.6S80 72.5 81.4 58C79 65.5 73 71.5 66 72.4Q60 73.8 54 72.4C47 71.5 41 65.5 38.6 58Z" fill="#4A3426" opacity=".92"/><path d="M53 64.5q7-2.6 14 0q-7 1.5-14 0z" fill="#4A3426"/>`}
+ <g class="brow"><path d="M45.5 45.5q5.5-3.4 11 0" stroke="#3A2A1E" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M63.5 45.5q5.5-3.4 11 0" stroke="#3A2A1E" stroke-width="2.4" fill="none" stroke-linecap="round"/></g>
+ <g class="eyes"><ellipse cx="51" cy="54" rx="4.2" ry="4.6" fill="#fff"/><ellipse cx="69" cy="54" rx="4.2" ry="4.6" fill="#fff"/>
+ <g class="pupils"><circle cx="51.3" cy="54.4" r="2.9" fill="#5A3A24"/><circle cx="69.3" cy="54.4" r="2.9" fill="#5A3A24"/><circle cx="51.3" cy="54.4" r="1.5" fill="#1B120C"/><circle cx="69.3" cy="54.4" r="1.5" fill="#1B120C"/><circle cx="52.3" cy="53.2" r=".95" fill="#fff"/><circle cx="70.3" cy="53.2" r=".95" fill="#fff"/></g>
+ <path d="M46.6 51.6q4.4-3.4 8.8 0M64.6 51.6q4.4-3.4 8.8 0" stroke="#2A1C14" stroke-width="1.3" fill="none" stroke-linecap="round"/></g>
+ <ellipse cx="45" cy="63" rx="4" ry="2.6" fill="#F28B9B" opacity=".35"/><ellipse cx="75" cy="63" rx="4" ry="2.6" fill="#F28B9B" opacity=".35"/>
+ <path d="M60.5 56.5q-2.6 4.6-.4 6.2q1.8.6 3-.4" stroke="#D99A74" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+ <path class="mouth" d="${AVM.rest}" fill="#8E2F36" stroke="#8E2F36" stroke-width="1.2" stroke-linejoin="round"/>
+ <path class="teeth" d="M54.5 67.4Q60 68.6 65.5 67.4l-.6 1.6Q60 69.8 55.1 69z" fill="#fff" style="opacity:0"/>
+ </g>
+ <g class="waves" stroke="#E8468A" stroke-width="2.4" fill="none" stroke-linecap="round"><path d="M96 46q5 8 0 16"/><path d="M102 41q8 13 0 26"/></g></svg>`}
+function tutorCard(){const st=TK&&TK.listening?'listen':TK&&TK.busy?'wait':AVS;return `<div class="tutor ${st}"><div class="avw">${avSVG(true)}</div><div class="tn"><b><span lang="zh" style="font-family:var(--fz)">李老师</span> <span dir="ltr" style="font-size:14px;color:var(--muted);font-weight:500">Lǐ lǎoshī</span></b><span class="ts"><i></i><span>${avLabel(st)}</span></span></div></div>`}
 
 /* ============ فهم الإجابة ============ */
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
@@ -459,25 +555,25 @@ async function aiJudge(turn, said, me, scene){
   if (!hasHan(said)) return null;
   const freeRule = `PERSONAL DETAILS ARE FREE: names, ages, numbers, quantities, prices, dates, times, places, nationalities, jobs, foods and other personal details are the learner's own choice. Never treat a difference from the example in these details as a mistake, never mark it as not fitting, and never change them in "corrected" (fix only grammar or wrong words around them).`;
   const common = `You check one spoken answer in a Mandarin speaking drill for an Arabic-speaking learner. Scenario: "${scene}". The learner's text is a speech-recognition transcript and may contain homophone mis-recognitions. ${freeRule}`;
-  const fields = `"corrected": the learner's OWN sentence with its mistakes fixed, simplified characters, changing as little as possible (identical when already correct; empty when fits is false). "pinyin": tone-marked pinyin of "corrected". "notes": 0-2 short explanations IN ARABIC of real grammar or word mistakes, naming the exact word; never invent mistakes; ignore punctuation. "pronunciation": words that make no sense but sound like the intended word (wrong tone or similar sound) as {"said","said_pinyin","meant","meant_pinyin","tip"} with tip in ARABIC; [] if none.`;
+  const fields = `"corrected": the learner's OWN sentence with its mistakes fixed, simplified characters, changing as little as possible (identical when already correct; empty when fits is false). "pinyin": tone-marked pinyin of "corrected". "notes": 0-2 short explanations IN ARABIC of real grammar or word mistakes, naming the exact word; never invent mistakes; ignore punctuation. "ideal": a complete, natural model sentence in simplified Chinese that KEEPS every correctly-said word of the learner (their names, numbers, ages, colors, cities, countries, foods, jobs, hobbies and other details) and only fixes errors and adds what is missing to make a full, natural sentence for this exchange; never replace the learner's details with the example's; empty when fits is false. "ideal_pinyin": tone-marked pinyin of "ideal". "pronunciation": words that make no sense but sound like the intended word (wrong tone or similar sound) as {"said","said_pinyin","meant","meant_pinyin","tip"} with tip in ARABIC; [] if none.`;
   const prompt = me
     ? `${common}
 The learner starts the exchange and should say, in Chinese, a sentence meaning (Arabic): «${turn[2]}». Reference sentence: ${turn[0]}
 Learner said: ${said}
 You are the other person in the scenario. Reply ONLY with JSON:
-{"fits":true,"corrected":"","pinyin":"","notes":[],"pronunciation":[],"reply":{"zh":"","pinyin":"","ar":""}}
+{"fits":true,"corrected":"","pinyin":"","ideal":"","ideal_pinyin":"","notes":[],"pronunciation":[],"reply":{"zh":"","pinyin":"","ar":""}}
 "fits": true only when the learner's sentence is understandable Chinese that carries the requested meaning (any natural wording counts). ${fields} "reply": ONE short natural sentence in simple Chinese that answers or reacts to the learner's sentence, with pinyin and an Arabic translation. The learner leads this conversation: do NOT ask any question, do NOT end with a question mark, and do NOT start a new topic. Empty strings when fits is false.`
     : `${common}
 The app asked: ${turn[0]} (Arabic: «${turn[2]}»). Example of a good answer: ${turn[4]}
 Learner said: ${said}
 Reply ONLY with JSON:
-{"fits":true,"corrected":"","pinyin":"","notes":[],"pronunciation":[]}
+{"fits":true,"corrected":"","pinyin":"","ideal":"","ideal_pinyin":"","notes":[],"pronunciation":[]}
 "fits": true only when the learner's sentence is understandable Chinese AND a relevant, sensible answer to the question; its content may differ from the example. Off-topic, unrelated, or nonsense answers, or just repeating the question, are false. ${fields}`;
   const r = await aiAsk(prompt);
   if (!r || typeof r.fits !== 'boolean') return null;
   const rp = r.reply || {};
   return {
-    fits: r.fits, corrected: str(r.corrected), pinyin: str(r.pinyin),
+    fits: r.fits, corrected: str(r.corrected), pinyin: str(r.pinyin), ideal: str(r.ideal), idealPy: str(r.ideal_pinyin),
     notes: (Array.isArray(r.notes) ? r.notes : []).map(str).filter(Boolean).slice(0, 2),
     pron: (Array.isArray(r.pronunciation) ? r.pronunciation : []).map(p => ({said:str(p && p.said), sp:str(p && p.said_pinyin), meant:str(p && p.meant), mp:str(p && p.meant_pinyin), tip:str(p && p.tip)})).filter(p => p.meant && p.said && p.meant !== p.said).slice(0, 3),
     reply: {zh:str(rp.zh), pinyin:str(rp.pinyin), ar:str(rp.ar)}
@@ -505,7 +601,7 @@ function tkBot(){
   if (TK.mode === 'me'){ TK.log.push({w:'ask', ar:t[2]}); render(); tkScroll(); return; }   // أنت تبدأ: تقول الجملة والتطبيق يرد
   TK.log.push({w:'bot', t:t[0], py:t[1], ar:t[2]}); render(); tkScroll(); speak(t[0]);
 }   // spoken inside the tap itself, so phones allow the sound
-function tkSys(html, extra){ TK.log.push(Object.assign({w:'sys', h:html}, extra || {})); }
+function tkSys(html, extra){ TK.log.push(Object.assign({w:'sys', h:html}, extra || {})); if (extra && extra.ok) avSet('happy', 2400); else avSet('think', 2400); }
 function tkStopRec(){ if (REC){ const r = REC; REC = null; try{ r.abort(); }catch(e){} } if (TK) TK.listening = false; }
 function tkListen(){
   if (!SR){ typingMode = true; render(); return; }
@@ -550,7 +646,7 @@ async function tkEval(alts){
   const run = TK, t = tkTurn(), me = TK.mode === 'me';
   const target = me ? t[0] : t[4], targetPy = me ? t[1] : t[5];
   const usable = alts.filter(a => hanCount(a) >= 1);
-  const rel = a => me ? tsim(a, t[0]) >= 0.5 : (tmatch(a, t) || tsim(a, t[4]) >= 0.5);
+  const rel = a => me ? tsim(a, t[0]) >= 0.5 : (tmatch(a, t) || tsim(a, t[4]) >= 0.75);
   const pick = usable.find(rel) || usable[0];
   const best = pick || alts[0];
   const echo = !me && pick && hanCount(pick) >= 3 && tsim(t[0], pick) >= 0.85 && tsim(t[4], pick) < 0.6;
@@ -567,10 +663,13 @@ async function tkEval(alts){
     const fixed = ai && ai.corrected && tnorm(ai.corrected) !== tnorm(best) ? ai.corrected : '';
     const perfect = !fixed && (ai ? (hanCount(best) >= 4 || tsim(best, target) >= 0.6) : tsim(best, target) >= 0.85 && tsim(target, best) >= 0.85);   // إجابة من كلمة أو كلمتين تُقبل، لكن يُعرض معها الرد الكامل
     const gain = award((first ? 10 : 5) * TK.sc.l);
-    const head = perfect ? 'ممتاز! جملة سليمة.' : first ? 'أحسنت! فهمتك.' : 'أحسنت! هذه المرة فهمتك.';
-    const show = fixed ? ideal('الرد المثالي لجملتك:', fixed, ai.pinyin) : perfect ? '' : ideal(me ? 'الصيغة المثالية للجملة:' : 'الرد المثالي:', target, targetPy);
-    const extra = ai && perfect && tsim(best, target) < 0.5 ? ideal(me ? 'صيغة أخرى صحيحة:' : 'رد آخر صحيح:', target, targetPy) : '';
-    tkSys(`<b>${head}</b>${gain ? `<span class="chip">+${gain} نقطة</span>` : ''}${notes.map(n => `<div class="tknote">${esc(n)}</div>`).join('')}${ai ? ai.pron.map(p => `<div class="tknote">النطق: سُمعت ${esc(p.said)} ${esc(p.sp)} والمقصود ${esc(p.meant)} ${esc(p.mp)}. ${esc(p.tip)}</div>`).join('') : ''}${show}${extra}`, {ok:true, say:fixed || (perfect ? '' : target)});
+    const own = ai && ai.ideal && hasHan(ai.ideal) ? ai.ideal : '';          // الرد المثالي مبني على كلمات الطالب نفسه
+    const ownSame = own && tnorm(own) === tnorm(best);
+    const head = perfect && (!own || ownSame) ? 'ممتاز! جملة سليمة.' : first ? 'أحسنت! فهمتك.' : 'أحسنت! هذه المرة فهمتك.';
+    const modelZh = own || fixed || target, modelPy = own ? ai.idealPy : fixed ? ai.pinyin : targetPy;
+    const show = ownSame || (perfect && !own) ? '' : ideal(own ? (me ? 'الصيغة المثالية بكلماتك:' : 'الرد المثالي بكلماتك:') : fixed ? 'الرد المثالي لجملتك:' : (me ? 'الصيغة المثالية للجملة:' : 'الرد المثالي:'), modelZh, modelPy);
+    const extra = !own && ai && perfect && tsim(best, target) < 0.5 ? ideal(me ? 'صيغة أخرى صحيحة:' : 'رد آخر صحيح:', target, targetPy) : '';
+    tkSys(`<b>${head}</b>${gain ? `<span class="chip">+${gain} نقطة</span>` : ''}${notes.map(n => `<div class="tknote">${esc(n)}</div>`).join('')}${ai ? ai.pron.map(p => `<div class="tknote">النطق: سُمعت ${esc(p.said)} ${esc(p.sp)} والمقصود ${esc(p.meant)} ${esc(p.mp)}. ${esc(p.tip)}</div>`).join('') : ''}${show}${extra}`, {ok:true, say:show ? modelZh : ''});
     if (me) replyBot();
     TK.waitNext = true;
   } else {
@@ -675,7 +774,7 @@ function vRun(){
     ${TK.attempts < 2 ? `<button class="x" data-act="tkShow">${TK.mode === 'me' ? 'لا أعرف، أظهر الجملة' : 'لا أعرف، اقترح رداً'}</button>` : ''}</div>`;
   return header() + `<div class="qhead"><h2>${s.t} <span class="zh" lang="zh" style="font-size:16px;color:var(--muted)">${s.z}</span></h2><button class="x" data-act="tkQuit">إنهاء</button></div>
   <div class="sec"><p class="prog">الجملة ${Math.min(TK.i + 1, n)} من ${n} · المستوى ال${LV[s.l]} · ${TK.mode === 'me' ? 'أنت تبدأ' : 'التطبيق يبدأ'}${AIOK ? ' · تصحيح بالذكاء الاصطناعي' : ''}</p><div class="bar"><i style="width:${100 * (TK.done ? n : TK.i) / n}%"></i></div>
-  <div class="chat" aria-live="polite">${log}</div>${ctl}</div>${CREDIT}`;
+  ${tutorCard()}<div class="chat" aria-live="polite">${log}</div>${ctl}</div>${CREDIT}`;
 }
 function render(){ app.innerHTML = view === 'run' && TK ? vRun() : view === 'admin' ? vAdmin() : vList(); }
 
