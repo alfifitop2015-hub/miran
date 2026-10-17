@@ -332,6 +332,37 @@ a.btn{text-decoration:none}
 .toast{bottom:28px}
 }
 @media (max-width:380px){.catrow{grid-template-columns:90px 1fr 40px}.stat b{font-size:20px}}
+
+/* المعلّم المتحرك في المحادثة */
+.tutor{display:flex;align-items:center;gap:14px;padding:10px 14px;border-radius:20px;background:linear-gradient(135deg,color-mix(in srgb,var(--en) 14%,var(--card)),color-mix(in srgb,var(--pink) 12%,var(--card)));border:1px solid var(--line);position:sticky;top:6px;z-index:5;box-shadow:0 10px 24px -18px var(--en)}
+.tutor .avw{width:92px;height:92px;flex:none;position:relative}
+.tutor svg.av{width:100%;height:100%;overflow:visible}
+.tutor .tn b{display:block;font-family:var(--fe);font-size:18px;color:var(--ink)}
+.tutor .ts{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:700;color:var(--muted);margin-top:4px}
+.tutor .ts i{width:8px;height:8px;border-radius:50%;background:#B8B4CC}
+.tutor.talk .ts i{background:#1E7BF2;animation:tsp .8s infinite}.tutor.listen .ts i{background:#E8468A;animation:tsp .8s infinite}.tutor.happy .ts i{background:#0E9F77}
+@keyframes tsp{50%{transform:scale(1.6);opacity:.5}}
+.av .head{transform-origin:60px 80px;transition:transform .35s}
+.av .eyes ellipse{transform-box:fill-box;transform-origin:center;animation:avblink 4.2s infinite}
+@keyframes avblink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+.av .mo{transform-box:fill-box;transform-origin:center;opacity:0}
+.av .mc{transition:opacity .15s}
+.tutor.talk .av .mo{opacity:1;animation:avtalk .26s infinite alternate}.tutor.talk .av .mc{opacity:0}
+@keyframes avtalk{0%{transform:scaleY(.25) scaleX(.9)}60%{transform:scaleY(1)}100%{transform:scaleY(.55) scaleX(1.05)}}
+.tutor.talk .av .head{animation:avnod 1.6s ease-in-out infinite}
+@keyframes avnod{0%,100%{transform:rotate(0)}30%{transform:rotate(-2deg) translateY(-.5px)}70%{transform:rotate(2deg)}}
+.tutor.listen .av .head{transform:rotate(-6deg)}
+.av .waves{opacity:0;transition:opacity .25s}.tutor.listen .av .waves{opacity:1}
+.av .waves path{animation:avwave 1.2s infinite}.av .waves path:nth-child(2){animation-delay:.3s}
+@keyframes avwave{0%{opacity:.2}50%{opacity:1}100%{opacity:.2}}
+.av .brow{transition:transform .3s}.tutor.listen .av .brow{transform:translateY(-2px)}.tutor.happy .av .brow{transform:translateY(-2.5px)}
+.av .mh{opacity:0}.tutor.happy .av .mh{opacity:1}.tutor.happy .av .mc,.tutor.happy .av .mo{opacity:0;animation:none}
+.tutor.happy .avw{animation:avhop .6s ease 2}
+@keyframes avhop{40%{transform:translateY(-6px)}}
+.av .spark{opacity:0}.tutor.happy .av .spark{opacity:1;animation:avsp 1.2s ease both}
+@keyframes avsp{from{transform:scale(.4);opacity:0}40%{opacity:1}to{transform:scale(1.1);opacity:0}}
+.tutor.think .av .head{transform:rotate(5deg)}.tutor.think .av .mc{transform:translateX(2px)}
+@media (prefers-reduced-motion:reduce){.tutor *{animation:none!important}}
 </style>
 
 <div id="app" class="wrap" dir="rtl" lang="ar"></div>
@@ -433,14 +464,14 @@ if(canSynth){loadVoices();try{speechSynthesis.addEventListener('voiceschanged',l
 function pickVoice(){return voices.find(v=>/en[-_]US/i.test(v.lang)&&/Samantha|Google US|Aria|Jenny|Ava|Allison/i.test(v.name))||voices.find(v=>/en[-_]US/i.test(v.lang))||voices.find(v=>/^en/i.test(v.lang))}
 let toastT;function toast(msg){let el=document.getElementById('toast');if(!el){el=document.createElement('div');el.id='toast';el.className='toast';el.setAttribute('role','status');document.body.appendChild(el)}el.textContent=msg;el.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>{el.hidden=true},2600)}
 const audioCache={};
-function speakFallback(t){const w=t.trim().toLowerCase();const play=u=>{try{const a=new Audio(u);a.play().catch(()=>toast('اضغط زر الاستماع مرة أخرى لسماع النطق'))}catch(e){toast('النطق غير متاح على هذا الجهاز')}};
+function speakFallback(t){const w=t.trim().toLowerCase();const play=u=>{try{const a=new Audio(u);a.onplay=()=>avSet('talk');a.onended=a.onpause=()=>{if(AVS==='talk')avSet('')};a.play().catch(()=>toast('اضغط زر الاستماع مرة أخرى لسماع النطق'))}catch(e){toast('النطق غير متاح على هذا الجهاز')}};
  if(!/^[a-z][a-z' -]*$/.test(w)){toast('النطق غير متاح على هذا المتصفح. جرّب Chrome أو Safari.');return}
  if(audioCache[w])return play(audioCache[w]);
  fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(w.split(' ')[0])).then(r=>r.json()).then(d=>{const ph=[].concat(...(Array.isArray(d)?d:[]).map(x=>x.phonetics||[])).filter(x=>x.audio);const best=ph.find(x=>/-us\./.test(x.audio))||ph[0];if(!best)throw 0;audioCache[w]=best.audio;play(best.audio)}).catch(()=>toast('النطق غير متاح على هذا المتصفح. جرّب Chrome أو Safari.'))}
 function speak(t){if(!t)return;if(!canSynth)return speakFallback(t);let started=false;
  try{if(!voices.length)loadVoices();if(speechSynthesis.speaking||speechSynthesis.pending)speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(t);const v=pickVoice();if(v)u.voice=v;u.lang=v?v.lang:'en-US';u.rate=.9;u.pitch=1;u.volume=1;
-  u.onstart=()=>{started=true};u.onerror=e=>{if(!started&&e.error!=='interrupted'&&e.error!=='canceled')speakFallback(t)};
+  u.onstart=()=>{started=true;avSet('talk')};u.onend=()=>{if(AVS==='talk')avSet('')};u.onerror=e=>{if(AVS==='talk')avSet('');if(!started&&e.error!=='interrupted'&&e.error!=='canceled')speakFallback(t)};
   speechSynthesis.resume();speechSynthesis.speak(u);
   setTimeout(()=>{if(!started&&!speechSynthesis.speaking){try{speechSynthesis.cancel()}catch(e){}speakFallback(t)}},1500)}catch(e){speakFallback(t)}}
 const ICON={
@@ -1313,7 +1344,7 @@ function startTalk(id){const sc=TALKS.find(x=>x.id===id);if(!sc)return;aiInit();
  if(me){tkSys(`<b>${g('أنت','أنتِ')} ${g('تبدأ','تبدئين')} كل جملة في هذه المحادثة!</b> ${g('قل','قولي')} الجملة المطلوبة بالإنجليزي، والتطبيق يرد ${g('عليك','عليكِ')}.`);tkMePrompt()}else tkBot()}
 function tkBot(){const t=tkTurn();TK.attempts=0;TK.waitNext=false;TK.log.push({w:'bot',t:t[0],ar:t[1]});render();tkScroll();setTimeout(()=>speak(t[0]),350)}
 function tkScroll(){setTimeout(()=>{window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})},60)}
-function tkSys(html,extra){TK.log.push(Object.assign({w:'sys',h:html},extra||{}))}
+function tkSys(html,extra){TK.log.push(Object.assign({w:'sys',h:html},extra||{}));if(extra&&extra.ok)avSet('happy',2200);else if(/لم أفهمك|ليست مناسبة|حاول/.test(html))avSet('think',2200)}
 function tkListen(){if(!SR){TK.typing=true;render();return}
  if(TK.listening){try{REC&&REC.stop()}catch(e){}return}
  try{speechSynthesis.cancel()}catch(e){}
@@ -1486,6 +1517,34 @@ function vTalkList(){const p=cur();aiInit();const srt=nearSort(TALKS,p.grade,x=>
  <h2>محادثات ${GRADES[p.grade]}</h2>${own.map(tile).join('')}
  <h2>محادثات أخرى</h2>${rest.map(tile).join('')}
  <button class="btn plain wide" data-go="en">رجوع</button></div>`}
+
+/* ============ المعلّم المتحرك: يتكلم ويستمع ويتفاعل أثناء المحادثة ============ */
+let AVS='',AVT=null;
+function avSet(st,ms){AVS=st||'';clearTimeout(AVT);const el=document.querySelector('.tutor');if(el){el.classList.remove('talk','listen','happy','think');if(AVS)el.classList.add(AVS);const t=el.querySelector('.ts span');if(t)t.textContent=avLabel(AVS)}if(ms)AVT=setTimeout(()=>avSet(''),ms)}
+function avLabel(st){const f=avF();return st==='talk'?(f?'تتحدث…':'يتحدث…'):st==='listen'?(f?'تستمع إليك…':'يستمع إليك…'):st==='happy'?'أحسنت! 👏':st==='think'?'حاول مرة أخرى 🙂':(f?'معلّمتك للمحادثة':'معلّمك للمحادثة')}
+const avF=()=>{const p=cur();return !!(p&&p.gender==='f')};
+function avSVG(f){const skin='#F1C6A0',skin2='#E2AE86',shirt=f?'#3B5BDB':'#1E5FB8';
+ return `<svg class="av" viewBox="0 0 120 120" aria-hidden="true"><defs><radialGradient id="avbg" cx="40%" cy="30%" r="75%"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="${f?'#FBD9E8':'#D6E6FF'}"/></radialGradient></defs>
+ <circle cx="60" cy="60" r="58" fill="url(#avbg)"/>
+ <g class="spark" style="transform-origin:60px 40px"><path d="M18 30l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#FFC53D"/><path d="M98 22l2 5 5 2-5 2-2 5-2-5-5-2 5-2z" fill="#FFC53D"/></g>
+ <path d="M18 120c3-24 20-34 42-34s39 10 42 34z" fill="${shirt}"/>
+ ${f?'':`<path d="M50 86l10 12 10-12" fill="#fff"/><path d="M60 98l-3 22h6z" fill="#F5B83D"/>`}
+ <g class="head">
+ ${f?`<path d="M30 60c-2-28 14-42 30-42s32 14 30 42c-1 14-6 24-14 30H44c-8-6-13-16-14-30z" fill="#5B3F8C"/><path d="M40 88c6 6 14 8 20 8s14-2 20-8l4 10c-8 6-16 8-24 8s-16-2-24-8z" fill="#4A3375"/>`
+ :`<rect x="52" y="72" width="16" height="16" rx="6" fill="${skin2}"/><ellipse cx="37.5" cy="56" rx="4.5" ry="6" fill="${skin2}"/><ellipse cx="82.5" cy="56" rx="4.5" ry="6" fill="${skin2}"/>`}
+ <ellipse cx="60" cy="56" rx="${f?20:22}" ry="${f?23:25}" fill="${skin}"/>
+ ${f?`<path d="M38 50c2-14 11-21 22-21s20 7 22 21c-6-7-13-10-22-10s-16 3-22 10z" fill="#5B3F8C"/>`
+ :`<path d="M37 52c-2-18 9-28 23-28 15 0 26 9 23 28-3-8-9-13-15-14-4 4-14 6-24 4-3 3-6 6-7 10z" fill="#2B1D14"/><path d="M38.5 57C40 72 49 79.5 60 79.5S80 72 81.5 57C79 65 73 71.5 66 72.5Q60 74 54 72.5C47 71.5 41 65 38.5 57Z" fill="#4A3426"/><path d="M53 64.6q7-2.8 14 0q-7 1.6-14 0z" fill="#4A3426"/>`}
+ <g class="brow"><path d="M46 46q5-3 10 0" stroke="#3A2A1E" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M64 46q5-3 10 0" stroke="#3A2A1E" stroke-width="2.2" fill="none" stroke-linecap="round"/></g>
+ <g class="eyes" fill="#2A2238"><ellipse cx="51" cy="54" rx="2.8" ry="3.4"/><ellipse cx="69" cy="54" rx="2.8" ry="3.4"/></g><circle cx="52" cy="52.8" r=".9" fill="#fff"/><circle cx="70" cy="52.8" r=".9" fill="#fff"/>
+ <circle cx="46" cy="63" r="3.5" fill="#F28B9B" opacity=".35"/><circle cx="74" cy="63" r="3.5" fill="#F28B9B" opacity=".35"/>
+ <path d="M60 57q-2 5 0 6" stroke="${skin2}" stroke-width="2" fill="none" stroke-linecap="round"/>
+ <path class="mc" d="M53 68q7 5 14 0" stroke="#A3443F" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+ <ellipse class="mo" cx="60" cy="69" rx="5" ry="4" fill="#8E2F36"/>
+ <path class="mh" d="M52 67q8 9 16 0z" fill="#8E2F36" stroke="#8E2F36" stroke-width="1.5" stroke-linejoin="round"/>
+ </g>
+ <g class="waves" stroke="#E8468A" stroke-width="2.4" fill="none" stroke-linecap="round"><path d="M96 48q5 8 0 16"/><path d="M102 43q8 13 0 26"/></g></svg>`}
+function tutorCard(){const f=avF();const st=TK&&TK.listening?'listen':AVS;return `<div class="tutor ${st}"><div class="avw">${avSVG(f)}</div><div class="tn"><b dir="ltr">${f?'Ms. Lina':'Mr. Adam'}</b><span class="ts"><i></i><span>${avLabel(st)}</span></span></div></div>`}
 function vTalkRun(){if(!TK)return vTalkList();const s=TK.sc,n=s.turns.length;
  const log=TK.log.map(m=>m.w==='bot'?`<div class="bub bot pop"><div>${esc(m.t)}</div><div class="bubtools"><button class="x" data-say="${esc(m.t)}">${ICON.spk} استمع</button><button class="x" data-tktr="1">ترجمة</button></div><div class="bubar" hidden>${esc(m.ar)}</div></div>`
   :m.w==='me'?`<div class="bub me pop">${esc(m.t)}</div>`
@@ -1500,7 +1559,7 @@ function vTalkRun(){if(!TK)return vTalkList();const s=TK.sc,n=s.turns.length;
   ${TK.free?`<button class="x" data-act="tkEndFree">إنهاء المحادثة</button>`:TK.attempts<2?'<button class="x" data-act="tkShow">لا أعرف، أظهر الإجابة</button>':''}</div>`;
  return header()+`<div class="qhead"><h2>${s.t}</h2><button class="x" data-act="tkQuit">إنهاء</button></div>
  <div class="sec"><p class="prog">${TK.free?`ردودك: ${TK.i} من ${n}`:`الجملة ${Math.min(TK.i+1,n)} من ${n}`}${TK.free?'':TK.mode==='me'?' · '+g('أنت تبدأ','أنتِ تبدئين'):' · التطبيق يبدأ'}${AIOK?' · تصحيح بالذكاء الاصطناعي':''}</p><div class="bar"><i style="width:${100*(TK.done?n:TK.i)/n}%"></i></div>
- <div class="chat">${log}</div>${ctl}</div>`}
+ ${tutorCard()}<div class="chat">${log}</div>${ctl}</div>`}
 
 /* ============ محتوى الصفوف من الأول الابتدائي إلى الثالث الثانوي ============ */
 // الصفوف: 1-6 ابتدائي، 7-9 متوسط، 10-12 ثانوي
