@@ -835,6 +835,8 @@ async function onAuth(u){if(C.joining){C.user=u;return}
 function subStudent(){stopSub();C.ready=false;render();
  C.unsub=stuRef(C.sid).onSnapshot(d=>{
   if(!d.exists){if(C.asAdmin){toast('هذا الطالب غير موجود');return adBack()}if(C.user&&C.sid!==C.user.uid){fb.collection('devices').doc(C.user.uid).delete().catch(()=>{});C.sid=C.user.uid;return subStudent()}
+   if(C.user&&C.sid===C.user.uid&&!C.lkTried){C.lkTried=true;const gone=()=>{C.lkTried=false;if(view.name==='wait')toast('لم تتم الموافقة على الطلب. يمكنك التواصل مع مدير النظام.');S={profiles:[],active:null};C.ready=true;go('start')};
+    return fb.collection('devices').doc(C.user.uid).get().then(dv=>{const sid=dv.exists&&dv.data().sid;if(sid&&sid!==C.sid){C.lkTried=false;C.sid=sid;S={profiles:[],active:null};toast('تم ربط جوالك بحسابك السابق، أهلاً بعودتك!');return subStudent()}gone()}).catch(gone)}
    if(view.name==='wait')toast('لم تتم الموافقة على الطلب. يمكنك التواصل مع مدير النظام.');S={profiles:[],active:null};C.ready=true;return go('start')}
   const r=normP(Object.assign({},d.data(),{id:d.id}));const l=S.profiles[0];
   if(l&&l.id===r.id&&(l.resetAt||0)===(r.resetAt||0)){const gc=l.grade!==r.grade||l.term!==r.term;['name','gender','grade','term','nick','online','status','role'].forEach(k=>l[k]=r[k]);if(gc)Object.keys(l.daily).forEach(k=>{if(l.daily[k])delete l.daily[k].words})}else S.profiles=[r];
@@ -943,7 +945,20 @@ function adRow(s){if(A.edit===s.id)return adForm(s.id);const l=A.links[s.id];
  :`<div class="row" style="flex-wrap:wrap"><button class="x" style="font-weight:700" data-adas="${s.id}">دخول حسابه</button><button class="x" data-adedit="${s.id}">تعديل</button><button class="x" data-adlink="${s.id}">رابط دخول</button><button class="x" style="color:var(--cp)" data-adrst="${s.id}">تصفير الرصيد</button><button class="x" style="color:var(--bad)" data-addel="${s.id}">حذف</button></div>`}</div>`}
 async function adminApprove(id){await stuRef(id).update({status:'approved',approvedAt:Date.now()})}
 function adPendRow(s){return `<div class="card stack" style="border:2px solid #FFCB5C"><div class="row"><span class="av ${s.gender}">${esc((s.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(s.name)}</b><br><span class="note">${s.role==='parent'?`👨‍👩‍👧 ولي أمر (${s.gender==='f'?'أم':'أب'}) · للاطلاع فقط`:`${s.gender==='f'?'طالبة':'طالب'} · ${GRADES[s.grade]} · ${TERMS[s.term]||''}`}${s.created?' · '+new Date(s.created).toLocaleDateString('ar-SA'):''}</span></span></div>
- <div class="row"><button class="btn grow" data-adok="${s.id}">✓ قبول</button><button class="btn plain grow" style="color:var(--bad)" data-adno="${s.id}">رفض</button></div></div>`}
+ <div class="row"><button class="btn grow" data-adok="${s.id}">✓ قبول</button><button class="btn plain grow" style="color:var(--bad)" data-adno="${s.id}">رفض</button></div>${adLinkBox(s)}</div>`}
+const anorm=t=>QNORM(t||'').replace(/^(ال)/,'');
+function adSimilar(s,o){const a=anorm(s.name).split(' ')[0],b=anorm(o.name).split(' ')[0];return (o.grade===s.grade?2:0)+(a&&b&&(a===b||a.includes(b)||b.includes(a))?3:0)+(o.gender===s.gender?1:0)}
+function adLinkBox(s){const others=(A.list||[]).filter(o=>o.status!=='pending'&&o.role===s.role);if(!others.length)return '';
+ const best=others.map(o=>[o,adSimilar(s,o)]).filter(x=>x[1]>=5).sort((a,b)=>b[1]-a[1])[0];
+ const warn=best?`<p class="note" style="margin:0;color:#9a5b00">⚠️ قد يكون نفس ${s.role==='parent'?'ولي الأمر':'المنافس'}: <b>${esc(best[0].name)}</b>${s.role==='parent'?'':' · '+GRADES[best[0].grade]+' · '+best[0].score+' نقطة'}</p>`:'';
+ if(A.lk!==s.id)return warn+`<button class="btn plain wide" data-adlk="${s.id}">🔗 دمج مع حساب موجود (غيّر جواله)</button>`;
+ if(A.lkTo){const t=others.find(o=>o.id===A.lkTo);if(t)return `<div class="warn stack"><p style="margin:0">دمج هذا الطلب مع حساب <b>${esc(t.name)}</b>؟ يُحذف الطلب الجديد، ويدخل الجوال الجديد مباشرة إلى حسابه القديم بكل نقاطه، دون رابط.</p><div class="row"><button class="btn" data-adlkok="${s.id}">✓ نعم، ادمج</button><button class="btn plain" data-act="adLkCancel">إلغاء</button></div></div>`}
+ return warn+`<div class="card stack" style="box-shadow:none;background:#F6F4FF"><b>اختر الحساب القديم لدمج هذا الطلب معه</b>
+ <input type="text" id="adlkq" value="${esc(A.lkQ||'')}" placeholder="ابحث بالاسم…" style="width:100%">
+ <div class="stack" id="adlklist">${adLkList(adLkCands(s),s)}</div><button class="btn plain" data-act="adLkCancel">إلغاء</button></div>`}
+function adLkCands(s){const q=anorm(A.lkQ||'');return (A.list||[]).filter(o=>o.status!=='pending'&&o.role===s.role).map(o=>[o,adSimilar(s,o)]).filter(([o])=>!q||anorm(o.name).includes(q)).sort((a,b)=>b[1]-a[1]||a[0].name.localeCompare(b[0].name,'ar')).slice(0,12)}
+function adLkList(list,s){return list.map(([o,sc])=>`<button class="tile" data-adlkto="${o.id}" style="padding:10px 12px"><span class="av ${o.gender}">${esc((o.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(o.name)}</b>${sc>=5?' <span class="note" style="color:#9a5b00">⚠️ مشابه</span>':''}<br><span class="note">${s.role==='parent'?'ولي أمر':GRADES[o.grade]+' · '+o.score+' نقطة'}${o.last?' · آخر تدريب '+o.last:''}</span></span></button>`).join('')||'<p class="note" style="margin:0">لا يوجد حساب بهذا الاسم.</p>'}
+async function adminLinkReq(reqId,targetId){await fb.collection('devices').doc(reqId).set({sid:targetId,at:Date.now(),byAdmin:true});await stuRef(reqId).delete();await fb.collection('studentSecrets').doc(reqId).delete().catch(()=>{})}
 function adParRow(s){return `<div class="card stack" style="box-shadow:none"><div class="row"><span class="av ${s.gender}">${esc((s.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(s.name)}</b><br><span class="note">${s.gender==='f'?'أم':'أب'} · ولي أمر${s.created?' · '+new Date(s.created).toLocaleDateString('ar-SA'):''}</span></span></div>
  ${A.del===s.id?`<div class="warn stack">حذف حساب ولي الأمر ${esc(s.name)} نهائياً؟<div class="row"><button class="btn danger" data-addelok="${s.id}">نعم، احذف</button><button class="btn plain" data-act="adCancel">إلغاء</button></div></div>`:`<div class="row"><button class="x" style="color:var(--bad)" data-addel="${s.id}">حذف</button></div>`}</div>`}
 function adFiltered(){const q=(view.q||'').trim().toLowerCase();return(A.list||[]).filter(s=>s.status!=='pending'&&s.role!=='parent').filter(s=>(A.st==='all'||stageOf(s.grade)===A.st)&&(!q||s.name.toLowerCase().includes(q)))}
@@ -987,7 +1002,8 @@ function vAdBoard(){const sg=(k,l)=>`<button type="button" class="${AB.st===k?'o
  ${tierLegend()}${AB.rows==null?'<div class="card">جارٍ التحميل…</div>':rows.length?`<div class="list">${rows.map((r,i)=>`<div class="brd"><span class="n p${i+1}">${i+1}</span><span>${esc(r.nick)}<br><span class="note">${GRADES[r.grade]||''}</span>${rkTitle(i+1,r.total,r.gender)?`<br><span class="rkl">${rkTitle(i+1,r.total,r.gender)}</span>`:''}</span>${tierBadge(r.total)}<span class="sc">${(r.total||0).toLocaleString('en')}</span></div>`).join('')}</div>`:'<div class="card">لا يوجد متنافسون بعد.</div>'}
  <button class="btn plain wide" data-act="adBoard">تحديث</button><button class="btn wide" data-act="adHome">رجوع لإدارة النظام</button></div>`}
 function adSync(){const n=$('#adn');if(A.form&&n)A.form.name=n.value}
-function bindAdmin(){const pq=$('#pbq');if(pq)pq.addEventListener('input',()=>{PB.q=pq.value;const l=$('#pblist');if(l&&PB.rows)l.innerHTML=pbList()});
+function bindAdmin(){const lq=$('#adlkq');if(lq)lq.addEventListener('input',()=>{A.lkQ=lq.value;const s=(A.list||[]).find(x=>x.id===A.lk);const l=$('#adlklist');if(s&&l)l.innerHTML=adLkList(adLkCands(s),s)});
+ const pq=$('#pbq');if(pq)pq.addEventListener('input',()=>{PB.q=pq.value;const l=$('#pblist');if(l&&PB.rows)l.innerHTML=pbList()});
  const q=$('#adq');if(q)q.addEventListener('input',()=>{view.q=q.value;const l=$('#adlist');if(l)l.innerHTML=adFiltered().map(adRow).join('')||'<div class="card">لا يوجد منافسون بعد.</div>'});
  const kf=$('#adkform');if(kf)kf.addEventListener('submit',e=>{e.preventDefault();adSync();const v=A.form,er=$('#aderr');
   if(!v.name.trim()){er.textContent='اكتب الاسم.';er.hidden=false;return}if(!v.grade){er.textContent='اختر الصف.';er.hidden=false;return}
@@ -1003,6 +1019,7 @@ function cloudAct(a){if(a==='intro'){openIntro();return true}if(a==='install'){d
  case 'adBoard':go('adBoard');adBoardLoad();return true;
  case 'adHome':go('admin');return true;
  case 'pbReload':pbLoad();return true;
+ case 'adLkCancel':A.lk=null;A.lkTo=null;A.lkQ='';render();return true;
  case 'wCancel':WC=true;render();return true;
  case 'wCancelNo':WC=false;render();return true;
  case 'wCancelOk':{const id=C.sid;WC=false;stopSub();S={profiles:[],active:null};(async()=>{try{await stuRef(id).delete()}catch(e){}view={name:'start'};await logout()})();return true}
@@ -1023,6 +1040,9 @@ function cloudClick(d){if(!CLOUD)return false;
  if(d.adedit){const s=A.list.find(x=>x.id===d.adedit);if(!s)return true;A.edit=s.id;A.del=null;A.form={name:s.name,gender:s.gender,grade:s.grade,term:s.term||1};render();return true}
  if(d.adset){adSync();A.form[d.adset]=d.adset==='gender'?d.v:+d.v;render();return true}
  if(d.addel){A.del=d.addel;A.rst=null;A.edit=null;render();return true}
+ if(d.adlk){A.lk=d.adlk;A.lkTo=null;A.lkQ='';render();return true}
+ if(d.adlkto){A.lkTo=d.adlkto;render();return true}
+ if(d.adlkok){const id=d.adlkok,to=A.lkTo;const t=(A.list||[]).find(x=>x.id===to);adBusy(()=>adminLinkReq(id,to),'تم الدمج: يدخل '+(t?t.name:'المتنافس')+' بحسابه القديم من جواله الجديد مباشرة').then(()=>{A.lk=null;A.lkTo=null;render()});return true}
  if(d.adok){const id=d.adok;const it=(A.list||[]).find(x=>x.id===id);adBusy(()=>adminApprove(id),it&&it.role==='parent'?'تمت الموافقة، ويدخل ولي الأمر مباشرة دون رابط':'تمت الموافقة، ويدخل مباشرة من جهازه');return true}
  if(d.adno){const id=d.adno;adBusy(()=>adminDel(id),'رُفض الطلب');return true}
  if(d.adrst){A.rst=d.adrst;A.del=null;A.edit=null;render();return true}
