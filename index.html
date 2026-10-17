@@ -1539,7 +1539,8 @@ function vTalkList(){const p=cur();aiInit();const srt=nearSort(TALKS,p.grade,x=>
 let AVS='',AVT=null;
 function avSet(st,ms){AVS=st||'';clearTimeout(AVT);const el=document.querySelector('.tutor');avMouth(AVS);if(el){el.classList.remove('talk','listen','happy','think');if(AVS)el.classList.add(AVS);const t=el.querySelector('.ts span');if(t)t.textContent=avLabel(AVS)}if(ms)AVT=setTimeout(()=>avSet(''),ms)}
 function avLabel(st){const f=avF();return st==='talk'?(f?'تتحدث…':'يتحدث…'):st==='listen'?(f?'تستمع إليك…':'يستمع إليك…'):st==='happy'?'أحسنت! 👏':st==='think'?'حاول مرة أخرى 🙂':(f?'معلّمتك للمحادثة':'معلّمك للمحادثة')}
-const avF=()=>{const p=cur();return !!(p&&p.gender==='f')};
+// صوت النطق أنثوي، فالمعلّمة امرأة محجبة للجميع
+const avF=()=>true;
 const AVM={rest:'M53 68Q60 71.5 67 68Q60 70 53 68Z',s:'M54 67.6Q60 70.6 66 67.6Q60 72.8 54 67.6Z',o:'M53.6 67.2Q60 69.6 66.4 67.2Q60 76.5 53.6 67.2Z',w:'M51.8 67.6Q60 69.6 68.2 67.6Q60 73.6 51.8 67.6Z',u:'M56.2 67Q60 65.8 63.8 67Q65 72.4 60 73.4Q55 72.4 56.2 67Z',e:'M52.6 67.8Q60 68.8 67.4 67.8Q60 71.4 52.6 67.8Z',happy:'M51.5 66Q60 67.6 68.5 66Q60 77.5 51.5 66Z'};
 let AVMT=null;
 function avMouth(st){clearInterval(AVMT);const m=document.querySelector('.tutor .mouth');const tt=document.querySelector('.tutor .teeth');if(!m)return;
