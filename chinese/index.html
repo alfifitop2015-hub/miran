@@ -273,10 +273,12 @@ const persist = () => { try{ localStorage.setItem(KEY, JSON.stringify(SAVE)); }c
 const FB = {apiKey:"AIzaSyDfDRNr06QJKPShAvjuc0UOaFYNlvU5NEo",authDomain:"miran-7ad31.firebaseapp.com",projectId:"miran-7ad31",storageBucket:"miran-7ad31.firebasestorage.app",messagingSenderId:"1089204486985",appId:"1:1089204486985:web:986b4a4ad56190c878d098"};
 const ADMIN_EMAIL = 'alfifitop2015@gmail.com';
 const X = {ready:false, off:false, uid:null, me:null, meLoaded:false, board:null, full:false, admin:false, rows:null, err:'', busy:false, confirm:''};
-const JF = {name:'', gender:''};
+const JF = {name:'', gender:'', role:''};
 let fsP = null, fsA = null, authP = null, authA = null, INC = null, unsubMe = null, unsubBoard = null, unsubAdmin = null;
 const g = (m, f) => X.me && X.me.gender === 'f' ? f : m;
 const COL = 'zhPlayers';
+const isParent = r => !!r && r.role === 'parent';          // وليّ الأمر: للاطلاع فقط ولا يدخل المنافسة
+const parentWord = r => r.gender === 'f' ? 'ولية أمر' : 'ولي أمر';
 function loadScript(src){ return new Promise((res, rej) => { const e = document.createElement('script'); e.src = src; e.onload = res; e.onerror = rej; document.head.appendChild(e); }); }
 const allowed = () => X.admin || !!(X.me && X.me.status === 'approved');   // المحادثات للمقبولين فقط
 function soft(){ if (view === 'run' && !allowed()){ quit(); return; } if (view !== 'run') render(); }
@@ -284,7 +286,8 @@ function subBoard(){
   const want = !!(X.me && X.me.status === 'approved');
   if (want && !unsubBoard){
     unsubBoard = fsP.collection(COL).where('status', '==', 'approved').onSnapshot(sn => {
-      X.board = sn.docs.map(d => Object.assign({id:d.id}, d.data())).filter(r => r.total > 0).sort((a, b) => b.total - a.total); soft();
+      X.boardAll = sn.docs.map(d => Object.assign({id:d.id}, d.data())).filter(r => !isParent(r)).sort((a, b) => (b.total || 0) - (a.total || 0) || (b.updated || 0) - (a.updated || 0));
+      X.board = X.boardAll.filter(r => r.total > 0); soft();
     }, () => { X.board = []; soft(); });
   } else if (!want && unsubBoard){ unsubBoard(); unsubBoard = null; X.board = null; }
 }
@@ -314,19 +317,19 @@ function fbStart(){
 async function join(){
   const name = JF.name.trim().slice(0, 20);
   if (!name){ X.err = 'اكتب اسمك.'; return render(); }
-  if (!JF.gender){ X.err = 'اختر: طالب أو طالبة.'; return render(); }
+  if (!JF.gender){ X.err = 'اختر صفتك: طالب، طالبة، ولي أمر، أو ولية أمر.'; return render(); }
   X.busy = true; X.err = ''; render();
   try{
     if (!authP.currentUser) await authP.signInAnonymously();
     const u = authP.currentUser;
-    await fsP.collection(COL).doc(u.uid).set({name, gender:JF.gender, status:'pending', total:0, talks:0, created:Date.now(), updated:Date.now()});
+    await fsP.collection(COL).doc(u.uid).set({name, gender:JF.gender, role:JF.role === 'parent' ? 'parent' : 'student', status:'pending', total:0, talks:0, created:Date.now(), updated:Date.now()});
   }catch(e){
     X.err = e && e.code === 'permission-denied' ? 'المنافسة لم تُفعَّل بعد من المشرف. حاول لاحقاً.' : 'تعذّر إرسال الطلب. تحقق من الإنترنت ثم حاول مرة أخرى.';
   }
   X.busy = false; soft();
 }
 function award(n, talk){
-  if (!TK || !X.me || X.me.status !== 'approved' || !fsP || !X.uid) return 0;
+  if (!TK || !X.me || X.me.status !== 'approved' || isParent(X.me) || !fsP || !X.uid) return 0;
   TK.pts += n;
   const d = {total:INC(n), updated:Date.now()}; if (talk) d.talks = INC(1);
   fsP.collection(COL).doc(X.uid).update(d).catch(() => {});
@@ -351,16 +354,26 @@ function adminDo(what, id){
   }
 }
 const TITLE = (i, f) => i === 0 ? '🥇 ' + (f ? 'فارسة المنافسة' : 'فارس المنافسة') : i === 1 ? '🥈 ' + (f ? 'منافسة شرسة' : 'منافس شرس') : i === 2 ? '🥉 ' + (f ? 'منافسة قوية' : 'منافس قوي') : i < 10 ? '🔥 ' + (f ? 'صاعدة بقوة' : 'صاعد بقوة') : '';
+const ago = t => { if (!t) return 'لم يبدأ بعد'; const m = Math.floor((Date.now() - t) / 60000); return m < 2 ? 'الآن' : m < 60 ? `قبل ${m} دقيقة` : m < 1440 ? `قبل ${Math.floor(m / 60)} ساعة` : `قبل ${Math.floor(m / 1440)} يوم`; };
+function vParent(m){
+  const A = X.boardAll, B = X.board || [];
+  const row = r => { const i = B.findIndex(x => x.id === r.id); const t = i >= 0 ? TITLE(i, r.gender === 'f') : '';
+    return `<div class="brd"><span class="n">${i >= 0 ? i + 1 : '–'}</span><span class="nm">${esc(r.name)} ${t ? `<span class="tier">${t}</span>` : ''}<span class="sub" style="display:block;margin:0;font-size:12.5px">محادثات مكتملة: ${r.talks || 0} · آخر نشاط: ${ago(r.total ? r.updated : 0)}</span></span><span class="sc">${r.total || 0}</span></div>`; };
+  return `<div class="card stack"><div class="row"><span class="lock" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" fill="none"/><circle cx="12" cy="12" r="3" fill="none"/></svg></span><div class="grow"><h2>لوحة ${parentWord(m)}</h2><p class="sub" style="margin:0">أهلاً ${esc(m.name)}. هذه اللوحة للاطلاع والمتابعة فقط، ولا تدخل المنافسة ولا تُحتسب لك نقاط.</p></div></div>
+    <div><h2>تقدّم المتنافسين</h2><div>${!A ? '<p class="sub" style="margin:0">جارٍ التحميل…</p>' : !A.length ? '<p class="sub" style="margin:0">لا يوجد متنافسون بعد.</p>' : A.map(row).join('')}</div></div>
+    <p class="sub" style="margin:0">تستطيع أيضاً تجربة المحادثات بالأسفل لتعرف ما يتدرّب عليه ابنك أو ابنتك، دون أن تُحسب نقاط.</p></div>`;
+}
 function vComp(){
   if (X.off) return '';
   if (!X.ready || (X.uid && !X.meLoaded)) return `<div class="card"><p class="sub" style="margin:0">جارٍ تحميل المنافسة…</p></div>`;
   const m = X.me;
-  if (!m) return `<form id="joinform" class="card stack"><div><h2>انضم للمنافسة</h2><p class="sub">سجّل اسمك، وتدخل المنافسة بعد موافقة المشرف.</p></div>
+  if (!m) return `<form id="joinform" class="card stack"><div><h2>انضم إلى «ني هاو»</h2><p class="sub">سجّل اسمك وصفتك، ويُفتح لك التطبيق بعد موافقة المشرف. ولي الأمر يدخل للاطلاع والمتابعة فقط، ولا يدخل المنافسة.</p></div>
     <label class="f">الاسم<input type="text" class="ar" id="jname" maxlength="20" autocomplete="off" value="${esc(JF.name)}" placeholder="اكتب اسمك"></label>
-    <div class="seg"><button type="button" class="${JF.gender === 'm' ? 'on' : ''}" data-gen="m" aria-pressed="${JF.gender === 'm'}">طالب</button><button type="button" class="${JF.gender === 'f' ? 'on' : ''}" data-gen="f" aria-pressed="${JF.gender === 'f'}">طالبة</button></div>
+    <div class="seg">${[['m','student','طالب'],['f','student','طالبة'],['m','parent','ولي أمر'],['f','parent','ولية أمر']].map(([gn, rl, lb]) => { const on = JF.gender === gn && (JF.role || 'student') === rl; return `<button type="button" class="${on ? 'on' : ''}" data-gen="${gn}" data-role="${rl}" aria-pressed="${on}" style="flex:1 1 40%">${lb}</button>`; }).join('')}</div>
     ${X.err ? `<div class="warn">${esc(X.err)}</div>` : ''}
     <button class="btn wide" type="submit" ${X.busy ? 'disabled' : ''}>${X.busy ? 'جارٍ الإرسال…' : 'أرسل طلب الانضمام'}</button></form>`;
-  if (m.status === 'pending') return `<div class="card"><h2>طلبك قيد المراجعة</h2><p class="sub">أهلاً ${esc(m.name)}. وصل طلبك إلى المشرف. تُفتح لك المحادثات والمنافسة هنا فور الموافقة.</p></div>`;
+  if (m.status === 'pending') return `<div class="card"><h2>طلبك قيد المراجعة</h2><p class="sub">أهلاً ${esc(m.name)}. وصل طلبك إلى المشرف. ${isParent(m) ? 'تُفتح لك لوحة المتابعة هنا فور الموافقة.' : 'تُفتح لك المحادثات والمنافسة هنا فور الموافقة.'}</p></div>`;
+  if (m.status === 'approved' && isParent(m)) return vParent(m);
   if (m.status !== 'approved') return `<div class="card"><h2>لم يُقبل طلب الانضمام</h2><p class="sub">${g('تواصل', 'تواصلي')} مع المشرف إن كان ذلك خطأ.</p></div>`;
   const B = X.board, my = B ? B.findIndex(r => r.id === X.uid) : -1;
   const row = (r, i) => `<div class="brd ${r.id === X.uid ? 'me' : ''}"><span class="n">${i + 1}</span><span class="nm">${esc(r.name)} ${TITLE(i, r.gender === 'f') ? `<span class="tier">${TITLE(i, r.gender === 'f')}</span>` : ''}</span><span class="sc">${r.total}</span></div>`;
@@ -393,12 +406,13 @@ function vAdmin(){
   const R = X.rows;
   if (!R) return header() + `<div class="sec"><p class="sub">جارٍ التحميل…</p>${back}</div>`;
   const by = st => R.filter(r => (st === 'rejected' ? r.status !== 'pending' && r.status !== 'approved' : r.status === st));
-  const P = by('pending').sort((a, b) => (a.created || 0) - (b.created || 0)), A = by('approved').sort((a, b) => (b.total || 0) - (a.total || 0)), J = by('rejected');
-  const who = r => `<span class="grow"><b>${esc(r.name || '')}</b> <span class="chip">${r.gender === 'f' ? 'طالبة' : 'طالب'}</span></span>`;
+  const P = by('pending').sort((a, b) => (a.created || 0) - (b.created || 0)), AA = by('approved').sort((a, b) => (b.total || 0) - (a.total || 0)), A = AA.filter(r => !isParent(r)), PR = AA.filter(isParent), J = by('rejected');
+  const who = r => `<span class="grow"><b>${esc(r.name || '')}</b> <span class="chip">${isParent(r) ? parentWord(r) : r.gender === 'f' ? 'طالبة' : 'طالب'}</span></span>`;
   const btn = (w, r, label, cls) => `<button class="x ${cls || ''}" data-adm="${w}" data-id="${esc(r.id)}">${X.confirm === w + r.id ? 'تأكيد: ' + label : label}</button>`;
   return header() + `<div class="qhead"><h2>لوحة المشرف</h2><button class="x" data-act="adminOut">خروج المشرف</button></div><div class="sec">
     <div class="card"><h3>طلبات الانضمام (${P.length})</h3>${P.length ? P.map(r => `<div class="li">${who(r)}${btn('approve', r, 'موافقة', 'ok')}${btn('reject', r, 'رفض', 'bad')}</div>`).join('') : '<p class="sub">لا توجد طلبات جديدة.</p>'}</div>
     <div class="card"><h3>المتنافسون (${A.length})</h3>${A.length ? A.map(r => `<div class="li">${who(r)}<span class="chip">${r.total || 0} نقطة</span>${btn('reset', r, 'تصفير النقاط')}${btn('reject', r, 'إيقاف', 'bad')}</div>`).join('') : '<p class="sub">لا يوجد متنافسون بعد.</p>'}</div>
+    ${PR.length ? `<div class="card"><h3>أولياء الأمور (${PR.length})</h3><p class="sub" style="margin:0">للاطلاع فقط، لا يظهرون في الترتيب.</p>${PR.map(r => `<div class="li">${who(r)}${btn('reject', r, 'إيقاف', 'bad')}</div>`).join('')}</div>` : ''}
     ${J.length ? `<div class="card"><h3>المرفوضون والموقوفون (${J.length})</h3>${J.map(r => `<div class="li">${who(r)}${btn('approve', r, 'قبول', 'ok')}${btn('del', r, 'حذف', 'bad')}</div>`).join('')}</div>` : ''}
     ${back}</div>`;
 }
@@ -773,7 +787,7 @@ function vRun(){
     : `<button class="mic ${TK.listening ? 'on' : ''}" data-act="tkMic" aria-label="${TK.listening ? 'إيقاف' : 'تكلّم'}">${MICSVG}</button><div class="tklive" id="tklive" lang="zh">${TK.listening ? '…' : ''}</div><p class="note">${TK.listening ? 'أستمع إليك… تكلّم الآن، ثم اضغط للإيقاف' : 'اضغط وتكلّم بالصينية'}</p><button class="x" data-act="tkType">اكتب بدلاً من ذلك</button>`}
     ${TK.attempts < 2 ? `<button class="x" data-act="tkShow">${TK.mode === 'me' ? 'لا أعرف، أظهر الجملة' : 'لا أعرف، اقترح رداً'}</button>` : ''}</div>`;
   return header() + `<div class="qhead"><h2>${s.t} <span class="zh" lang="zh" style="font-size:16px;color:var(--muted)">${s.z}</span></h2><button class="x" data-act="tkQuit">إنهاء</button></div>
-  <div class="sec"><p class="prog">الجملة ${Math.min(TK.i + 1, n)} من ${n} · المستوى ال${LV[s.l]} · ${TK.mode === 'me' ? 'أنت تبدأ' : 'التطبيق يبدأ'}${AIOK ? ' · تصحيح بالذكاء الاصطناعي' : ''}</p><div class="bar"><i style="width:${100 * (TK.done ? n : TK.i) / n}%"></i></div>
+  <div class="sec"><p class="prog">الجملة ${Math.min(TK.i + 1, n)} من ${n} · المستوى ال${LV[s.l]} · ${TK.mode === 'me' ? 'أنت تبدأ' : 'التطبيق يبدأ'}${AIOK ? ' · تصحيح بالذكاء الاصطناعي' : ''}${isParent(X.me) ? ' · وضع الاطلاع (بلا نقاط)' : ''}</p><div class="bar"><i style="width:${100 * (TK.done ? n : TK.i) / n}%"></i></div>
   ${tutorCard()}<div class="chat" aria-live="polite">${log}</div>${ctl}</div>${CREDIT}`;
 }
 function render(){ app.innerHTML = view === 'run' && TK ? vRun() : view === 'admin' ? vAdmin() : vList(); }
@@ -802,7 +816,7 @@ app.addEventListener('click', e => {
   if (b.dataset.say){ speak(b.dataset.say); return; }
   if (b.dataset.tr){ const a = b.closest('.bub').querySelector('.bubar'); if (a) a.hidden = !a.hidden; return; }
   if (b.dataset.act === 'intro'){ openIntro(); return; }
-  if (b.dataset.gen){ JF.gender = b.dataset.gen; X.err = ''; render(); return; }
+  if (b.dataset.gen){ JF.gender = b.dataset.gen; JF.role = b.dataset.role || 'student'; X.err = ''; render(); return; }
   if (b.dataset.adm){ adminDo(b.dataset.adm, b.dataset.id); return; }
   if (b.dataset.act === 'admin'){ X.err = ''; go('admin'); return; }
   if (b.dataset.act === 'home'){ X.err = ''; X.confirm = ''; go('list'); return; }
