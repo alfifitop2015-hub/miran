@@ -1376,6 +1376,39 @@ function tkListen(){if(!SR){TK.typing=true;render();return}
   else tkSys('لم أسمع صوتك. اضغط زر المايكروفون، ثم تكلّم بوضوح وقرّب الجوال منك.');
   render();tkScroll()};
  try{r.start();TK.listening=true;render()}catch(e){TK.typing=true;render()}}
+
+// يضع أسماء الطالب وأرقامه وكلماته الصحيحة في الجملة النموذجية، حتى لا يظن أن ما قاله خطأ
+const PNUM=/^(\d+|zero|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand)$/i;
+const PANCH=new Set(['is','am','are','from','like','love','likes','loves','called','play','eat','drink','have','has','was','at','in','to','favorite','favourite','name','my','a','an','with','by','for','every','on']);
+const PSTOP=new Set(['a','an','the','to','is','am','are','was','very','my','your','his','her','in','at','on','and','or','but','it','i','you','he','she','we','they','go','play','do','does','not','so','too','also','really','um','uh','yes','no','of','for','with','like','love','from','this','that','years','year','old']);
+const PCAT=[['red','blue','green','yellow','black','white','pink','purple','orange','brown','gray','grey','gold','silver'],
+ ['saturday','sunday','monday','tuesday','wednesday','thursday','friday'],
+ ['january','february','march','april','may','june','july','august','september','october','november','december'],
+ ['math','maths','mathematics','science','english','arabic','art','history','geography','physics','chemistry','biology','computer','pe','islamic','quran'],
+ ['football','soccer','basketball','volleyball','tennis','swimming','running','cycling','karate','handball','chess','reading','drawing','gaming'],
+ ['cat','cats','dog','dogs','bird','birds','fish','rabbit','rabbits','horse','horses','camel','camels','parrot'],
+ ['apple','apples','banana','bananas','pizza','rice','chicken','dates','burger','pasta','salad','orange','oranges','milk','juice','water','tea','coffee'],
+ ['teacher','doctor','engineer','pilot','nurse','police','officer','scientist','programmer','artist','farmer','writer','dentist','lawyer']];
+function personalize(model,said){if(!model||!said)return model;const T=String(model).split(/\s+/);const L=tnorm(said).split(' ').filter(Boolean);if(!L.length)return model;
+ const core=w=>w.replace(/[^A-Za-z0-9']/g,'').toLowerCase();const used=new Set();
+ const lnums=L.map((w,i)=>[w,i]).filter(([w])=>PNUM.test(w));let ni=0;const out=[];let skipCap=false;
+ for(let k=0;k<T.length;k++){const tok=T[k],c=core(tok);if(!c){out.push(tok);continue}
+  const pre=tok.match(/^[^A-Za-z0-9']*/)[0],post=tok.match(/[^A-Za-z0-9']*$/)[0];
+  const cap=/^[A-Z]/.test(tok.replace(/^[^A-Za-z]*/,''))&&k>0&&c!=='i';
+  if(skipCap){if(cap){if(post&&out.length)out[out.length-1]+=post;continue}skipCap=false}
+  const isNum=PNUM.test(c);const prev=k>0?core(T[k-1]):'';const cat=PCAT.find(g=>g.includes(c));
+  const detail=isNum||cap||cat||PANCH.has(prev);if(!detail||(PSTOP.has(c)&&!isNum)){out.push(tok);continue}
+  let rep=null;
+  if(cat){const j=L.findIndex((w,i)=>!used.has(i)&&cat.includes(w)&&w!==c);if(j>=0&&!L.includes(c))rep=[L[j],j]}
+  if(!rep&&prev){for(let j=1;j<L.length;j++){if(L[j-1]===prev&&!used.has(j)&&!PSTOP.has(L[j])&&(PNUM.test(L[j])===isNum)){rep=[L[j],j];break}}}
+  if(!rep&&isNum&&ni<lnums.length){while(ni<lnums.length&&used.has(lnums[ni][1]))ni++;if(ni<lnums.length){rep=[lnums[ni][0],lnums[ni][1]];ni++}}
+  if(!rep||rep[0]===c){out.push(tok);continue}
+  used.add(rep[1]);let w=rep[0];if(cap&&!cat)w=w[0].toUpperCase()+w.slice(1);else if(cat&&(PCAT.indexOf(cat)===1||PCAT.indexOf(cat)===2||/^(english|arabic|islamic|quran)$/.test(w)))w=w[0].toUpperCase()+w.slice(1);
+  {const lp=L[rep[1]-1];if(out.length&&/^(a|an)$/i.test(core(out[out.length-1]))&&lp&&(PNUM.test(lp)||/^(some|many)$/.test(lp)))out[out.length-1]=lp}
+  out.push(pre+w+post);if(cap&&!cat)skipCap=true;
+  if(isNum&&k+1<T.length){const nx=core(T[k+1]),lw=L[rep[1]+1];if(nx&&lw&&nx!==lw&&nx.slice(0,4)===lw.slice(0,4)&&!PSTOP.has(nx)){const p2=T[k+1].match(/[^A-Za-z0-9']*$/)[0];out.push(lw+p2);used.add(rep[1]+1);k++}}}
+ for(let k=0;k<out.length-1;k++){const c0=core(out[k]);if(c0==='a'||c0==='an'){const v=/^[aeiou]/i.test(core(out[k+1]));out[k]=out[k].replace(/^(a|an)\b/i,m=>{const r=v?'an':'a';return m[0]===m[0].toUpperCase()?r[0].toUpperCase()+r.slice(1):r})}}
+ return out.join(' ')}
 const tkIdeal=(lbl,en)=>`<div class="tknote">${lbl}</div><div class="tkmodel" dir="ltr" style="font-size:16px">${esc(en)}</div>`;
 const tkNotes=(ai,raw)=>{const n=ai?ai.notes:gnotes(raw);return n.length?`<div class="tknote">تصحيح: ${n.map(esc).join(' ')}</div>`:''};
 async function tkFree(alts){const run=TK;const raw=alts.find(a=>understood(a,''))||alts[0];TK.log.push({w:'me',t:raw});
@@ -1416,7 +1449,7 @@ async function tkEvalMe(alts){const run=TK,t=tkTurn();
  if(ok){const first=TK.attempts===0;if(first)TK.first++;TK.score+=first?2:1;record({sec:'en',cat:'speak'},true,'practice',null);
   const fixed=ai&&ai.corrected&&tnorm(ai.corrected)!==tnorm(best)?ai.corrected:'';
   const same=tnorm(best)===tnorm(t[0]);
-  tkSys(`<b>${same||!fixed?(first?g('ممتاز! فهمتك.','ممتازة! فهمتكِ.'):g('أحسنت! هذه المرة فهمتك.','أحسنتِ! هذه المرة فهمتكِ.')):g('جملتك مفهومة، أحسنت ✓','جملتكِ مفهومة، أحسنتِ ✓')}</b>${tkNotes(ai,best)}${fixed&&tnorm(fixed)!==tnorm(t[0])?tkIdeal('الصيغة الصحيحة لجملتك:',fixed):''}${same||tsim(best,t[0])>=0.5?'':tkIdeal('صيغة أخرى صحيحة:',t[0])}`,{ok:true,say:same||tsim(best,t[0])>=0.5?null:t[0]});
+  tkSys(`<b>${same||!fixed?(first?g('ممتاز! فهمتك.','ممتازة! فهمتكِ.'):g('أحسنت! هذه المرة فهمتك.','أحسنتِ! هذه المرة فهمتكِ.')):g('جملتك مفهومة، أحسنت ✓','جملتكِ مفهومة، أحسنتِ ✓')}</b>${tkNotes(ai,best)}${fixed&&tnorm(fixed)!==tnorm(t[0])?tkIdeal('الصيغة الصحيحة لجملتك:',fixed):''}${same||tsim(best,t[0])>=0.5?'':tkIdeal('صيغة أخرى صحيحة:',personalize(t[0],best))}`,{ok:true,say:same||tsim(best,t[0])>=0.5?null:personalize(t[0],best)});
   const rep=ai&&ai.reply.en?ai.reply:{en:t[3],ar:''};botSay(rep.en,rep.ar);TK.waitNext=true}
  else{TK.attempts++;
   const why=!pick||(ai&&!ai.understandable)?g('لم أفهمك جيداً. أعد الكلام بنطق أوضح.','لم أفهمكِ جيداً. أعيدي الكلام بنطق أوضح.'):g('جملتك لا تحمل المعنى المطلوب. حاول مرة أخرى.','جملتكِ لا تحمل المعنى المطلوب. حاولي مرة أخرى.');
@@ -1437,10 +1470,10 @@ async function tkEval(alts){if(TK.free)return tkFree(alts);if(TK.mode==='me')ret
  if(ok){const first=TK.attempts===0;if(first)TK.first++;TK.score+=first?2:1;
   record({sec:'en',cat:'speak'},true,'practice',null);
   const fixed=ai&&ai.corrected&&tnorm(ai.corrected)!==tnorm(best)?ai.corrected:'';
-  const ideal=(ai&&ai.ideal)||t[3];
-  const same=tnorm(ideal)===tnorm(best);
+  const ideal=personalize((ai&&ai.ideal)||t[3],best);
+  const same=tnorm(ideal)===tnorm(best)||(!fixed&&tsim(best,ideal)>=0.85&&tsim(ideal,best)>=0.85);
   const head=same?(first?g('ممتاز! إجابة سليمة.','ممتازة! إجابة سليمة.'):g('أحسنت! هذه المرة فهمتك.','أحسنتِ! هذه المرة فهمتكِ.')):g('إجابتك مفهومة، أحسنت ✓','إجابتكِ مفهومة، أحسنتِ ✓');
-  tkSys(`<b>${head}</b>${tkNotes(ai,best)}${fixed&&tnorm(fixed)!==tnorm(ideal)?tkIdeal('الصيغة الصحيحة لجملتك:',fixed):''}${same?'':tkIdeal(ai&&ai.ideal?'الرد المثالي:':'مثال لرد مثالي (التفاصيل الشخصية كالأسماء والأرقام تختلف من شخص لآخر):',ideal)}`,{ok:true,say:same?null:ideal});
+  tkSys(`<b>${head}</b>${tkNotes(ai,best)}${fixed&&tnorm(fixed)!==tnorm(ideal)?tkIdeal('الصيغة الصحيحة لجملتك:',fixed):''}${same?'':tkIdeal(ai&&ai.ideal?'الرد المثالي:':g('ويمكنك أن تقولها كاملة هكذا:','ويمكنكِ أن تقوليها كاملة هكذا:'),ideal)}`,{ok:true,say:same?null:ideal});
   if(!same)setTimeout(()=>{if(TK===run)speak(ideal)},600);
   TK.waitNext=true}
  else{TK.attempts++;
