@@ -828,7 +828,7 @@ async function onAuth(u){if(C.joining){C.user=u;return}
  C.user=u;fbUid=u?u.uid:null;boardKey='';stopSub();C.asAdmin=false;
  if(LINK.j&&!LINK.jDone&&(!u||u.isAnonymous)){LINK.jDone=true;return linkJoin()}
  if(!u){C.mode=null;C.sid=null;S={profiles:[],active:null};C.ready=true;return go(view.name==='plogin'?'plogin':'start')}
- if(!u.isAnonymous){if(isAdm()){C.mode='admin';C.ready=true;A.list=null;return go('admin')}C.ready=true;toast('هذا الحساب ليس حساب مدير النظام.');return firebase.auth().signOut()}
+ if(!u.isAnonymous){if(isAdm()){C.mode='admin';C.ready=true;A.list=null;adWatch();return go('admin')}C.ready=true;toast('هذا الحساب ليس حساب مدير النظام.');return firebase.auth().signOut()}
  C.mode='student';let sid=u.uid;
  try{const d=await fb.collection('devices').doc(u.uid).get();if(d.exists&&d.data().sid)sid=d.data().sid}catch(e){}
  C.sid=sid;subStudent()}
@@ -849,7 +849,7 @@ function subStudent(){stopSub();C.ready=false;render();
 async function register(row){const FA=firebase.auth();C.joining=true;
  try{if(!FA.currentUser)await FA.signInAnonymously();const u=FA.currentUser;C.user=u;fbUid=u.uid;
   const par=row.role==='p';const p=newP(row.name.trim(),row.gender,par?1:row.grade,par?1:row.term);const d=JSON.parse(JSON.stringify(p));delete d.id;d.created=Date.now();d.status='pending';if(par){d.role='parent';d.online=false}
-  await stuRef(u.uid).set(d);C.joining=false;C.mode='student';C.sid=u.uid;subStudent()}
+  await stuRef(u.uid).set(d);notifyAdminMail(d);C.joining=false;C.mode='student';C.sid=u.uid;subStudent()}
  catch(e){C.joining=false;throw e}}
 async function linkJoin(){C.ready=false;view={name:'loading'};render();const FA=firebase.auth();C.joining=true;
  try{if(!FA.currentUser)await FA.signInAnonymously();const u=FA.currentUser;
@@ -861,7 +861,27 @@ function stuDoc(p){const d=JSON.parse(JSON.stringify(p));delete d.id;return d}
 function cloudSave(){if(!fb||!C.sid)return;const p=cur();if(!p)return;clearTimeout(csT);csT=setTimeout(()=>{csT=null;const q=cur();if(q)stuRef(q.id).set(stuDoc(q)).catch(()=>{})},4000)}
 function flushSave(){if(csT){clearTimeout(csT);csT=null;const p=cur();if(p&&fb&&C.sid)stuRef(p.id).set(stuDoc(p)).catch(()=>{})}}
 async function makeTransfer(sid){const pin=rndCode(8);await fb.collection('studentSecrets').doc(sid).set({pin,at:Date.now()});return BASE()+'?j='+sid+'.'+pin}
-async function logout(){flushSave();try{await firebase.auth().signOut()}catch(e){}}
+// بريد لمدير النظام عند كل طلب انضمام جديد (عبر FormSubmit، يحتاج تفعيلاً لمرة واحدة من رسالة تصل للبريد)
+function notifyAdminMail(d){if(!FB||location.protocol==='file:')return;try{const par=d.role==='parent';
+ fetch('https://formsubmit.co/ajax/'+ADMIN_EMAIL,{method:'POST',keepalive:true,headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({
+  _subject:'مِران: طلب انضمام جديد بانتظار موافقتك',_template:'table',_captcha:'false',
+  'الاسم':d.name,'الصفة':par?(d.gender==='f'?'ولي أمر (أم)':'ولي أمر (أب)'):(d.gender==='f'?'طالبة':'طالب'),'الصف':par?'—':(GRADES[d.grade]||''),
+  'الوقت':new Date().toLocaleString('ar-SA'),'للموافقة':'افتح مِران ← دخول مدير النظام: https://alfifitop2015-hub.github.io/miran/'})}).catch(()=>{})}catch(e){}}
+// تنبيه فوري بصوت وإشعار عند وصول طلب جديد ولوحة الإدارة مفتوحة
+let adWatchUn=null,adSeen=null;
+function adChime(){try{const AC=window.AudioContext||window.webkitAudioContext;const c=new AC();[[880,0],[1175,.18],[1568,.36]].forEach(([f,t])=>{const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0,c.currentTime+t);g.gain.linearRampToValueAtTime(.25,c.currentTime+t+.02);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+t+.5);o.connect(g);g.connect(c.destination);o.start(c.currentTime+t);o.stop(c.currentTime+t+.55)});setTimeout(()=>c.close(),1500)}catch(e){}}
+function adNotify(list){const n=list.length;const who=list.map(x=>x.name+(x.role==='parent'?' (ولي أمر)':'')).join('، ');const title=n>1?`${n} طلبات انضمام جديدة`:'طلب انضمام جديد';const body=who+' — بانتظار موافقتك';
+ adChime();try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}toast('🔔 '+title+': '+who);
+ try{if(window.Notification&&Notification.permission==='granted'){const o={body,icon:'icon-192.png',badge:'icon-192.png',tag:'miran-join',renotify:true,dir:'rtl',lang:'ar'};
+  if(navigator.serviceWorker&&navigator.serviceWorker.controller)navigator.serviceWorker.ready.then(r=>r.showNotification(title,o)).catch(()=>{try{new Notification(title,o)}catch(e){}});else new Notification(title,o)}}catch(e){}}
+function adWatch(){if(adWatchUn||!fb)return;adSeen=null;
+ adWatchUn=fb.collection('students').where('status','==','pending').onSnapshot(sn=>{const docs=sn.docs.map(d=>Object.assign({id:d.id},d.data()));
+  if(adSeen){const fresh=docs.filter(d=>!adSeen.has(d.id));if(fresh.length){adNotify(fresh);if(view.name==='admin'&&!A.loading){A.list=null;adminLoad()}}}
+  adSeen=new Set(docs.map(d=>d.id));document.title=docs.length?`(${docs.length}) مِران`:'مِران'},()=>{})}
+function adUnwatch(){if(adWatchUn){adWatchUn();adWatchUn=null}adSeen=null;document.title='مِران'}
+function adNotifPerm(){if(!window.Notification){toast('هذا المتصفح لا يدعم الإشعارات، وستسمع التنبيه الصوتي فقط والصفحة مفتوحة.');adChime();return}
+ Notification.requestPermission().then(r=>{adChime();toast(r==='granted'?'تم تفعيل التنبيهات ✓':'لم يُسمح بالإشعارات. فعّلها من إعدادات المتصفح للموقع.');render()})}
+async function logout(){adUnwatch();flushSave();try{await firebase.auth().signOut()}catch(e){}}
 
 /* شاشات الدخول */
 const startTop=()=>`<div class="top"><div class="brand">مِران</div>${instTop()}</div>${instHelp()}`;
@@ -961,6 +981,10 @@ function adLkList(list,s){return list.map(([o,sc])=>`<button class="tile" data-a
 async function adminLinkReq(reqId,targetId){await fb.collection('devices').doc(reqId).set({sid:targetId,at:Date.now(),byAdmin:true});await stuRef(reqId).delete();await fb.collection('studentSecrets').doc(reqId).delete().catch(()=>{})}
 function adParRow(s){return `<div class="card stack" style="box-shadow:none"><div class="row"><span class="av ${s.gender}">${esc((s.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(s.name)}</b><br><span class="note">${s.gender==='f'?'أم':'أب'} · ولي أمر${s.created?' · '+new Date(s.created).toLocaleDateString('ar-SA'):''}</span></span></div>
  ${A.del===s.id?`<div class="warn stack">حذف حساب ولي الأمر ${esc(s.name)} نهائياً؟<div class="row"><button class="btn danger" data-addelok="${s.id}">نعم، احذف</button><button class="btn plain" data-act="adCancel">إلغاء</button></div></div>`:`<div class="row"><button class="x" style="color:var(--bad)" data-addel="${s.id}">حذف</button></div>`}</div>`}
+function adAlertCard(){const on=window.Notification&&Notification.permission==='granted';
+ return `<div class="card stack" style="box-shadow:none"><div class="row between"><b>🔔 تنبيهات طلبات الانضمام</b>${on?'<span class="note" style="color:var(--th)">مفعّلة ✓</span>':''}</div>
+ <p class="note" style="margin:0">عند وصول طلب جديد تسمع نغمة ويصلك إشعار ما دامت مِران مفتوحة عندك كمدير، ويصلك أيضاً بريد على ${esc(ADMIN_EMAIL)}.</p>
+ ${on?'<button class="x" data-act="adTestAlert" style="align-self:flex-start">تجربة التنبيه</button>':'<button class="btn" data-act="adNotif">تفعيل التنبيهات</button>'}</div>`}
 function adFiltered(){const q=(view.q||'').trim().toLowerCase();return(A.list||[]).filter(s=>s.status!=='pending'&&s.role!=='parent').filter(s=>(A.st==='all'||stageOf(s.grade)===A.st)&&(!q||s.name.toLowerCase().includes(q)))}
 function vAdmin(){let body;
  if(A.err)body=`<div class="warn stack">${esc(A.err)}<span class="note">تأكد أنك نشرت قواعد الحماية الجديدة في Firebase.</span><button class="btn plain" data-act="adReload">إعادة المحاولة</button></div>`;
@@ -969,7 +993,7 @@ function vAdmin(){let body;
   body=`<div class="stats"><div class="stat" style="--c:var(--home)"><b>${L.length}</b><span>منافس</span></div><div class="stat" style="--c:var(--en)"><b>${cnt('p')}</b><span>ابتدائي</span></div><div class="stat" style="--c:var(--th)"><b>${cnt('m')+cnt('s')}</b><span>متوسط وثانوي</span></div></div>
   ${A.old?`<div class="card stack"><h3>بيانات النظام القديم</h3><p class="note" style="margin:0">${A.old>0?`يوجد ${A.old} طالب مسجّل عن طريق أولياء الأمور.`:'توجد بيانات عائلات قديمة.'} انقلهم للنظام الجديد مع تقدّمهم، ثم أرسل لكل واحد رابط الدخول.</p><button class="btn" data-act="adMigrate">نقل الطلاب للنظام الجديد</button></div>`:''}
   ${PD.length?`<div class="card stack" style="background:#FFF6DB"><h3 style="margin:0">طلبات انضمام جديدة (${PD.length})</h3><p class="note" style="margin:0">لا يدخل المنافس أو ولي الأمر التطبيق حتى توافق عليه، وأولياء الأمور لا يظهرون في الترتيب أبداً.</p></div>${PD.map(adPendRow).join('')}`:''}
-  <button class="btn plain wide" data-act="adBoard">🏆 عرض الترتيب</button>
+  ${adAlertCard()}<button class="btn plain wide" data-act="adBoard">🏆 عرض الترتيب</button>
   ${A.edit==='new'?adForm(null):`<button class="btn wide" data-act="adAdd">+ إضافة منافس جديد</button>`}
   <label class="f" for="adq">بحث بالاسم<input type="text" id="adq" value="${esc(view.q||'')}" placeholder="ابحث…"></label>
   <div class="seg">${sg('all','الكل')}${sg('p','ابتدائي')}${sg('m','متوسط')}${sg('s','ثانوي')}</div>
@@ -1019,6 +1043,8 @@ function cloudAct(a){if(a==='intro'){openIntro();return true}if(a==='install'){d
  case 'adBoard':go('adBoard');adBoardLoad();return true;
  case 'adHome':go('admin');return true;
  case 'pbReload':pbLoad();return true;
+ case 'adNotif':adNotifPerm();return true;
+ case 'adTestAlert':adNotify([{name:'تجربة'}]);return true;
  case 'adLkCancel':A.lk=null;A.lkTo=null;A.lkQ='';render();return true;
  case 'wCancel':WC=true;render();return true;
  case 'wCancelNo':WC=false;render();return true;
