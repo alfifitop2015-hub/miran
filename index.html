@@ -334,6 +334,7 @@ a.btn{text-decoration:none}
 @media (max-width:380px){.catrow{grid-template-columns:90px 1fr 40px}.stat b{font-size:20px}}
 
 .hof{border:2px solid #E9C46A;background:linear-gradient(135deg,#FFF8E1,var(--card))}.wb{font-size:12px;font-weight:800;color:#B7791F;white-space:nowrap}
+.certbtn{font-weight:700;color:#B7791F;background:#FFF6DB;border-radius:99px;padding:4px 10px}
 .certbox{width:min(560px,100%);display:flex;flex-direction:column;align-items:center;gap:12px}.certbox img{width:100%;border-radius:14px;box-shadow:0 30px 60px -20px #000}
 .certgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:10px}
 .certth{display:flex;flex-direction:column;align-items:center;gap:2px;border:none;border-radius:14px;padding:12px 8px;color:#fff;background:linear-gradient(135deg,var(--c1),var(--c2));cursor:pointer;font:inherit;box-shadow:0 8px 18px -12px var(--c1)}
@@ -551,12 +552,14 @@ function tierOf(t){t=t||0;const done=Math.floor(t/STG),rel=t-done*STG,r=tierRel(
  return o}
 function crossDay(p,th){const ks=Object.keys(p.log||{}).sort();if(!ks.length)return dkey();let lo=0,hi=ks.length-1,ans=ks[hi];
  while(lo<=hi){const m=(lo+hi)>>1;const sub={log:{}};for(let i=0;i<=m;i++)sub.log[ks[i]]=p.log[ks[i]];if(scoreAll(sub).total>=th){ans=ks[m];hi=m-1}else lo=m+1}return ans}
-function stageMarks(p){const done=Math.floor(lifetime(p)/STG);p.stg=p.stg||{};let ch=false;
- for(let n=1;n<=done;n++){if(!p.stg['s'+n]){p.stg['s'+n]=crossDay(p,n*STG)+'|'+String(Date.now()).padStart(14,'0');ch=true}}if(ch)setTimeout(save,0);return p.stg}
+function calcMarks(p){const done=Math.floor(lifetime(p)/STG),o={};for(let n=1;n<=done;n++)o['s'+n]=crossDay(p,n*STG)+'|'+p.id;return o}
+function stageMarks(p){p.stg=p.stg||{};const done=Math.floor(lifetime(p)/STG);let ch=false;
+ for(let n=1;n<=done;n++){const k='s'+n;if(!p.stg[k]||!p.stg[k].endsWith('|'+p.id)){p.stg[k]=crossDay(p,n*STG)+'|'+p.id;ch=true}}if(ch)setTimeout(save,0);return p.stg}
 function stageNote(){return `<p class="note" style="margin:6px 0 0">🏁 <b>المراحل:</b> كل ${STG.toLocaleString('en')} نقطة مرحلة. من يتمّ المرحلة يحصل على <b>شهادتها</b> بترتيب وصوله (الأول، الثاني…)، ويبقى ترتيبه فيها محفوظاً، ثم يبدأ المرحلة التالية. الشهادة لكل من يصل.</p>`}
 const STL={};
-function stLoad(n){if(STL[n]!==undefined||!fb)return;STL[n]=null;fb.collection('players').orderBy('stg.s'+n).limit(200).get().then(sn=>{STL[n]=sn.docs.map(d=>d.data()).filter(r=>r.sid&&r.stg&&r.stg['s'+n]).sort((x,y)=>x.stg['s'+n]<y.stg['s'+n]?-1:1);certSync();if(['home','comp','pboard','adBoard','who'].includes(view.name))render()}).catch(()=>{STL[n]=[]})}
-function stMax(){let m=0;[boardRows,AB.rows,PB.rows].forEach(rs=>(rs||[]).forEach(r=>{m=Math.max(m,Math.floor((r.total||0)/STG))}));const p=cur();if(p&&p.role!=='parent')m=Math.max(m,Math.floor(lifetime(p)/STG));return Math.min(m,10)}
+const STLv={};
+function stLoad(n){if(STL[n]!==undefined||!fb)return;STL[n]=null;const v=STLv[n]=(STLv[n]||0)+1;fb.collection('players').orderBy('stg.s'+n).limit(200).get().then(sn=>{if(STLv[n]!==v)return;STL[n]=sn.docs.map(d=>d.data()).filter(r=>r.sid&&r.stg&&r.stg['s'+n]).sort((x,y)=>x.stg['s'+n]<y.stg['s'+n]?-1:1);certSync();if(['home','comp','pboard','adBoard','who','admin'].includes(view.name))render()}).catch(()=>{if(STLv[n]===v)STL[n]=[]})}
+function stMax(){let m=0;(A.list||[]).forEach(x=>{m=Math.max(m,Math.floor((x.score||0)/STG))});[boardRows,AB.rows,PB.rows].forEach(rs=>(rs||[]).forEach(r=>{m=Math.max(m,Math.floor((r.total||0)/STG))}));const p=cur();if(p&&p.role!=='parent')m=Math.max(m,Math.floor(lifetime(p)/STG));return Math.min(m,10)}
 function hofCard(){if(!fb)return '';const M=stMax();if(!M)return '';for(let n=1;n<=M;n++)stLoad(n);const md=['🥇','🥈','🥉'];let body='';
  for(let n=M;n>=1;n--){const L=STL[n];if(!L||!L.length)continue;
   body+=`<div class="stack" style="gap:4px;margin-top:8px"><b style="font-size:14px">🏁 المرحلة ${ORDST(n)} · ${(n*STG).toLocaleString('en')} نقطة <span class="note">(${L.length} ${L.length>2&&L.length<11?'أتمّوها':'أتمّها'})</span></b>
@@ -1072,9 +1075,17 @@ const ADMIN_EMAIL='alfifitop2015@gmail.com';
 const ADMV=['admin','adBoard'];
 const isAdm=()=>CLOUD&&C.user&&!C.user.isAnonymous&&(C.user.email||'').toLowerCase()===ADMIN_EMAIL;
 const A={loading:false,list:null,err:null,edit:null,form:null,del:null,links:{},old:0,st:'all'};
+function adCertBtns(s){const done=Math.floor((s.score||0)/STG);if(!done)return '';let b='';
+ for(let n=1;n<=done;n++){stLoad(n);const L=STL[n];const i=L?L.findIndex(r=>r.sid===s.id):-1;b+=`<button class="x certbtn" data-cert="s${n}|${s.id}">🎖️ شهادة المرحلة ${ORDST(n)}${i>=0?' · المركز '+rankWord(i+1,false):L==null?'':' · جارٍ التحديث…'}</button>`}
+ return `<div class="row" style="flex-wrap:wrap;gap:6px">${b}</div>`}
+async function adStageSync(PS){let ch=false;for(const p of PS){if(lifetime(p)<STG)continue;const m=calcMarks(p);
+  try{const ref=fb.collection('players').doc(p.id);const d=await ref.get();if(!d.exists)continue;const cur0=(d.data()||{}).stg||{};
+   if(Object.keys(m).some(k=>cur0[k]!==m[k])){await ref.update({stg:Object.assign({},cur0,m)});ch=true}}catch(e){}}
+ Object.keys(STL).forEach(k=>delete STL[k]);if(['admin','adBoard'].includes(view.name))render()}
 async function adminLoad(){A.loading=true;render();
  try{const sn=await fb.collection('students').get();
-  A.list=sn.docs.map(d=>{const p=normP(Object.assign({},d.data(),{id:d.id}));return{id:d.id,status:p.status||'approved',role:p.role||'student',name:p.name,gender:p.gender,grade:p.grade,term:p.term,score:lifetime(p),last:Object.keys(p.log).sort().pop()||'',created:p.created||0,answers:sumSt(p.stats.en).t+sumSt(p.stats.qd).t+sumSt(p.stats.th).t}}).sort((a,b)=>b.score-a.score);
+  const PS=[];A.list=sn.docs.map(d=>{const p=normP(Object.assign({},d.data(),{id:d.id}));if(p.role!=='parent'&&(p.status||'approved')!=='pending')PS.push(p);return{id:d.id,status:p.status||'approved',role:p.role||'student',name:p.name,gender:p.gender,grade:p.grade,term:p.term,score:lifetime(p),last:Object.keys(p.log).sort().pop()||'',created:p.created||0,answers:sumSt(p.stats.en).t+sumSt(p.stats.qd).t+sumSt(p.stats.th).t}}).sort((a,b)=>b.score-a.score);
+  adStageSync(PS);
   try{const o=await fb.collection('families').get();let n=0;for(const f of o.docs){const k=await fb.collection('families').doc(f.id).collection('kids').get();n+=k.docs.length}A.old=n||(o.docs.length?-1:0)}catch(e){A.old=0}
   A.err=null}catch(e){A.err=authErr(e)}
  A.loading=false;render()}
@@ -1107,7 +1118,7 @@ function adForm(id){const v=A.form;const sg=(k,o)=>`<div class="seg">${o.map(([x
  ${id?'':'<p class="note" style="margin:0">بعد الحفظ يظهر رابط دخول ترسله للمنافس، فيفتحه ويبدأ مباشرة.</p>'}
  <p class="warn" id="aderr" hidden></p><div class="row"><button class="btn grow" type="submit">حفظ</button><button type="button" class="btn plain grow" data-act="adCancel">إلغاء</button></div></form>`}
 function adRow(s){if(A.edit===s.id)return adForm(s.id);const l=A.links[s.id];
- return `<div class="card stack"><div class="row"><span class="av ${s.gender}">${esc((s.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(s.name)}</b><br><span class="note">${GRADES[s.grade]} · ${TERMS[s.term]||''} · ${s.score} نقطة · ${s.answers} سؤال${s.last?' · آخر تدريب '+s.last:''}</span></span></div>
+ return `<div class="card stack"><div class="row"><span class="av ${s.gender}">${esc((s.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(s.name)}</b><br><span class="note">${GRADES[s.grade]} · ${TERMS[s.term]||''} · ${s.score} نقطة · ${s.answers} سؤال${s.last?' · آخر تدريب '+s.last:''}</span></span></div>${adCertBtns(s)}
  ${l?`<div class="tklink" dir="ltr">${esc(l)}</div><div class="row"><button class="btn plain grow" data-copy="${esc(l)}">نسخ الرابط</button><a class="btn grow" href="${esc(wa('رابط دخولك إلى مِران يا '+s.name+':\n'+l))}" target="_blank" rel="noopener">واتساب</a></div>`:''}
  ${A.rst===s.id?`<div class="warn stack">تصفير رصيد ${esc(s.name)} يجعل نقاطه صفراً ويبدأ المنافسة من جديد، ويبقى اسمه وحسابه.<div class="row"><button class="btn danger" data-adrstok="${s.id}">نعم، صفّر الرصيد</button><button class="btn plain" data-act="adCancel">إلغاء</button></div></div>`:A.del===s.id?`<div class="warn stack">حذف ${esc(s.name)} يمسح حسابه وكل تقدّمه نهائياً.<div class="row"><button class="btn danger" data-addelok="${s.id}">نعم، احذف</button><button class="btn plain" data-act="adCancel">إلغاء</button></div></div>`
  :`<div class="row" style="flex-wrap:wrap"><button class="x" style="font-weight:700" data-adas="${s.id}">دخول حسابه</button><button class="x" data-adedit="${s.id}">تعديل</button><button class="x" data-adlink="${s.id}">رابط دخول</button><button class="x" style="color:var(--cp)" data-adrst="${s.id}">تصفير الرصيد</button><button class="x" style="color:var(--bad)" data-addel="${s.id}">حذف</button></div>`}</div>`}
@@ -1145,7 +1156,7 @@ function vAdmin(){let body;
   body=`<div class="stats"><div class="stat" style="--c:var(--home)"><b>${L.length}</b><span>منافس</span></div><div class="stat" style="--c:var(--en)"><b>${cnt('p')}</b><span>ابتدائي</span></div><div class="stat" style="--c:var(--th)"><b>${cnt('m')+cnt('s')}</b><span>متوسط وثانوي</span></div></div>
   ${A.old?`<div class="card stack"><h3>بيانات النظام القديم</h3><p class="note" style="margin:0">${A.old>0?`يوجد ${A.old} طالب مسجّل عن طريق أولياء الأمور.`:'توجد بيانات عائلات قديمة.'} انقلهم للنظام الجديد مع تقدّمهم، ثم أرسل لكل واحد رابط الدخول.</p><button class="btn" data-act="adMigrate">نقل الطلاب للنظام الجديد</button></div>`:''}
   ${PD.length?`<div class="card stack" style="background:#FFF6DB"><h3 style="margin:0">طلبات انضمام جديدة (${PD.length})</h3><p class="note" style="margin:0">لا يدخل المنافس أو ولي الأمر التطبيق حتى توافق عليه، وأولياء الأمور لا يظهرون في الترتيب أبداً.</p></div>${PD.map(adPendRow).join('')}`:''}
-  ${adAlertCard()}<button class="btn plain wide" data-act="adBoard">🏆 عرض الترتيب</button>
+  ${adAlertCard()}${hofCard()}<button class="btn plain wide" data-act="adBoard">🏆 عرض الترتيب</button>
   ${A.edit==='new'?adForm(null):`<button class="btn wide" data-act="adAdd">+ إضافة منافس جديد</button>`}
   <label class="f" for="adq">بحث بالاسم<input type="text" id="adq" value="${esc(view.q||'')}" placeholder="ابحث…"></label>
   <div class="seg">${sg('all','الكل')}${sg('p','ابتدائي')}${sg('m','متوسط')}${sg('s','ثانوي')}</div>
