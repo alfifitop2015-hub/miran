@@ -540,33 +540,30 @@ function scoreAll(p){const keys=Object.keys(p.log||{}).sort();let days=0,a=0,c=0
 const lifetime=p=>scoreAll(p).total;
 function todayGain(p){const x=(p.log||{})[dkey()];if(!x)return 0;const acc=scoreAll(p).mult;return Math.round(((x.a||x.sp||x.s>=60?20:0)+x.a+Math.floor(x.s/60)+x.c*2+x.dc*15+x.mf*5+x.wm*3+x.ex*20+x.sp+(x.pl||0)*30+(x.q||0)+(x.bz||0))*acc)}
 const TIERS=[[0,'مبتدئ','🌱','t0'],[300,'برونزي','🥉','t1'],[1000,'فضي','🥈','t2'],[3000,'ذهبي','🥇','t3'],[7000,'بطل مِران','🏆','t4']];
-const STAR=3000;
-function tierOf(t){let i=0;TIERS.forEach((x,k)=>{if(t>=x[0])i=k});const nx=TIERS[i+1];const top=!nx;const stars=top?Math.floor((t-TIERS[i][0])/STAR):0;
- return{i,em:TIERS[i][2],cls:TIERS[i][3],nextEm:nx&&nx[2],name:TIERS[i][1]+(stars?' '+(stars>3?'⭐×'+stars:'⭐'.repeat(stars)):''),next:nx&&nx[0],nextName:nx&&nx[1],pct:nx?Math.round(100*(t-TIERS[i][0])/(nx[0]-TIERS[i][0])):100,
-  stars,nextStar:top?TIERS[i][0]+STAR*(stars+1):null}}
-// ===== المواسم الشهرية: كل شهر هجري (أم القرى، بتوقيت الرياض) ترتيب جديد، ويدخل الثلاثة الأوائل لوحة الشرف =====
-const HFMT=(()=>{try{return new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn',{year:'numeric',month:'numeric',day:'numeric',timeZone:'Asia/Riyadh'})}catch(e){return null}})();
-function seasonOf(d){try{if(HFMT){const o={};HFMT.formatToParts(d).forEach(x=>o[x.type]=x.value);const y=+String(o.year||o.relatedYear||'').replace(/\D/g,''),m=+o.month;if(y>1400&&m>=1&&m<=12)return 'h'+y+String(m).padStart(2,'0')}}catch(e){}
- return 'g'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')}
-const SKC={};const keySeason=k=>SKC[k]||(SKC[k]=seasonOf(new Date(k+'T12:00:00+03:00')));
-const SKEY=()=>seasonOf(new Date());
-const HMON=['محرم','صفر','ربيع الأول','ربيع الآخر','جمادى الأولى','جمادى الآخرة','رجب','شعبان','رمضان','شوال','ذو القعدة','ذو الحجة'];
-const GMON=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-const seasonName=K=>(K[0]==='h'?HMON:GMON)[+K.slice(5)-1]+' '+K.slice(1,5)+(K[0]==='h'?'هـ':'');
-function seasonDaysLeft(){const K=SKEY(),now=Date.now();let n=0;for(let i=1;i<=31;i++){if(seasonOf(new Date(now+i*864e5))!==K)break;n++}return n}
-function pastSeasons(n){const out=[];let K=SKEY(),t=Date.now();for(let i=0;i<n*31+5&&out.length<n;i++){t-=864e5;const k=seasonOf(new Date(t));if(k!==K&&!out.includes(k))out.push(k)}return out}
-function seasonScores(p){const G={};Object.keys(p.log||{}).forEach(k=>{const K=keySeason(k);(G[K]=G[K]||[]).push(p.log[k])});const out={};
- Object.keys(G).forEach(K=>{let days=0,a=0,c=0,s=0,ach=0;G[K].forEach(x=>{if(x.a||x.sp||x.q||x.s>=60)days++;a+=x.a||0;c+=x.c||0;s+=x.s||0;ach+=(x.dc||0)*15+(x.mf||0)*5+(x.wm||0)*3+(x.ex||0)*20+(x.sp||0)+(x.pl||0)*30+(x.q||0)+(x.bz||0)});
-  const v=Math.round((days*20+a+Math.floor(s/60)+c*2+ach)*(a?.7+.6*c/a:1));if(v>0)out[K]=v});return out}
-const seasonScore=p=>seasonScores(p)[SKEY()]||0;
-function seasonNote(){const n=seasonDaysLeft();return `<p class="note" style="margin:4px 0 0">🗓️ موسم <b>${seasonName(SKEY())}</b> · ${n===0?'ينتهي اليوم':n===1?'ينتهي غداً':'باقي '+n+' يوماً'}، ثم يبدأ موسم جديد للجميع ويدخل الثلاثة الأوائل <b>لوحة الشرف</b> 🏅. نقاط طريق البطل لا تُصفَّر.</p>`}
-const HOF={};
-function hofLoad(K){if(HOF[K]!==undefined||!fb)return;HOF[K]=null;fb.collection('players').orderBy('ss.'+K,'desc').limit(3).get().then(sn=>{HOF[K]=sn.docs.map(d=>d.data()).filter(r=>r.sid&&((r.ss||{})[K]||0)>0).sort((x,y)=>y.ss[K]-x.ss[K]).slice(0,3);certSync();if(['home','comp','pboard','adBoard'].includes(view.name))render()}).catch(()=>{HOF[K]=[]})}
-function hofCard(){if(!fb)return '';const P=pastSeasons(6);P.forEach(hofLoad);const K=P[0];const rows=K&&HOF[K];if(!rows||!rows.length)return '';const md=['🥇','🥈','🥉'];
- return `<div class="card hof"><div class="row between"><b>🏅 لوحة الشرف</b><span class="note">موسم ${seasonName(K)}</span></div><div class="stack" style="margin-top:8px;gap:6px">${rows.map((r,i)=>`<button type="button" class="row hofrow" data-cert="${K}|${r.sid}" style="gap:8px"><span style="font-size:20px">${md[i]}</span><span class="grow"><b>${esc(r.nick)}</b> <span class="note">${GRADES[r.grade]||''}</span></span><b class="sc">${(r.ss[K]||0).toLocaleString('en')}</b><span class="note">🎖️</span></button>`).join('')}</div><p class="note" style="margin:6px 0 0">اضغط على أي فائز لعرض شهادته.</p></div>`}
-function winsOf(sid){let n=0;pastSeasons(6).forEach(K=>{const r=HOF[K];if(r&&r[0]&&r[0].sid===sid)n++});return n}
-const winBadge=(sid,cn)=>{const n=winsOf(sid);const c=cn!=null?cn:0;return (n?` <span class="wb" title="بطل موسم">🏆${n>1?'×'+n:''}</span>`:'')+(c?` <span class="wb" title="شهادات المواسم">🎖️${c>1?'×'+c:''}</span>`:'')};
-const seasonRows=(rows,mode)=>mode==='all'?rows:rows.map(r=>Object.assign({},r,{life:r.total,total:r.season===SKEY()?(r.st||0):0})).filter(r=>r.total>0).sort((a,b)=>b.total-a.total);
+const STG=7000;
+const ORDST=n=>(['','الأولى','الثانية','الثالثة','الرابعة','الخامسة','السادسة','السابعة','الثامنة','التاسعة','العاشرة'][n])||String(n);
+function tierRel(t){let i=0;TIERS.forEach((x,k)=>{if(t>=x[0])i=k});const nx=TIERS[i+1];return{i,em:TIERS[i][2],cls:TIERS[i][3],name:TIERS[i][1],nextEm:nx&&nx[2],next:nx&&nx[0],nextName:nx&&nx[1],pct:nx?Math.round(100*(t-TIERS[i][0])/(nx[0]-TIERS[i][0])):100}}
+// المراحل: كل 7000 نقطة مرحلة. من يتمّ مرحلة يحصل على شهادتها بترتيب وصوله، ثم يكمل في المرحلة التالية
+function tierOf(t){t=t||0;const done=Math.floor(t/STG),rel=t-done*STG,r=tierRel(rel);
+ const o=Object.assign({},r,{done,stage:done+1,rel,next:done*STG+r.next});
+ if(r.next===STG){o.nextEm='🏁';o.nextName=done?'إتمام المرحلة '+ORDST(done+1):'🏆 بطل مِران (إتمام المرحلة الأولى)'}
+ if(done){o.em='🏆';o.cls='t4';o.name='بطل مِران'+(done>1?' ×'+done:'')}
+ return o}
+function crossDay(p,th){const ks=Object.keys(p.log||{}).sort();if(!ks.length)return dkey();let lo=0,hi=ks.length-1,ans=ks[hi];
+ while(lo<=hi){const m=(lo+hi)>>1;const sub={log:{}};for(let i=0;i<=m;i++)sub.log[ks[i]]=p.log[ks[i]];if(scoreAll(sub).total>=th){ans=ks[m];hi=m-1}else lo=m+1}return ans}
+function stageMarks(p){const done=Math.floor(lifetime(p)/STG);p.stg=p.stg||{};let ch=false;
+ for(let n=1;n<=done;n++){if(!p.stg['s'+n]){p.stg['s'+n]=crossDay(p,n*STG)+'|'+String(Date.now()).padStart(14,'0');ch=true}}if(ch)setTimeout(save,0);return p.stg}
+function stageNote(){return `<p class="note" style="margin:6px 0 0">🏁 <b>المراحل:</b> كل ${STG.toLocaleString('en')} نقطة مرحلة. من يتمّ المرحلة يحصل على <b>شهادتها</b> بترتيب وصوله (الأول، الثاني…)، ويبقى ترتيبه فيها محفوظاً، ثم يبدأ المرحلة التالية. الشهادة لكل من يصل.</p>`}
+const STL={};
+function stLoad(n){if(STL[n]!==undefined||!fb)return;STL[n]=null;fb.collection('players').orderBy('stg.s'+n).limit(200).get().then(sn=>{STL[n]=sn.docs.map(d=>d.data()).filter(r=>r.sid&&r.stg&&r.stg['s'+n]).sort((x,y)=>x.stg['s'+n]<y.stg['s'+n]?-1:1);certSync();if(['home','comp','pboard','adBoard','who'].includes(view.name))render()}).catch(()=>{STL[n]=[]})}
+function stMax(){let m=0;[boardRows,AB.rows,PB.rows].forEach(rs=>(rs||[]).forEach(r=>{m=Math.max(m,Math.floor((r.total||0)/STG))}));const p=cur();if(p&&p.role!=='parent')m=Math.max(m,Math.floor(lifetime(p)/STG));return Math.min(m,10)}
+function hofCard(){if(!fb)return '';const M=stMax();if(!M)return '';for(let n=1;n<=M;n++)stLoad(n);const md=['🥇','🥈','🥉'];let body='';
+ for(let n=M;n>=1;n--){const L=STL[n];if(!L||!L.length)continue;
+  body+=`<div class="stack" style="gap:4px;margin-top:8px"><b style="font-size:14px">🏁 المرحلة ${ORDST(n)} · ${(n*STG).toLocaleString('en')} نقطة <span class="note">(${L.length} ${L.length>2&&L.length<11?'أتمّوها':'أتمّها'})</span></b>
+  ${L.slice(0,5).map((r,i)=>`<button type="button" class="row hofrow" data-cert="s${n}|${r.sid}" style="gap:8px"><span style="font-size:18px;width:26px;text-align:center">${md[i]||(i+1)}</span><span class="grow"><b>${esc(r.nick)}</b> <span class="note">${GRADES[r.grade]||''}</span></span><span class="note">🎖️</span></button>`).join('')}${L.length>5?`<span class="note">و${L.length-5} آخرون</span>`:''}</div>`}
+ if(!body)return '';return `<div class="card hof"><b>🏅 لوحة الشرف: المراحل</b>${body}<p class="note" style="margin:6px 0 0">اضغط على أي اسم لعرض شهادته.</p></div>`}
+function winsOf(sid){let n=0;Object.keys(STL).forEach(k=>{const L=STL[k];if(L&&L[0]&&L[0].sid===sid)n++});return n}
+const winBadge=(sid,cn)=>{const n=winsOf(sid);const c=cn||0;return (n?` <span class="wb" title="الأول في إتمام مرحلة">🏆${n>1?'×'+n:''}</span>`:'')+(c?` <span class="wb" title="شهادات المراحل">🎖️${c>1?'×'+c:''}</span>`:'')};
 
 /* ============ المزامنة الأونلاين (Firebase) ============ */
 let fb=null,fbUid=null,lastPush=0,unsub=null,boardKey='',boardRows=null;
@@ -576,13 +573,12 @@ function fbStart(){if(!FB)return;const b='https://www.gstatic.com/firebasejs/10.
   firebase.initializeApp(FB);fb=firebase.firestore();try{fb.enablePersistence({synchronizeTabs:true}).catch(()=>{})}catch(e){}firebase.auth().onAuthStateChanged(u=>{onAuth(u)})}).catch(()=>{fb=null;C.ready=true;app.innerHTML=startTop()+'<div class="warn">تعذّر تحميل الخدمة. تحقّق من الإنترنت ثم أعد فتح الصفحة.</div>'})}
 function pushAll(force){if(!fb||!C.sid||C.mode!=='student')return;if(!force&&Date.now()-lastPush<30000){clearTimeout(pushAll.t);pushAll.t=setTimeout(()=>pushAll(true),30000);return}lastPush=Date.now();
  const p=cur();if(!p||p.status==='pending'||p.role==='parent')return;const ref=fb.collection('players').doc(p.id);if(!p.name){ref.delete().catch(()=>{});return}
- const sc=scoreAll(p);const ssAll=seasonScores(p);const ks=Object.keys(ssAll).sort().slice(-12);const ss={};ks.forEach(k=>ss[k]=ssAll[k]);
- ref.set({sid:p.id,nick:p.name.slice(0,20),gender:p.gender||'m',grade:p.grade,stage:stageOf(p.grade),total:sc.total,days:sc.days,acc:Math.round(sc.accv*100),answers:sc.a,season:SKEY(),st:ss[SKEY()]||0,ss,cn:certCount(p),updated:Date.now()}).catch(()=>{})}
+ const sc=scoreAll(p);ref.set({sid:p.id,nick:p.name.slice(0,20),gender:p.gender||'m',grade:p.grade,stage:stageOf(p.grade),total:sc.total,days:sc.days,acc:Math.round(sc.accv*100),answers:sc.a,stg:stageMarks(p),cn:certCount(p),updated:Date.now()}).catch(()=>{})}
 document.addEventListener('visibilitychange',()=>{if(document.hidden){pushAll(true);if(CLOUD)flushSave()}});
-function subscribeBoard(){const p=cur();const bs=view.bs||'all';const key=bs+'|'+p.grade+'|'+(C.sid||'')+'|'+SKEY();if(key===boardKey)return;boardKey=key;if(unsub){unsub();unsub=null}boardRows=null;if(!fb)return;
- let q=fb.collection('players').where('season','==',SKEY());
- if(bs==='st')q=q.where('stage','==',stageOf(p.grade));else if(bs==='gr')q=q.where('grade','==',p.grade);
- unsub=q.onSnapshot(sn=>{boardRows=seasonRows(sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>r.sid)).slice(0,100);renderBoard()},()=>{boardRows=[];renderBoard()})}
+function subscribeBoard(){const p=cur();const bs=view.bs||'all';const key=bs+'|'+p.grade+'|'+(C.sid||'');if(key===boardKey)return;boardKey=key;if(unsub){unsub();unsub=null}boardRows=null;if(!fb)return;
+ let q=fb.collection('players');
+ if(bs==='st')q=q.where('stage','==',stageOf(p.grade));else if(bs==='gr')q=q.where('grade','==',p.grade);else q=q.orderBy('total','desc').limit(100);
+ unsub=q.onSnapshot(sn=>{boardRows=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>r.sid).sort((a,b)=>b.total-a.total).slice(0,100);renderBoard()},()=>{boardRows=[];renderBoard()})}
 // اللقب يحتاج المركز والنقاط معاً: يُعطى أعلى لقب يحقق الطالب شرطيه
 const RANKT=[{r:1,p:3000,e:'🥇',m:'فارس المنافسة',f:'فارسة المنافسة',c:'r1',md:['gold','ذهبي']},{r:2,p:1000,e:'🥈',m:'منافس شرس',f:'منافسة شرسة',c:'r2',md:['silver','فضي']},{r:3,p:300,e:'🥉',m:'منافس قوي',f:'منافسة قوية',c:'r3',md:['bronze','برونزي']},{r:4,p:150,e:'🔥',m:'صاعد بقوة',f:'صاعدة بقوة',c:'r4'},{r:5,p:50,e:'🧭',m:'في الاتجاه الصحيح',f:'في الاتجاه الصحيح',c:'r5'},{r:1e9,p:1,e:'🌱',m:'مبتدئ',f:'مبتدئة',c:'r6'}];
 const rankT=(i,tot)=>RANKT.find(x=>i<=x.r&&tot>=x.p)||null;
@@ -592,10 +588,10 @@ const rkTitle=(rk,tot,gd)=>{const x=CHASET[rk-1];return x&&(tot||0)>0?x[0]+' '+(
 function medal(i,tot){const t=rankT(i,tot||0);if(!t||!t.md)return '<span></span>';return `<span class="medal ${t.md[0]}" title="${t.m}"><span class="disc"><b>${t.md[1]}</b></span><span class="rib"></span></span>`}
 function rankBadge(i,gd,tot){const t=rankT(i,tot||0);return t?`<span class="rkt ${t.c}">${t.e} ${gd==='f'?t.f:t.m}</span>`:''}
 const tierBadge=tot=>{const t=tierOf(tot||0);return `<span class="tb ${t.cls}">${t.em} ${t.name}</span>`};
-function heroPath(p){const tot=lifetime(p),t=tierOf(tot);
- return `<div class="card hpath"><div class="row between"><b>🗺️ طريق البطل</b><span class="note">الهدف: 🏆 ${TIERS[TIERS.length-1][0].toLocaleString('en')} نقطة</span></div>
- <div class="hsteps">${TIERS.map((x,k)=>`<div class="hs ${k<t.i?'done':k===t.i?'cur':''}"><span class="hd">${x[2]}</span><span class="hn">${x[1]}</span><span class="hp">${x[0].toLocaleString('en')}</span></div>`).join('')}<i class="hline"><i style="width:${Math.min(100,100*(t.i+(t.next?(tot-TIERS[t.i][0])/(t.next-TIERS[t.i][0]):0))/(TIERS.length-1))}%"></i></i></div>
- <p class="hmsg">${t.next?`${g('أنت','أنتِ')} في <b>${t.em} ${t.name}</b> — باقي <b>${(t.next-tot).toLocaleString('en')} نقطة</b> على <b>${t.nextEm} ${t.nextName}</b>`:`🏆 ${g('أنت','أنتِ')} <b>${t.name}</b>! باقي <b>${(t.nextStar-tot).toLocaleString('en')} نقطة</b> على النجمة ⭐ التالية.`}</p></div>`}
+function heroPath(p){const tot=lifetime(p),t=tierOf(tot),base=t.done*STG,rel=t.rel;
+ return `<div class="card hpath"><div class="row between"><b>🗺️ طريق البطل${t.done?` · المرحلة ${ORDST(t.stage)}`:''}</b><span class="note">${t.done?`أتممت ${t.done} ${t.done>1&&t.done<11?'مراحل':'مرحلة'} 🎖️`:'الهدف: 🏆 '+STG.toLocaleString('en')+' نقطة'}</span></div>
+ <div class="hsteps">${TIERS.map((x,k)=>`<div class="hs ${k<t.i?'done':k===t.i?'cur':''}"><span class="hd">${k===TIERS.length-1&&t.done?'🏁':x[2]}</span><span class="hn">${k===TIERS.length-1&&t.done?'إتمام المرحلة':x[1]}</span><span class="hp">${(base+x[0]).toLocaleString('en')}</span></div>`).join('')}<i class="hline"><i style="width:${Math.min(100,100*(t.i+(rel-TIERS[t.i][0])/(TIERS[t.i+1][0]-TIERS[t.i][0]))/(TIERS.length-1))}%"></i></i></div>
+ <p class="hmsg">${g('أنت','أنتِ')} في <b>${t.done?'المرحلة '+ORDST(t.stage)+' · ':''}${TIERS[t.i][2]} ${TIERS[t.i][1]}</b> — باقي <b>${(t.next-tot).toLocaleString('en')} نقطة</b> على <b>${t.nextEm} ${t.nextName}</b></p></div>`}
 const CHASET=[['🥇','فارس المنافسة','فارسة المنافسة'],['🥈','منافس شرس','منافسة شرسة'],['🥉','منافس قوي','منافسة قوية'],['🔥','صاعد بقوة','صاعدة بقوة'],['🧭','في الاتجاه الصحيح','في الاتجاه الصحيح']];
 const ORDFF=['','الأولى','الثانية','الثالثة','الرابعة','الخامسة','السادسة','السابعة','الثامنة','التاسعة','العاشرة'];
 const ORDF=['','الأول','الثاني','الثالث','الرابع','الخامس','السادس','السابع','الثامن','التاسع','العاشر'];
@@ -1001,16 +997,21 @@ function vWait(){const p=cur();return startTop()+band('طلبك قيد المر�
 /* ============ شهادات المواسم: لكل فائز من الثلاثة الأوائل شهادة إلكترونية خاصة بموسمه ============ */
 const CTHEME=[['#0E7C66','#C9A13B'],['#7B3FE0','#E8468A'],['#1E5FB8','#38B2AC'],['#B83280','#F6AD55'],['#2F855A','#D69E2E'],['#2B6CB0','#9F7AEA'],['#C05621','#ECC94B'],['#285E61','#81E6D9'],['#553C9A','#F6E05E'],['#9B2C2C','#ED8936'],['#2C5282','#63B3ED'],['#276749','#B7791F']];
 const CRANK=[['الأول','#F2C94C','#B7791F','الذهبي'],['الثاني','#E2E8F0','#8A94A6','الفضي'],['الثالث','#F0A868','#9C5B2E','البرونزي']];
-function certSync(){const p=cur();if(!p||p.role==='parent'||!fb)return;p.certs=p.certs||{};let added=null;
- Object.keys(HOF).forEach(K=>{const rows=HOF[K];if(!rows)return;const i=rows.findIndex(r=>r.sid===p.id);if(i>=0&&!p.certs[K]){p.certs[K]={r:i+1,pts:(rows[i].ss||{})[K]||0,at:Date.now()};added=K}});
- if(added){p.newCert=added;save();pushAll(true);if(view.name==='home')render()}}
-const certCount=p=>Object.keys(p.certs||{}).length;
-function certData(K,src){return{K,name:src.name||src.nick,gender:src.gender||'m',grade:src.grade,rank:src.r,pts:src.pts,sid:src.sid||''}}
+function certSync(){const p=cur();if(!p||p.role==='parent'||!fb)return;p.certs=p.certs||{};let added=null,ch=false;
+ Object.keys(STL).forEach(n=>{const L=STL[n];if(!L)return;const i=L.findIndex(r=>r.sid===p.id);if(i<0)return;const K='s'+n,day=(L[i].stg['s'+n]||'').split('|')[0];const c=p.certs[K];
+  if(!c){p.certs[K]={r:i+1,pts:n*STG,day,at:Date.now()};added=K;ch=true}else if(c.r!==i+1){c.r=i+1;ch=true}});
+ Object.keys(p.certs).forEach(K=>{if(K[0]!=='s')delete p.certs[K]});
+ if(added)p.newCert=added;if(ch){save();pushAll(true);if(['home','who'].includes(view.name))render()}}
+const certCount=p=>Object.keys(p.certs||{}).filter(k=>k[0]==='s').length;
+function certData(K,src){return{K,name:src.name||src.nick,gender:src.gender||'m',grade:src.grade,rank:src.r,pts:src.pts,day:src.day||'',sid:src.sid||''}}
+const stageLabel=K=>'المرحلة '+ORDST(+K.slice(1));
+const rankWord=(r,f)=>r<=3?CRANK[r-1][0]:((f?ORDFF:ORDF)[r]||String(r));
+const hDate=k=>{try{return new Date(k+'T12:00:00+03:00').toLocaleDateString('ar-SA-u-ca-islamic-umalqura',{day:'numeric',month:'long',year:'numeric'})}catch(e){return k}};
 let CERTF=null;
 function certFonts(){if(!CERTF)CERTF=Promise.all(['800 40px "Baloo Bhaijaan 2"','700 40px "Baloo Bhaijaan 2"','600 30px "IBM Plex Sans Arabic"','500 30px "IBM Plex Sans Arabic"'].map(f=>document.fonts?document.fonts.load(f,'مِران شهادة').catch(()=>{}):0)).catch(()=>{});return CERTF}
 function rnd(seed){let h=0;for(const ch of seed)h=(h*31+ch.charCodeAt(0))>>>0;return()=>{h=(h*1664525+1013904223)>>>0;return h/4294967296}}
 async function drawCert(d){await certFonts();const W=1600,H=1130,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
- const mon=+d.K.slice(5)||1,[c1,c2]=CTHEME[(mon-1)%12],RK=CRANK[(d.rank||1)-1]||CRANK[2],F=d.gender==='f';
+ const n=+d.K.slice(1)||1,[c1,c2]=CTHEME[(n*5-5)%12],F=d.gender==='f';const RK=CRANK[(d.rank||1)-1]||[rankWord(d.rank),'#FFFFFF',c1];
  const FD='"Baloo Bhaijaan 2","IBM Plex Sans Arabic",sans-serif',FB='"IBM Plex Sans Arabic",sans-serif';
  // الخلفية
  let g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,c1);g.addColorStop(1,c2);x.fillStyle=g;x.fillRect(0,0,W,H);
@@ -1023,19 +1024,19 @@ async function drawCert(d){await certFonts();const W=1600,H=1130,c=document.crea
  x.direction='rtl';x.textAlign='center';x.textBaseline='alphabetic';
  // الشعار والعنوان
  x.fillStyle=c1;x.font='800 54px '+FD;x.fillText('مِران',W/2,P+120);
- x.fillStyle='#1d1640';x.font='800 92px '+FD;x.fillText('شهادة تفوّق',W/2,P+230);
- x.fillStyle=c1;x.font='600 34px '+FB;x.fillText('موسم '+seasonName(d.K),W/2,P+285);
+ x.fillStyle='#1d1640';x.font='800 84px '+FD;x.fillText('شهادة إتمام المرحلة '+ORDST(n),W/2,P+230);
+ x.fillStyle=c1;x.font='600 34px '+FB;x.fillText('هدف المرحلة '+(n*STG).toLocaleString('en')+' نقطة',W/2,P+285);
  // الكأس والنجوم
  cup(x,W/2,P+505,RK,d.rank);
- const ns=4-(d.rank||3);for(let i=0;i<ns;i++){x.fillStyle=RK[1];x.strokeStyle=RK[2];x.lineWidth=3;const sx=W/2+(i-(ns-1)/2)*70;star(x,sx,P+338,24,5,true)}
+ const ns=d.rank<=3?4-d.rank:0;for(let i=0;i<ns;i++){x.fillStyle=RK[1];x.strokeStyle=RK[2];x.lineWidth=3;const sx=W/2+(i-(ns-1)/2)*70;star(x,sx,P+338,24,5,true)}
  // النص
  x.fillStyle='#4a4560';x.font='500 36px '+FB;x.fillText(F?'تُمنح هذه الشهادة للطالبة المتميّزة':'تُمنح هذه الشهادة للطالب المتميّز',W/2,P+660);
  x.fillStyle=c1;x.font='800 96px '+FD;x.fillText(d.name||'',W/2,P+768);
- x.fillStyle='#1d1640';x.font='600 38px '+FB;x.fillText(`${F?'لحصولها':'لحصوله'} على المركز ${RK[0]} في موسم ${seasonName(d.K)}`,W/2,P+840);
- x.fillStyle='#4a4560';x.font='500 32px '+FB;x.fillText(`${GRADES[d.grade]?GRADES[d.grade]+' · ':''}رصيد الموسم ${(d.pts||0).toLocaleString('en')} نقطة`,W/2,P+892);
+ x.fillStyle='#1d1640';x.font='600 38px '+FB;x.fillText(`${F?'لإتمامها':'لإتمامه'} المرحلة ${ORDST(n)} في المركز ${rankWord(d.rank,false)}`,W/2,P+840);
+ x.fillStyle='#4a4560';x.font='500 32px '+FB;x.fillText(`${GRADES[d.grade]?GRADES[d.grade]+' · ':''}${d.day?(F?'أتمّتها في ':'أتمّها في ')+hDate(d.day):''}`,W/2,P+892);
  x.fillStyle=c1;x.font='600 30px '+FB;x.fillText('كلما تدرّبت أكثر زادت نقاطك 🌟',W/2,P+948);
  x.fillStyle='#8a86a0';x.font='500 22px '+FB;x.textAlign='right';x.fillText('إدارة منافسة مِران',W-P-115,H-P-62);
- x.textAlign='left';x.direction='ltr';x.fillText('No. '+d.K.slice(1)+'-'+(d.rank||0)+'-'+(d.sid||'').slice(0,6).toUpperCase(),P+115,H-P-62);
+ x.textAlign='left';x.direction='ltr';x.fillText('No. S'+n+'-'+(d.rank||0)+'-'+(d.sid||'').slice(0,6).toUpperCase(),P+115,H-P-62);
  return c}
 function rr(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath()}
 function star(x,cx,cy,R,n,stroke){x.beginPath();for(let i=0;i<n*2;i++){const rad=i%2?R*.45:R,an=Math.PI/n*i-Math.PI/2;x.lineTo(cx+rad*Math.cos(an),cy+rad*Math.sin(an))}x.closePath();x.fill();if(stroke)x.stroke()}
@@ -1051,14 +1052,14 @@ function cup(x,cx,cy,RK,rank){const g=x.createLinearGradient(cx-90,0,cx+90,0);g.
  x.fillStyle=RK[2];x.font='800 48px "Baloo Bhaijaan 2",sans-serif';x.direction='ltr';x.textAlign='center';x.textBaseline='middle';x.fillText(String(rank||''),cx,cy-58);x.textBaseline='alphabetic';x.direction='rtl'}
 async function openCert(d){closeCert();const ov=document.createElement('div');ov.id='certov';ov.className='iv-ov';ov.setAttribute('dir','rtl');ov.innerHTML='<div class="certbox"><p style="color:#fff;margin:0">جارٍ تجهيز الشهادة…</p></div>';document.body.appendChild(ov);document.body.style.overflow='hidden';
  ov.addEventListener('click',e=>{if(e.target===ov||e.target.closest('[data-certx]'))closeCert()});
- const c=await drawCert(d);const url=c.toDataURL('image/png');const fname='شهادة-مران-'+(d.name||'')+'-'+seasonName(d.K).replace(/\s+/g,'-')+'.png';
+ const c=await drawCert(d);const url=c.toDataURL('image/png');const fname='شهادة-مران-'+(d.name||'')+'-'+stageLabel(d.K).replace(/\s+/g,'-')+'.png';
  const box=ov.querySelector('.certbox');if(!box)return;box.innerHTML=`<img src="${url}" alt="شهادة ${esc(d.name)}"><div class="row" style="width:100%"><a class="btn grow" href="${url}" download="${esc(fname)}">⬇️ تحميل الشهادة</a>${navigator.share?'<button class="btn plain grow" id="certsh">📤 مشاركة</button>':''}</div><button class="iv-close" data-certx="1">إغلاق</button>`;
- const sh=box.querySelector('#certsh');if(sh)sh.onclick=()=>{c.toBlob(b=>{const f=new File([b],fname,{type:'image/png'});const data={files:[f],title:'شهادة مِران',text:`🏆 ${d.name}: المركز ${(CRANK[d.rank-1]||CRANK[2])[0]} في موسم ${seasonName(d.K)} على مِران`};if(navigator.canShare&&navigator.canShare(data))navigator.share(data).catch(()=>{});else navigator.share({title:data.title,text:data.text}).catch(()=>{})})}}
+ const sh=box.querySelector('#certsh');if(sh)sh.onclick=()=>{c.toBlob(b=>{const f=new File([b],fname,{type:'image/png'});const data={files:[f],title:'شهادة مِران',text:`🏆 ${d.name}: ${d.gender==='f'?'أتمّت':'أتمّ'} ${stageLabel(d.K)} في المركز ${rankWord(d.rank)} على مِران`};if(navigator.canShare&&navigator.canShare(data))navigator.share(data).catch(()=>{});else navigator.share({title:data.title,text:data.text}).catch(()=>{})})}}
 function closeCert(){const o=document.getElementById('certov');if(o){o.remove();document.body.style.overflow=''}}
-function myCertsCard(p){const ks=Object.keys(p.certs||{}).sort().reverse();if(!ks.length)return '';const md=['🥇','🥈','🥉'];
- return `<div class="card hof"><div class="row between"><b>🎖️ شهاداتي (${ks.length})</b><span class="note">اضغط على الشهادة لعرضها</span></div><div class="certgrid">${ks.map(K=>{const c=p.certs[K];return `<button type="button" class="certth" data-cert="${K}|me" style="--c1:${CTHEME[(+K.slice(5)-1)%12][0]};--c2:${CTHEME[(+K.slice(5)-1)%12][1]}"><span>${md[c.r-1]||'🏅'}</span><b>${seasonName(K)}</b><small>المركز ${(CRANK[c.r-1]||CRANK[2])[0]}</small></button>`}).join('')}</div></div>`}
-function newCertBanner(p){const K=p.newCert;if(!K||!(p.certs||{})[K])return '';const c=p.certs[K];
- return `<div class="hero celeb pop"><h2>🎉 مبروك! ${g('حصلت','حصلتِ')} على شهادة المركز ${(CRANK[c.r-1]||CRANK[2])[0]}</h2><p class="sub" style="margin:0">في موسم ${seasonName(K)}. ${g('احتفظ','احتفظي')} بها و${g('شاركها','شاركيها')} مع ${g('أهلك','أهلكِ')}، فكل شهادة لها مكافأة!</p><div class="row"><button class="btn" style="background:#fff;color:var(--acc)" data-cert="${K}|me">🏆 عرض شهادتي</button><button class="btn plain" data-act="certSeen">لاحقاً</button></div></div>`}
+function myCertsCard(p){const ks=Object.keys(p.certs||{}).filter(k=>k[0]==='s').sort((a,b)=>b.slice(1)-a.slice(1));if(!ks.length)return '';const md=['🥇','🥈','🥉'];
+ return `<div class="card hof"><div class="row between"><b>🎖️ شهاداتي (${ks.length})</b><span class="note">اضغط على الشهادة لعرضها</span></div><div class="certgrid">${ks.map(K=>{const c=p.certs[K],th=CTHEME[(+K.slice(1)*5-5)%12];return `<button type="button" class="certth" data-cert="${K}|me" style="--c1:${th[0]};--c2:${th[1]}"><span>${md[c.r-1]||'🎖️'}</span><b>${stageLabel(K)}</b><small>المركز ${rankWord(c.r,false)}</small></button>`}).join('')}</div></div>`}
+function newCertBanner(p){const K=p.newCert;if(!K||K[0]!=='s')return '';const c=(p.certs||{})[K];
+ return `<div class="hero celeb pop"><h2>🎖️ ${g('شهادتك','شهادتكِ')} في ${stageLabel(K)} جاهزة!</h2><p class="sub" style="margin:0">${c?`المركز ${rankWord(c.r,false)} في الوصول. `:''}${g('احتفظ','احتفظي')} بها و${g('شاركها','شاركيها')} مع ${g('أهلك','أهلكِ')}، فكل شهادة لها مكافأة!</p><div class="row">${c?`<button class="btn" style="background:#fff;color:var(--acc)" data-cert="${K}|me">🏆 عرض شهادتي</button>`:'<span class="note" style="color:#fff">جارٍ تحديد ترتيبك…</span>'}<button class="btn plain" data-act="certSeen">لاحقاً</button></div></div>`}
 function vStudentWho(){const p=cur();if(!p)return vLoading();const v=view;
  return header()+band('حسابي',esc(p.name)+' · '+(isPar()?'ولي أمر':GRADES[p.grade]+' · '+TERMS[p.term]))+`<div class="sec">${isPar()?'':myCertsCard(p)+progressCard(p,true)}
  <div class="card stack"><h3>استخدام حسابك على جهاز آخر</h3><p class="note" style="margin:0">أنشئ رابط النقل وافتحه على الجهاز الآخر، فيظهر حسابك بكل نقاطك. احتفظ به أيضاً لو تغيّر جوالك.</p>
@@ -1158,7 +1159,7 @@ const AB={rows:null,st:'all',mode:'season'};
 const isPar=()=>{const p=cur();return !!(p&&p.role==='parent')};
 const PB={rows:null,st:'all',q:'',at:0,mode:'season'};
 function pbLoad(){PB.rows=null;PB.at=Date.now();render();fb.collection('players').orderBy('total','desc').limit(500).get().then(sn=>{PB.rows=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>r.sid&&(r.total||0)>0);if(view.name==='pboard')render()}).catch(e=>{PB.rows=[];toast(authErr(e));render()})}
-function pbList(){const q=PB.q.trim();const all=seasonRows(PB.rows||[],PB.mode).filter(r=>PB.st==='all'||(r.stage||stageOf(r.grade))===PB.st).map((r,i)=>Object.assign({},r,{rk:i+1}));
+function pbList(){const q=PB.q.trim();const all=(PB.rows||[]).filter(r=>(r.total||0)>0).filter(r=>PB.st==='all'||(r.stage||stageOf(r.grade))===PB.st).map((r,i)=>Object.assign({},r,{rk:i+1}));
  const rows=q?all.filter(r=>(r.nick||'').includes(q)):all;
  return rows.length?`<div class="list">${rows.map(r=>`<div class="brd${q?' me':''}"><span class="n p${r.rk}">${r.rk}</span><span>${esc(r.nick)}${winBadge(r.sid,r.cn)}<br><span class="note">${GRADES[r.grade]||''}</span>${rkTitle(r.rk,r.total,r.gender)?`<br><span class="rkl">${rkTitle(r.rk,r.total,r.gender)}</span>`:''}</span>${tierBadge(r.life!=null?r.life:r.total)}<span class="sc">${(r.total||0).toLocaleString('en')}</span></div>`).join('')}</div>`:`<div class="card">${q?'لا يوجد متنافس بهذا الاسم في هذه القائمة.':'لا يوجد متنافسون بعد.'}</div>`}
 function vPBoard(){const p=cur();if(PB.rows==null&&fb&&Date.now()-PB.at>3000)setTimeout(pbLoad,0);const sg=(k,l)=>`<button type="button" class="${PB.st===k?'on':''}" data-pbst="${k}">${l}</button>`;
@@ -1166,16 +1167,15 @@ function vPBoard(){const p=cur();if(PB.rows==null&&fb&&Date.now()-PB.at>3000)set
  <div class="card"><p style="margin:0;line-height:1.9">👀 حساب ولي الأمر للاطلاع فقط، ولا يظهر اسمك في الترتيب. ابحث باسم ابنك أو ابنتك لتعرف مركزه، ثم ${p.gender==='f'?'شجّعيه':'شجّعه'} على التدريب اليومي: كل تدريب يرفع نقاطه.</p></div>
  <label class="f" for="pbq">ابحث باسم ابنك أو ابنتك<input type="text" id="pbq" value="${esc(PB.q)}" placeholder="اكتب الاسم…"></label>
  <div class="seg">${sg('all','الجميع')}${sg('p','ابتدائي')}${sg('m','متوسط')}${sg('s','ثانوي')}</div>
- ${modeSeg(PB,'data-pbm')}${PB.mode!=='all'?seasonNote():''}${hofCard()}${tierLegend()}<div id="pblist">${PB.rows==null?'<div class="card">جارٍ تحميل الترتيب…</div>':pbList()}</div>
+ ${stageNote()}${hofCard()}${tierLegend()}<div id="pblist">${PB.rows==null?'<div class="card">جارٍ تحميل الترتيب…</div>':pbList()}</div>
  <button class="btn plain wide" data-act="pbReload">تحديث الترتيب</button></div>`}
 function adBoardLoad(){AB.rows=null;render();fb.collection('players').orderBy('total','desc').limit(300).get().then(sn=>{AB.rows=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(r=>r.sid);render()}).catch(e=>{AB.rows=[];toast(authErr(e));render()})}
-const modeSeg=(o,attr)=>`<div class="seg"><button type="button" class="${o.mode!=='all'?'on':''}" ${attr}="season">🗓️ هذا الموسم</button><button type="button" class="${o.mode==='all'?'on':''}" ${attr}="all">♾️ كل الأوقات</button></div>`;
 function tierLegend(){return `<div class="card hpath"><div class="row between"><b>🗺️ طريق البطل</b><span class="note">حسب النقاط</span></div>
  <div class="hsteps">${TIERS.map(x=>`<div class="hs done"><span class="hd">${x[2]}</span><span class="hn">${x[1]}</span><span class="hp">${x[0].toLocaleString('en')}</span></div>`).join('')}<i class="hline"><i style="width:100%"></i></i></div></div>`}
 function vAdBoard(){const sg=(k,l)=>`<button type="button" class="${AB.st===k?'on':''}" data-abst="${k}">${l}</button>`;
- const rows=seasonRows((AB.rows||[]).filter(r=>(r.total||0)>0),AB.mode).filter(r=>AB.st==='all'||(r.stage||stageOf(r.grade))===AB.st);
+ const rows=(AB.rows||[]).filter(r=>(r.total||0)>0).filter(r=>AB.st==='all'||(r.stage||stageOf(r.grade))===AB.st);
  return startTop()+band('الترتيب','ترتيب كل الطلاب كما يظهر لهم في التطبيق.')+`<div class="sec"><div class="seg">${sg('all','الجميع')}${sg('p','ابتدائي')}${sg('m','متوسط')}${sg('s','ثانوي')}</div>
- ${modeSeg(AB,'data-abm')}${AB.mode!=='all'?seasonNote():''}${hofCard()}${tierLegend()}${AB.rows==null?'<div class="card">جارٍ التحميل…</div>':rows.length?`<div class="list">${rows.map((r,i)=>`<div class="brd"><span class="n p${i+1}">${i+1}</span><span>${esc(r.nick)}${winBadge(r.sid,r.cn)}<br><span class="note">${GRADES[r.grade]||''}</span>${rkTitle(i+1,r.total,r.gender)?`<br><span class="rkl">${rkTitle(i+1,r.total,r.gender)}</span>`:''}</span>${tierBadge(r.life!=null?r.life:r.total)}<span class="sc">${(r.total||0).toLocaleString('en')}</span></div>`).join('')}</div>`:'<div class="card">لا يوجد متنافسون بعد.</div>'}
+ ${stageNote()}${hofCard()}${tierLegend()}${AB.rows==null?'<div class="card">جارٍ التحميل…</div>':rows.length?`<div class="list">${rows.map((r,i)=>`<div class="brd"><span class="n p${i+1}">${i+1}</span><span>${esc(r.nick)}${winBadge(r.sid,r.cn)}<br><span class="note">${GRADES[r.grade]||''}</span>${rkTitle(i+1,r.total,r.gender)?`<br><span class="rkl">${rkTitle(i+1,r.total,r.gender)}</span>`:''}</span>${tierBadge(r.life!=null?r.life:r.total)}<span class="sc">${(r.total||0).toLocaleString('en')}</span></div>`).join('')}</div>`:'<div class="card">لا يوجد متنافسون بعد.</div>'}
  <button class="btn plain wide" data-act="adBoard">تحديث</button><button class="btn wide" data-act="adHome">رجوع لإدارة النظام</button></div>`}
 function adSync(){const n=$('#adn');if(A.form&&n)A.form.name=n.value}
 function bindAdmin(){const lq=$('#adlkq');if(lq)lq.addEventListener('input',()=>{A.lkQ=lq.value;const s=(A.list||[]).find(x=>x.id===A.lk);const l=$('#adlklist');if(s&&l)l.innerHTML=adLkList(adLkCands(s),s)});
@@ -1216,10 +1216,8 @@ function cloudClick(d){if(!CLOUD)return false;
  if(d.adst){A.st=d.adst;render();return true}
  if(d.abst){AB.st=d.abst;render();return true}
  if(d.pbst){PB.st=d.pbst;render();return true}
- if(d.pbm){PB.mode=d.pbm;render();return true}
- if(d.cert){const [K,who]=d.cert.split('|');const p=cur();if(who==='me'){const c=(p.certs||{})[K];if(c){if(p.newCert===K){p.newCert=null;save()}openCert(certData(K,{name:p.name,gender:p.gender,grade:p.grade,r:c.r,pts:c.pts,sid:p.id}))}}
-  else{const rows=HOF[K]||[];const i=rows.findIndex(r=>r.sid===who);if(i>=0){const r=rows[i];openCert(certData(K,{nick:r.nick,gender:r.gender,grade:r.grade,r:i+1,pts:(r.ss||{})[K]||0,sid:r.sid}))}}return true}
- if(d.abm){AB.mode=d.abm;render();return true}
+ if(d.cert){const [K,who]=d.cert.split('|');const p=cur();if(who==='me'){const c=(p.certs||{})[K];if(c){if(p.newCert===K){p.newCert=null;save()}openCert(certData(K,{name:p.name,gender:p.gender,grade:p.grade,r:c.r,pts:c.pts,day:c.day,sid:p.id}))}}
+  else{const rows=STL[+K.slice(1)]||[];const i=rows.findIndex(r=>r.sid===who);if(i>=0){const r=rows[i];openCert(certData(K,{nick:r.nick,gender:r.gender,grade:r.grade,r:i+1,pts:+K.slice(1)*STG,day:(r.stg[K]||'').split('|')[0],sid:r.sid}))}}return true}
  if(d.adas){adAs(d.adas);return true}
  if(d.adedit){const s=A.list.find(x=>x.id===d.adedit);if(!s)return true;A.edit=s.id;A.del=null;A.form={name:s.name,gender:s.gender,grade:s.grade,term:s.term||1};render();return true}
  if(d.adset){adSync();A.form[d.adset]=d.adset==='gender'?d.v:+d.v;render();return true}
@@ -2063,12 +2061,16 @@ function vQuranRun(){const p=cur();if(!Q.vs)return vQuran();const su=qSurah(Q.s)
 function qHomeCards(p){if(!QFLAG)return '';const q=qToday(p);const done=q.days[dkey()];const st=qStreak(p);const today=dkey();
  const prompt=!done&&p.qPrompt!==today?`<div class="hero qprompt"><h2>🌙 ${g('ابدأ يومك بآيات','ابدئي يومكِ بآيات')}</h2><p class="sub" style="margin:0">وِرد قصير بأعلى نقاط في مِران، وبعده تصبح نقاطك ×1.5 في بقية تدريب اليوم. وقبل ذلك كله: أجرٌ عظيم من الله، بكل حرف حسنة.</p><div class="row" style="margin-top:10px"><button class="btn grow" data-act="qWird">📖 أقرأ الآن</button><button class="btn plain" data-act="qLater">لاحقاً</button></div></div>`:'';
  return prompt+`<button class="seccard" data-go="quran" style="--c:#0E7C66;--c2:#C9A13B"><span class="sci">📖</span><span class="grow"><b>القرآن الكريم</b><span>🏆 أعلى نقاط في مِران · ${g('ابدأ','ابدئي')} به لتزيد نقاطك في بقية التدريب · والأهم: الأجر العظيم من الله</span>${done?`<span class="scst">✨ ${g('قرأت','قرأتِ')} وِرد اليوم: نقاطك مضاعفة ×1.5 في بقية تدريب اليوم${st>1?` · 📖 ${st} أيام`:''}</span>`:`<span class="scst">${g('اقرأ','اقرئي')} وِرد اليوم ${g('لتحصل','لتحصلي')} على نقاط ×1.5 في كل الأقسام</span>`}</span><span class="go">‹</span></button>`}
-function celebrate(p){const t=tierOf(lifetime(p));if(t.stars&&t.stars>(p.starSeen||0)){p.starSeen=t.stars;setTimeout(save,0);return `<div class="hero celeb pop"><h2>🌟 نجمة جديدة! ${g('أنت','أنتِ')} الآن ${t.name}</h2><p class="sub" style="margin:0">النجمة التالية عند ${t.nextStar.toLocaleString('en')} نقطة.</p></div>`}if(p.tierSeen==null){p.tierSeen=t.i;return ''}if(t.i>p.tierSeen){p.tierSeen=t.i;setTimeout(save,0);return `<div class="hero celeb pop"><h2>🎉 مبروك! ${g('وصلت','وصلتِ')} إلى ${t.em} ${t.name}</h2><p class="sub" style="margin:0">${t.next?`المحطة التالية: ${t.nextEm} ${t.nextName} عند ${t.next.toLocaleString('en')} نقطة.`:g('أنت الآن بطل مِران!','أنتِ الآن بطلة مِران!')}</p></div>`}if(t.i<p.tierSeen)p.tierSeen=t.i;return ''}
+function celebrate(p){const tot=lifetime(p),t=tierOf(tot);if(p.tierSeen==null||p.stageSeen==null){p.tierSeen=t.i;p.stageSeen=t.done;return ''}
+ if(t.done>p.stageSeen){p.stageSeen=t.done;p.tierSeen=t.i;p.newCert='s'+t.done;setTimeout(()=>{save();pushAll(true)},0);return `<div class="hero celeb pop"><h2>🏁 مبروك! ${g('أتممت','أتممتِ')} المرحلة ${ORDST(t.done)}</h2><p class="sub" style="margin:0">${g('حصلت','حصلتِ')} على شهادتها 🎖️، وترتيبك فيها حسب وصولك. ${g('ابدأ','ابدئي')} الآن المرحلة ${ORDST(t.done+1)}!</p></div>`}
+ if(t.done<p.stageSeen)p.stageSeen=t.done;
+ if(t.i>p.tierSeen){p.tierSeen=t.i;setTimeout(save,0);return `<div class="hero celeb pop"><h2>🎉 مبروك! ${g('وصلت','وصلتِ')} إلى ${TIERS[t.i][2]} ${TIERS[t.i][1]}${t.done?' في المرحلة '+ORDST(t.stage):''}</h2><p class="sub" style="margin:0">المحطة التالية: ${t.nextEm} ${t.nextName} عند ${t.next.toLocaleString('en')} نقطة.</p></div>`}
+ if(t.i<p.tierSeen)p.tierSeen=t.i;return ''}
 function vHome(){const p=cur();const pl=planOf(p);const st=planStep(p);const done=PLAN.filter(x=>pl[x.k]).length;const bs=view.bs||'all';
  const card=x=>{const d=x.items.filter(k=>pl[k]).length,all=d===x.items.length;return `<button class="seccard" ${x.go==='en'?'data-go="en"':`data-act="${x.go}"`} style="--c:var(--${x.c});--c2:var(--${x.c2})"><span class="sci">${x.i}</span><span class="grow"><b>${x.t}</b><span>${x.m}</span>${d?`<span class="scst">✓ ${g('تدرّبت','تدرّبتِ')} اليوم</span>`:''}</span><span class="go">‹</span></button>`};
  return header()+`<h1>أهلاً يا ${esc(p.name)}</h1>
  ${introCard(false)}<div class="homegrid"><div class="sec">${qHomeCards(p)}${SECS.map(card).join('')}</div>
- <div><p class="motto">${g('كلما تدرّبت أكثر زادت نقاطك','كلما تدرّبتِ أكثر زادت نقاطكِ')}</p>${newCertBanner(p)}${celebrate(p)}${heroPath(p)}${myCertsCard(p)}${CLOUD?`<div class="sec"><div class="row between"><h2>🏆 ترتيب الموسم</h2><button class="x" data-go="comp">عرض الكل</button></div><div class="card"><div class="seg">${['all','st','gr'].map(k=>`<button type="button" class="${bs===k?'on':''}" data-bs="${k}">${k==='all'?'الجميع':k==='st'?STAGES[stageOf(p.grade)]:'صفّي'}</button>`).join('')}</div><div id="board" style="margin-top:10px"></div>${seasonNote()}</div>${hofCard()}</div>`:`<div class="sec"><button class="btn plain wide" data-go="comp">🏆 الترتيب</button><button class="btn plain wide" data-go="parent">لوحة ولي الأمر</button></div>`}</div></div>`}
+ <div><p class="motto">${g('كلما تدرّبت أكثر زادت نقاطك','كلما تدرّبتِ أكثر زادت نقاطكِ')}</p>${newCertBanner(p)}${celebrate(p)}${heroPath(p)}${myCertsCard(p)}${CLOUD?`<div class="sec"><div class="row between"><h2>🏆 الترتيب</h2><button class="x" data-go="comp">عرض الكل</button></div><div class="card"><div class="seg">${['all','st','gr'].map(k=>`<button type="button" class="${bs===k?'on':''}" data-bs="${k}">${k==='all'?'الجميع':k==='st'?STAGES[stageOf(p.grade)]:'صفّي'}</button>`).join('')}</div><div id="board" style="margin-top:10px"></div>${stageNote()}</div>${hofCard()}</div>`:`<div class="sec"><button class="btn plain wide" data-go="comp">🏆 الترتيب</button><button class="btn plain wide" data-go="parent">لوحة ولي الأمر</button></div>`}</div></div>`}
 
 function vEn(){const p=cur();const hc=Object.keys(p.hard).length;const pl=planOf(p);
  return header()+band('الإنجليزي',`${GRADES[p.grade]} · ${TERMS[p.term]}`)+`
@@ -2136,8 +2138,8 @@ function vComp(){const p=cur();const sc=scoreAll(p);const t=tierOf(sc.total);con
  const sg=(k,v,l,cv)=>`<button type="button" class="${cv===v?'on':''}" data-${k}="${v}">${l}</button>`;
  return header()+band('المنافسة','رصيد يزيد مع كل تدريب.')+`
  <div class="sec"><div class="hero"><div class="row between"><div><p class="sub" style="margin:0">رصيدك${tg?` · اليوم +${tg}`:''}</p><div style="font-family:var(--fd);font-size:46px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums">${sc.total}</div></div><span class="chip" style="background:var(--onacc);color:var(--acc);font-size:14px;padding:4px 14px">${t.em} ${t.name}</span></div>
- ${t.next?`<div class="bar" style="background:color-mix(in srgb,var(--onacc) 25%,transparent)"><i style="background:var(--onacc);width:${t.pct}%"></i></div><p class="sub" style="margin:0">باقٍ ${t.next-sc.total} نقطة للوصول إلى ${t.nextEm} ${t.nextName}</p>`:`<p class="sub" style="margin:0">🏆 ${g('أنت','أنتِ')} ${t.name}! باقٍ ${t.nextStar-sc.total} نقطة على النجمة ⭐ التالية.</p>`}</div>${heroPath(p)}
- ${hofCard()}<div class="card"><h3>ترتيب الموسم</h3><div class="seg" style="margin-top:10px">${sg('bs','all','الجميع',bs)}${sg('bs','st','المرحلة '+STAGES[stageOf(p.grade)],bs)}${sg('bs','gr','صفّي',bs)}</div><div id="board" style="margin-top:10px"></div>${seasonNote()}</div>
+ ${t.next?`<div class="bar" style="background:color-mix(in srgb,var(--onacc) 25%,transparent)"><i style="background:var(--onacc);width:${t.pct}%"></i></div><p class="sub" style="margin:0">باقٍ ${t.next-sc.total} نقطة للوصول إلى ${t.nextEm} ${t.nextName}</p>`:''}</div>${heroPath(p)}
+ ${hofCard()}<div class="card"><h3>الترتيب</h3><div class="seg" style="margin-top:10px">${sg('bs','all','الجميع',bs)}${sg('bs','st','المرحلة '+STAGES[stageOf(p.grade)],bs)}${sg('bs','gr','صفّي',bs)}</div><div id="board" style="margin-top:10px"></div>${stageNote()}</div>
  <details class="card"><summary>كيف تُحسب النقاط؟</summary><ul>
  <li>كل يوم تدريب: 20 نقطة.</li><li>كل سؤال محلول: نقطة، وكل دقيقة تدريب: نقطة.</li><li>كل إجابة صحيحة: نقطتان إضافيتان.</li>
  <li>إكمال تدريب اليوم الأربعة (كلمات اليوم، المحادثة الصوتية، القدرات، التحصيلي) في يوم واحد 30، كلمات اليوم 15، اختبار محاكي 20، تصحيح سؤال من دفتر الأخطاء 5، إتقان كلمة صعبة 3.</li>
