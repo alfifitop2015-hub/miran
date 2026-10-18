@@ -334,6 +334,20 @@ a.btn{text-decoration:none}
 @media (max-width:380px){.catrow{grid-template-columns:90px 1fr 40px}.stat b{font-size:20px}}
 
 .hof{border:2px solid #E9C46A;background:linear-gradient(135deg,#FFF8E1,var(--card))}.wb{font-size:12px;font-weight:800;color:#B7791F;white-space:nowrap}
+.gcard{display:flex;align-items:center;gap:14px;width:100%;text-align:start;border:none;border-radius:18px;padding:16px;color:#fff;background:linear-gradient(135deg,#0EA5A4,#6D5BD0);box-shadow:0 12px 24px -16px #6D5BD0;cursor:pointer;font:inherit}.gcard b{display:block;font-family:var(--fd);font-size:20px}.gcard span span{display:block;font-size:13px;opacity:.95}.gcard .gi{font-size:30px}
+.ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.gtile{display:flex;flex-direction:column;align-items:center;gap:2px;border:1.5px solid var(--line);border-radius:16px;background:var(--card);padding:12px 8px;cursor:pointer;font:inherit;color:var(--ink);text-align:center}.gtile .gi{font-size:30px}.gtile b{font-size:15px}.gtile small{color:var(--muted);font-size:12px}.gtile .gs{font-size:13px;letter-spacing:1px;margin-top:2px}.gtile.done{border-color:#E9C46A;background:linear-gradient(180deg,#FFFBEA,var(--card))}
+.glearn p b{color:var(--en)}.gex{display:flex;align-items:center;gap:10px;background:color-mix(in srgb,var(--en) 8%,var(--card));border-radius:12px;padding:8px 10px}
+.gtype{margin:4px 0 0;font-weight:800;font-size:16px}.gsent{font-family:var(--fe);font-size:22px;line-height:1.8;text-align:left}
+.gblank{display:inline-block;min-width:70px;border-bottom:3px dashed var(--en);text-align:center;color:var(--en);font-weight:700;padding:0 6px}.gblank.ok{border-color:var(--ok);color:var(--ok)}.gblank.bad{border-color:var(--ok);color:var(--ok)}
+.gline{min-height:64px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border:2px dashed var(--line)}.gline.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 8%,var(--card))}.gline.bad{border-color:var(--bad);animation:gshake .4s}
+.gpool{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.gw{font-family:var(--fe);font-size:18px;border:1.5px solid var(--line);border-bottom-width:4px;background:var(--card);color:var(--ink);border-radius:12px;padding:8px 12px;cursor:pointer;transition:transform .1s}.gw:active{transform:translateY(2px)}.gw.on{background:color-mix(in srgb,var(--en) 12%,var(--card));border-color:var(--en)}.gw.ghost{opacity:.25;cursor:default}
+.gerr .gw.fixme{background:#FFE4E4;border-color:var(--bad);color:var(--bad);text-decoration:line-through}.gerr .gw.wrong{border-color:#F6AD55;background:#FFF4E5}
+.gright{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:12px;padding:8px 10px;margin-top:6px;font-family:var(--fe);font-size:17px}
+.gcombo{background:linear-gradient(135deg,#F6AD55,#E8468A);color:#fff;animation:gpulse 1s infinite}
+.gstars{display:flex;gap:6px;font-size:44px}.gstars span{opacity:.18;filter:grayscale(1)}.gstars span.on{opacity:1;filter:none;animation:gpop .5s both}
+@keyframes gshake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}@keyframes gpulse{50%{transform:scale(1.08)}}@keyframes gpop{from{transform:scale(.2) rotate(-30deg);opacity:0}}
 .certbtn{font-weight:700;color:#B7791F;background:#FFF6DB;border-radius:99px;padding:4px 10px}
 .certbox{width:min(560px,100%);display:flex;flex-direction:column;align-items:center;gap:12px}.certbox img{width:100%;border-radius:14px;box-shadow:0 30px 60px -20px #000}
 .certgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:10px}
@@ -1932,6 +1946,177 @@ const PLAN=[{k:'enDay',c:'en',i:'E',t:'الإنجليزي',m:'5 كلمات جد�
 function planOf(p){p.plan=p.plan||{};return p.plan[dkey()]||(p.plan[dkey()]={})}
 function enDayItems(p,ws){const out=ws.map((w,j)=>vocabItem(w,p,j%2)).concat(grammarItems(p,2));const extra=weightedWords(p,8).filter(w=>!ws.includes(w))[0];if(extra)out.push(canSpeak?listenItem(extra,p):vocabItem(extra,p,0));const r=pk(nearSort(RD,p.grade,x=>x.g).slice(0,3));return out.concat(readItems(r,2)).slice(0,10)}
 function planStep(p){const pl=planOf(p);return PLAN.findIndex(x=>!pl[x.k])}
+/* ============ مختبر القواعد: دروس قصيرة وتحديات ممتعة (اختيار، ترتيب كلمات، اصطياد الخطأ) ============ */
+// mcq: [جملة فيها ___, [خيارات], رقم الصحيح, سبب] · ord: جمل صحيحة تُبعثر كلماتها · err: [جملة فيها كلمة خطأ واحدة, رقم الكلمة الخطأ (من 0), التصحيح, السبب]
+const GTOP=[
+{id:'an',g:[1,4],i:'🍎',t:'a و an',e:'a / an',
+ r:'نستخدم <b>a</b> قبل الكلمة التي تبدأ بصوت ساكن، و<b>an</b> قبل الكلمة التي تبدأ بصوت حرف علّة (a, e, i, o, u).',
+ x:[['a cat, a book','قطة، كتاب'],['an apple, an egg','تفاحة، بيضة']],
+ mcq:[['I have ___ orange.',['an','a'],0,'orange تبدأ بصوت o، فنستخدم an.'],['This is ___ dog.',['a','an'],0,'dog تبدأ بصوت ساكن d، فنستخدم a.'],['She has ___ umbrella.',['an','a'],0,'umbrella تبدأ بصوت u، فنستخدم an.'],['He eats ___ banana.',['a','an'],0,'banana تبدأ بصوت ساكن b.'],['I see ___ elephant.',['an','a'],0,'elephant تبدأ بصوت e.']],
+ ord:['I have a red pen.','She eats an apple.','This is an egg.'],
+ err:[['I have an cat.',2,'a','cat تبدأ بصوت ساكن، فنقول a cat.'],['She has a orange.',2,'an','orange تبدأ بصوت حرف علّة، فنقول an orange.'],['He is a engineer.',2,'an','engineer تبدأ بصوت e.']]},
+{id:'be',g:[1,5],i:'👋',t:'am و is و are',e:'am / is / are',
+ r:'<b>I</b> معها <b>am</b>. ومع المفرد (he, she, it) نستخدم <b>is</b>. ومع الجمع (we, you, they) نستخدم <b>are</b>.',
+ x:[['I am happy.','أنا سعيد.'],['They are my friends.','هم أصدقائي.']],
+ mcq:[['I ___ a student.',['am','is','are'],0,'مع I نستخدم am.'],['She ___ my sister.',['is','am','are'],0,'مع she نستخدم is.'],['We ___ in the park.',['are','is','am'],0,'مع we نستخدم are.'],['The cat ___ black.',['is','are','am'],0,'The cat مفرد، فنستخدم is.'],['You ___ very kind.',['are','is','am'],0,'مع you نستخدم are دائماً.']],
+ ord:['I am ten years old.','They are in the class.','He is my brother.'],
+ err:[['She are my friend.',1,'is','مع she نستخدم is.'],['I is happy today.',1,'am','مع I نستخدم am.'],['They is at school.',1,'are','مع they نستخدم are.']]},
+{id:'this',g:[1,5],i:'👉',t:'this و these',e:'this / these',
+ r:'<b>this</b> للمفرد القريب (هذا/هذه)، و<b>these</b> للجمع القريب (هؤلاء/هذه). وللبعيد: <b>that</b> للمفرد و<b>those</b> للجمع.',
+ x:[['This is my bag.','هذه حقيبتي.'],['These are my books.','هذه كتبي.']],
+ mcq:[['___ is my pencil.',['This','These'],0,'pencil مفرد، فنستخدم This.'],['___ are my shoes.',['These','This'],0,'shoes جمع، فنستخدم These.'],['___ apples are red.',['These','This'],0,'apples جمع.'],['Look at ___ bird in the sky!',['that','those'],0,'bird مفرد وبعيد، فنستخدم that.'],['___ cars over there are fast.',['Those','That'],0,'cars جمع وبعيدة، فنستخدم Those.']],
+ ord:['This is my school.','These are my friends.','That is a big tree.'],
+ err:[['These is my pen.',0,'This','pen مفرد، فنقول This is.'],['This are my toys.',0,'These','toys جمع، فنقول These are.'],['Those is my house.',0,'That','house مفرد.']]},
+{id:'pl',g:[1,5],i:'🐟',t:'الجمع بإضافة s',e:'Plurals',
+ r:'نجمع أغلب الأسماء بإضافة <b>s</b>: book ← books. وبعد s, sh, ch, x نضيف <b>es</b>: box ← boxes. وبعض الكلمات شاذة: child ← <b>children</b>، man ← <b>men</b>.',
+ x:[['one cat, two cats','قطة، قطتان'],['one box, three boxes','صندوق، ثلاثة صناديق']],
+ mcq:[['I have two ___.',['dogs','dog'],0,'two تعني أكثر من واحد، فنضيف s.'],['There are three ___ on the table.',['boxes','boxs'],0,'box تنتهي بـ x، فنضيف es.'],['The ___ are playing.',['children','childs'],0,'جمع child هو children.'],['She has five ___.',['pencils','pencil'],0,'five جمع، فنضيف s.'],['Two ___ are in the room.',['men','mans'],0,'جمع man هو men.']],
+ ord:['I have three books.','The children are happy.','She has two cats.'],
+ err:[['I have two pen.',3,'pens','two جمع، فنقول pens.'],['There are four boxs.',3,'boxes','box نجمعها boxes.'],['The childs are playing.',1,'children','جمع child هو children.']]},
+{id:'ps',g:[3,8],i:'🔁',t:'المضارع البسيط',e:'Present Simple',
+ r:'للعادات والحقائق. مع <b>he / she / it</b> نضيف <b>s</b> للفعل: he plays. وفي النفي: <b>don\'t</b> و<b>doesn\'t</b>، وفي السؤال: <b>Do</b> و<b>Does</b> والفعل بدون s.',
+ x:[['She reads every day.','هي تقرأ كل يوم.'],['He doesn\'t like milk.','هو لا يحب الحليب.']],
+ mcq:[['My father ___ to work by car.',['goes','go','going'],0,'My father = he، فنضيف es.'],['They ___ football on Fridays.',['play','plays','playing'],0,'they بدون s.'],['She ___ like fish.',['doesn\'t','don\'t','isn\'t'],0,'مع she نستخدم doesn\'t.'],['___ you speak English?',['Do','Does','Are'],0,'مع you نسأل بـ Do.'],['___ he live in Riyadh?',['Does','Do','Is'],0,'مع he نسأل بـ Does والفعل بدون s.']],
+ ord:['She drinks milk every morning.','We go to school by bus.','Does he play tennis?'],
+ err:[['He play football every day.',1,'plays','مع he نضيف s: plays.'],['She don\'t like coffee.',1,'doesn\'t','مع she نستخدم doesn\'t.'],['Does she likes music?',2,'like','بعد Does يأتي الفعل بدون s.']]},
+{id:'pc',g:[3,8],i:'🏃',t:'المضارع المستمر',e:'Present Continuous',
+ r:'لما يحدث <b>الآن</b>. نكوّنه بـ <b>am / is / are</b> + الفعل مع <b>ing</b>: She is reading now.',
+ x:[['I am eating lunch now.','أنا آكل الغداء الآن.'],['They are playing outside.','هم يلعبون في الخارج.']],
+ mcq:[['Look! The baby ___.',['is sleeping','sleeps','sleep'],0,'Look! تدل على الآن، فنستخدم is + ing.'],['We ___ TV now.',['are watching','is watching','watch'],0,'مع we نستخدم are + ing.'],['I ___ my homework at the moment.',['am doing','is doing','do'],0,'at the moment = الآن، ومع I نستخدم am.'],['Listen! She ___.',['is singing','sings','sing'],0,'Listen! تدل على حدث الآن.'],['They ___ in the pool right now.',['are swimming','swim','is swimming'],0,'right now = الآن، ومع they نستخدم are.']],
+ ord:['She is reading a story.','We are playing in the garden.','I am writing a letter now.'],
+ err:[['She is read a book now.',2,'reading','بعد is نضيف ing للفعل.'],['They is playing football.',1,'are','مع they نستخدم are.'],['I am eat my lunch now.',2,'eating','بعد am نضيف ing.']]},
+{id:'can',g:[3,8],i:'💪',t:'can و can\'t',e:'can / can\'t',
+ r:'<b>can</b> للقدرة (يستطيع)، و<b>can\'t</b> لعدم القدرة. وبعدها يأتي الفعل بدون <b>to</b> وبدون <b>s</b>: She can swim.',
+ x:[['I can ride a bike.','أستطيع ركوب الدراجة.'],['Fish can\'t walk.','الأسماك لا تستطيع المشي.']],
+ mcq:[['Birds ___ fly.',['can','can\'t'],0,'الطيور تستطيع الطيران.'],['A fish ___ climb trees.',['can\'t','can'],0,'السمكة لا تستطيع تسلق الأشجار.'],['She can ___ very well.',['swim','swims','to swim'],0,'بعد can يأتي الفعل بدون s وبدون to.'],['___ you help me, please?',['Can','Do','Are'],0,'نطلب المساعدة بـ Can you.'],['He can ___ three languages.',['speak','speaks','speaking'],0,'بعد can الفعل في صورته الأصلية.']],
+ ord:['I can speak English.','Can you open the door?','My brother can\'t swim.'],
+ err:[['She can swims fast.',2,'swim','بعد can الفعل بدون s.'],['I can to read English.',2,'','لا نضع to بعد can: I can read English.'],['He cans play the piano.',1,'can','can لا تتغير مع he.']]},
+{id:'there',g:[3,8],i:'🏠',t:'there is و there are',e:'There is / There are',
+ r:'<b>There is</b> (يوجد) مع المفرد، و<b>There are</b> (يوجد) مع الجمع. والسؤال: <b>Is there</b> و<b>Are there</b>',
+ x:[['There is a cat under the table.','توجد قطة تحت الطاولة.'],['There are ten students in the class.','يوجد عشرة طلاب في الفصل.']],
+ mcq:[['There ___ a park near my house.',['is','are'],0,'a park مفرد.'],['There ___ many stars in the sky.',['are','is'],0,'many stars جمع.'],['___ there a bank here?',['Is','Are'],0,'a bank مفرد.'],['There ___ some books on the shelf.',['are','is'],0,'books جمع.'],['There ___ an apple in my bag.',['is','are'],0,'an apple مفرد.']],
+ ord:['There is a big tree.','There are three cats.','Is there a shop here?'],
+ err:[['There are a dog in the garden.',1,'is','a dog مفرد، فنقول There is.'],['There is five chairs in the room.',1,'are','five chairs جمع.'],['Is there two cars outside?',0,'Are','two cars جمع، فنسأل Are there.']]},
+{id:'prep',g:[2,7],i:'📦',t:'حروف المكان',e:'in / on / under / next to',
+ r:'<b>in</b> داخل، <b>on</b> فوق (ملامس)، <b>under</b> تحت، <b>next to</b> بجانب، <b>between</b> بين، <b>behind</b> خلف.',
+ x:[['The cat is under the bed.','القطة تحت السرير.'],['The book is on the desk.','الكتاب على المكتب.']],
+ mcq:[['The ball is ___ the box. (داخل)',['in','on','under'],0,'in تعني داخل.'],['The cup is ___ the table. (فوق)',['on','in','under'],0,'on تعني فوق وملامس.'],['The shoes are ___ the bed. (تحت)',['under','on','in'],0,'under تعني تحت.'],['The bank is ___ the school. (بجانب)',['next to','in','under'],0,'next to تعني بجانب.'],['The car is ___ the house. (خلف)',['behind','on','in'],0,'behind تعني خلف.']],
+ ord:['The pen is on the desk.','The cat is under the chair.','My house is next to the mosque.'],
+ err:[['The fish is on the water.',3,'in','السمكة داخل الماء: in the water.'],['The ball is in the table.',3,'on','الكرة فوق الطاولة: on the table.'],['The picture is in the wall.',3,'on','الصورة معلقة على الحائط: on the wall.']]},
+{id:'past',g:[6,10],i:'⏪',t:'الماضي البسيط',e:'Past Simple',
+ r:'لحدث انتهى في الماضي (yesterday, last week, ago). الأفعال المنتظمة نضيف لها <b>ed</b>: play ← played. والشاذة تُحفظ: go ← <b>went</b>، eat ← <b>ate</b>. وفي النفي والسؤال: <b>didn\'t</b> و<b>Did</b> والفعل في أصله.',
+ x:[['I visited my grandma yesterday.','زرت جدتي أمس.'],['We went to Makkah last year.','ذهبنا إلى مكة العام الماضي.']],
+ mcq:[['Yesterday I ___ football.',['played','play','plays'],0,'yesterday تدل على الماضي، فنضيف ed.'],['She ___ to Jeddah last week.',['went','goes','go'],0,'الماضي من go هو went.'],['We ___ pizza last night.',['ate','eat','eaten'],0,'الماضي من eat هو ate.'],['He didn\'t ___ his homework.',['do','did','does'],0,'بعد didn\'t الفعل في أصله.'],['___ you see the match yesterday?',['Did','Do','Does'],0,'سؤال في الماضي يبدأ بـ Did.']],
+ ord:['I watched a film yesterday.','She went to school early.','Did you finish your homework?'],
+ err:[['I goed to the park yesterday.',1,'went','الماضي من go هو went.'],['She didn\'t played tennis.',2,'play','بعد didn\'t الفعل بدون ed.'],['We visit our uncle last Friday.',1,'visited','last Friday في الماضي، فنقول visited.']]},
+{id:'fut',g:[6,11],i:'🔮',t:'المستقبل',e:'will / going to',
+ r:'<b>will</b> + الفعل للتوقع والقرار الفوري: I will help you. و<b>am/is/are going to</b> + الفعل للخطة المسبقة: We are going to travel.',
+ x:[['It will rain tomorrow.','ستمطر غداً.'],['I am going to study medicine.','سأدرس الطب (خطة).']],
+ mcq:[['I think it ___ sunny tomorrow.',['will be','is','was'],0,'توقع للمستقبل بـ will.'],['We are going ___ our grandparents.',['to visit','visit','visiting'],0,'going to + الفعل.'],['She will ___ you later.',['call','calls','calling'],0,'بعد will الفعل في أصله.'],['Look at the clouds! It ___ rain.',['is going to','will','was'],0,'دليل واضح الآن، فنستخدم going to.'],['Next year I ___ 14 years old.',['will be','am','was'],0,'next year مستقبل.']],
+ ord:['I will call you tomorrow.','They are going to play football.','She will be a doctor.'],
+ err:[['I will to help you.',2,'','بعد will لا نضع to: I will help you.'],['We are going travel next week.',3,'to travel','نقول going to + الفعل.'],['He will plays tomorrow.',2,'play','بعد will الفعل بدون s.']]},
+{id:'comp',g:[5,10],i:'📏',t:'المقارنة والتفضيل',e:'Comparatives & Superlatives',
+ r:'للمقارنة بين شيئين نضيف <b>er</b> ثم <b>than</b>، مثل: <b>taller than</b>. وللصفات الطويلة نستخدم <b>more</b>، مثل: <b>more beautiful than</b>.<br>وللأفضل بين الجميع: <b>the</b> مع <b>est</b>، مثل: <b>the tallest</b>، أو <b>the most</b>، مثل: <b>the most beautiful</b>.<br>وشاذة: <b>good</b> ثم <b>better</b> ثم <b>the best</b>.',
+ x:[['A car is faster than a bike.','السيارة أسرع من الدراجة.'],['This is the best day ever!','هذا أفضل يوم على الإطلاق!']],
+ mcq:[['An elephant is ___ than a dog.',['bigger','big','biggest'],0,'مقارنة بين شيئين: bigger than.'],['Riyadh is the ___ city in Saudi Arabia.',['biggest','bigger','big'],0,'the + est للأفضل بين الجميع.'],['This book is ___ than that one.',['more interesting','interestinger','most interesting'],0,'الصفات الطويلة نستخدم more.'],['She is the ___ student in the class.',['best','better','good'],0,'الأفضل بين الجميع: the best.'],['Today is ___ than yesterday.',['hotter','hot','hottest'],0,'hot ← hotter (نضاعف t).']],
+ ord:['My brother is taller than me.','This is the best school.','Gold is more expensive than silver.'],
+ err:[['He is tall than his father.',2,'taller','في المقارنة نضيف er: taller than.'],['This is the goodest cake.',3,'best','التفضيل من good هو the best.'],['Ali is faster then Omar.',3,'than','في المقارنة نستخدم than.']]},
+{id:'quant',g:[6,10],i:'🧮',t:'much و many و some و any',e:'much / many / some / any',
+ r:'<b>many</b> مع المعدود (many books)، و<b>much</b> مع غير المعدود (much water). <b>some</b> في الإثبات، و<b>any</b> في النفي والسؤال.',
+ x:[['How many apples do you have?','كم تفاحة عندك؟'],['I don\'t have any money.','ليس معي أي نقود.']],
+ mcq:[['How ___ students are in your class?',['many','much'],0,'students معدود.'],['There isn\'t ___ milk in the fridge.',['much','many'],0,'milk غير معدود.'],['I have ___ friends in Jeddah.',['some','any'],0,'جملة مثبتة، فنستخدم some.'],['Do you have ___ questions?',['any','some'],0,'في السؤال نستخدم any غالباً.'],['How ___ sugar do you want?',['much','many'],0,'sugar غير معدود.']],
+ ord:['How many brothers do you have?','I need some water.','We don\'t have any homework.'],
+ err:[['How much books do you have?',1,'many','books معدود، فنقول many.'],['I don\'t have some time.',3,'any','في النفي نستخدم any.'],['I don\'t have many money.',3,'much','money غير معدود، فنقول much.']]},
+{id:'pp',g:[8,12],i:'✅',t:'المضارع التام',e:'Present Perfect',
+ r:'<b>have / has + التصريف الثالث</b> لحدث وقع ونتيجته مستمرة، أو لتجربة في الحياة. ويكثر معه: already, yet, ever, never, since, for.',
+ x:[['I have finished my homework.','أنهيت واجبي (الآن هو منتهٍ).'],['She has never been to London.','لم تذهب إلى لندن قط.']],
+ mcq:[['I have ___ my lunch.',['eaten','ate','eat'],0,'have + التصريف الثالث eaten.'],['She ___ visited Egypt twice.',['has','have','is'],0,'مع she نستخدم has.'],['Have you ___ been to Abha?',['ever','yet','since'],0,'ever للسؤال عن التجربة.'],['They have lived here ___ 2015.',['since','for','ago'],0,'since مع نقطة زمنية محددة.'],['We have known him ___ five years.',['for','since','ago'],0,'for مع مدة زمنية.']],
+ ord:['I have finished my project.','She has never seen snow.','Have you ever been to Makkah?'],
+ err:[['She have done her work.',1,'has','مع she نستخدم has.'],['I have went to Dubai.',2,'gone','التصريف الثالث من go هو gone.'],['We have lived here since five years.',4,'for','five years مدة، فنستخدم for.']]},
+{id:'pass',g:[9,12],i:'🔄',t:'المبني للمجهول',e:'Passive Voice',
+ r:'نركّز على الحدث لا على الفاعل: <b>be + التصريف الثالث</b>. المضارع: is/are made. الماضي: was/were made. ونذكر الفاعل بعد <b>by</b> إن احتجنا.',
+ x:[['Arabic is spoken in many countries.','العربية تُتحدث في دول كثيرة.'],['The car was washed yesterday.','غُسلت السيارة أمس.']],
+ mcq:[['English ___ all over the world.',['is spoken','speaks','is speaking'],0,'مجهول في المضارع: is + spoken.'],['The house ___ in 1990.',['was built','built','is build'],0,'مجهول في الماضي: was + built.'],['These cars ___ in Japan.',['are made','is made','make'],0,'cars جمع، فنستخدم are made.'],['The letter was written ___ my sister.',['by','from','with'],0,'نذكر الفاعل بعد by.'],['The windows ___ every week.',['are cleaned','clean','cleaned'],0,'مجهول في المضارع للجمع.']],
+ ord:['The cake was made by my mother.','Dates are grown in Saudi Arabia.','The book was written in 2010.'],
+ err:[['The window was broke by the ball.',3,'broken','التصريف الثالث من break هو broken.'],['These phones is made in Korea.',2,'are','phones جمع، فنقول are made.'],['The room cleans every day.',2,'is cleaned','الغرفة لا تنظف نفسها: is cleaned.']]},
+{id:'cond',g:[9,12],i:'🔀',t:'الجمل الشرطية',e:'Conditionals',
+ r:'<b>الشرط الأول</b> (ممكن): If + مضارع، will + فعل: If it rains, I will stay home. <b>الشرط الثاني</b> (تخيّلي): If + ماضٍ، would + فعل: If I had wings, I would fly.',
+ x:[['If you study, you will pass.','إن ذاكرت ستنجح.'],['If I were rich, I would help the poor.','لو كنت غنياً لساعدت الفقراء.']],
+ mcq:[['If it rains, we ___ at home.',['will stay','stayed','would stayed'],0,'الشرط الأول: will + الفعل.'],['If I ___ a bird, I would fly.',['were','am','will be'],0,'الشرط الثاني نستخدم were.'],['If you heat ice, it ___.',['melts','melted','would melt'],0,'حقيقة علمية: مضارع + مضارع.'],['If she studied, she ___ pass.',['would','will','can'],0,'الشرط الثاني: would.'],['If you ___ hard, you will succeed.',['work','worked','will work'],0,'بعد If في الشرط الأول مضارع.']],
+ ord:['If you study, you will pass.','If I had time, I would read more.','If it rains, we will stay inside.'],
+ err:[['If it rain, I will stay home.',2,'rains','بعد If في الشرط الأول مضارع: If it rains.'],['If I was you, I would study.',2,'were','نقول If I were you.'],['If he studies, he would pass.',4,'will','الشرط الأول: will pass.']]},
+{id:'rel',g:[9,12],i:'🔗',t:'ضمائر الوصل',e:'who / which / where',
+ r:'<b>who</b> للعاقل (الذي/التي)، و<b>which</b> لغير العاقل، و<b>where</b> للمكان.',
+ x:[['The man who lives next door is a doctor.','الرجل الذي يسكن بجوارنا طبيب.'],['This is the school where I study.','هذه المدرسة التي أدرس فيها.']],
+ mcq:[['The girl ___ won the prize is my cousin.',['who','which','where'],0,'girl عاقل، فنستخدم who.'],['I like the car ___ is red.',['which','who','where'],0,'car غير عاقل.'],['This is the city ___ I was born.',['where','which','who'],0,'city مكان.'],['The teacher ___ helped me is kind.',['who','which','where'],0,'teacher عاقل.'],['The book ___ I read was exciting.',['which','who','where'],0,'book غير عاقل.']],
+ ord:['The boy who helped me is kind.','This is the house where I live.','I lost the pen which you gave me.'],
+ err:[['The man which called you is here.',2,'who','man عاقل، فنستخدم who.'],['This is the park who we play.',4,'where','park مكان.'],['I have a cat who sleeps all day.',4,'which','القطة غير عاقلة، فالأدق which.']]},
+{id:'mod',g:[8,12],i:'📜',t:'أفعال الوجوب والنصيحة',e:'must / should / have to',
+ r:'<b>must</b> للوجوب القوي، و<b>have to</b> للالتزام، و<b>should</b> للنصيحة، و<b>mustn\'t</b> للمنع. وبعدها الفعل في أصله (ما عدا have to).',
+ x:[['You must wear a seatbelt.','يجب أن تربط حزام الأمان.'],['You should drink more water.','ينبغي أن تشرب ماءً أكثر.']],
+ mcq:[['You ___ sleep early. It\'s good for you.',['should','mustn\'t','can\'t'],0,'نصيحة: should.'],['Students ___ cheat in exams.',['mustn\'t','should','have to'],0,'منع: mustn\'t.'],['She has ___ wear a uniform at school.',['to','must','should'],0,'have to + الفعل.'],['You must ___ your homework.',['do','to do','doing'],0,'بعد must الفعل في أصله.'],['He ___ go to school on Friday.',['doesn\'t have to','mustn\'t','should'],0,'لا يلزمه (ليس ممنوعاً): doesn\'t have to.']],
+ ord:['You should eat healthy food.','We must respect our teachers.','She has to wake up early.'],
+ err:[['You should to sleep early.',2,'','بعد should لا نضع to: You should sleep early.'],['He musts finish his work.',1,'must','must لا تتغير.'],['She have to study tonight.',1,'has','مع she نقول has to.']]},
+{id:'rep',g:[10,12],i:'💬',t:'الكلام المنقول',e:'Reported Speech',
+ r:'عند نقل كلام شخص نرجع الزمن خطوة للوراء غالباً: am ← <b>was</b>، will ← <b>would</b>، can ← <b>could</b>، والمضارع ← ماضٍ. ونغيّر الضمائر حسب المعنى.',
+ x:[['"I am tired." → He said he was tired.','قال إنه متعب.'],['"I will come." → She said she would come.','قالت إنها ستأتي.']],
+ mcq:[['"I am busy." → She said she ___ busy.',['was','is','will be'],0,'am ترجع إلى was.'],['"I will help." → He said he ___ help.',['would','will','can'],0,'will ترجع إلى would.'],['"I can swim." → She said she ___ swim.',['could','can','will'],0,'can ترجع إلى could.'],['"I like tea." → He said he ___ tea.',['liked','likes','like'],0,'المضارع يرجع إلى الماضي.'],['He told me ___ he was late.',['that','what','which'],0,'ننقل الكلام بـ that.']],
+ ord:['She said she was happy.','He told me that he would come.','They said they could help.'],
+ err:[['He said he is tired.',3,'was','في الكلام المنقول: is ← was.'],['She said she will call me.',3,'would','will ← would.'],['He said me that he was late.',1,'told','نقول told me أو said that.']]}
+];
+
+let GQ=null;
+// يعزل الكلمات الإنجليزية داخل النص العربي حتى لا يختلط ترتيبها
+const bidi=h=>String(h).split(/(<[^>]+>)/).map(x=>x[0]==='<'?x:x.replace(/\(?[A-Za-z][A-Za-z'’ ,/+-]*[A-Za-z'’]\)?|[A-Za-z]/g,m=>`<bdi>${m}</bdi>`)).join('');
+const gStars=(p,id)=>((p.gram||{})[id]||0);
+const gFits=(t,gr)=>gr>=t.g[0]&&gr<=t.g[1];
+function vGram(){const p=cur();const mine=GTOP.filter(t=>gFits(t,p.grade)),rest=GTOP.filter(t=>!gFits(t,p.grade));const tot=GTOP.reduce((a,t)=>a+gStars(p,t.id),0);
+ const tile=t=>{const st=gStars(p,t.id);return `<button class="gtile${st?' done':''}" data-gtop="${t.id}"><span class="gi">${t.i}</span><b>${bidi(t.t)}</b><small dir="ltr">${t.e}</small><span class="gs">${[1,2,3].map(k=>k<=st?'⭐':'☆').join('')}</span></button>`};
+ return header()+band('🧪 مختبر القواعد',g('درس قصير، ثم تحدٍّ من 8 أسئلة: اختر، ورتّب، واصطد الخطأ!','درس قصير، ثم تحدٍّ من 8 أسئلة: اختاري، ورتّبي، واصطادي الخطأ!'))+`<div class="sec">
+ <div class="card row between"><b>نجومك في المختبر</b><span class="chip">⭐ ${tot} من ${GTOP.length*3}</span></div>
+ <h2>دروس ${GRADES[p.grade]}</h2><div class="ggrid">${mine.map(tile).join('')}</div>
+ <h2>دروس أخرى للمراجعة والتقدّم</h2><div class="ggrid">${rest.map(tile).join('')}</div></div>`}
+function gStart(id){const t=GTOP.find(x=>x.id===id);if(!t)return;GQ={t,phase:'learn'};go('gramRun')}
+function gBuild(t){const it=[];shuf(t.mcq.slice()).slice(0,4).forEach(m=>{const ch=shuf(m[1].map((x,j)=>({x,j})));it.push({k:'mcq',q:m[0],c:ch.map(o=>o.x),a:ch.findIndex(o=>o.j===m[2]),why:m[3]})});
+ shuf(t.ord.slice()).slice(0,2).forEach(sn=>{const w=sn.split(' ');let pool;let n=0;do{pool=shuf(w.map((x,j)=>({x,j})))}while(n++<5&&pool.every((o,k)=>o.j===k));it.push({k:'ord',ans:sn,pool,pick:[]})});
+ shuf(t.err.slice()).slice(0,2).forEach(e=>it.push({k:'err',w:e[0].split(' '),bad:e[1],fix:e[2],why:e[3]}));
+ return shuf(it)}
+function gPlay(){GQ.items=gBuild(GQ.t);GQ.i=0;GQ.ok=0;GQ.combo=0;GQ.best=0;GQ.res=null;GQ.phase='play';render()}
+function gAnswer(ok,extra){const it=GQ.items[GQ.i];GQ.res=Object.assign({ok},extra||{});if(ok){GQ.ok++;GQ.combo++;GQ.best=Math.max(GQ.best,GQ.combo)}else GQ.combo=0;
+ record({sec:'en',cat:'grammar'},ok,'practice',null);render();setTimeout(()=>{const el=document.querySelector('.gfb');if(el)el.scrollIntoView({behavior:'smooth',block:'center'})},60)}
+function gNext(){if(GQ.i<GQ.items.length-1){GQ.i++;GQ.res=null;render();window.scrollTo(0,0);return}
+ const p=cur();const n=GQ.items.length,st=GQ.ok>=n-1?3:GQ.ok>=n-3?2:GQ.ok>=Math.ceil(n/3)?1:0;p.gram=p.gram||{};const old=p.gram[GQ.t.id]||0;GQ.stars=st;GQ.newBest=st>old;
+ if(st>old){p.gram[GQ.t.id]=st;if(st>=2&&old<2)lg(p).dc++}touchDay(p);save();GQ.phase='done';render();window.scrollTo(0,0)}
+const gSent=s=>s.replace(/[.,!?]/g,'').trim().toLowerCase();
+function vGramRun(){if(!GQ)return vGram();const t=GQ.t;const p=cur();
+ const top=`<div class="qhead"><h2>${t.i} ${bidi(t.t)}</h2><button class="x" data-act="gram">الدروس</button></div>`;
+ if(GQ.phase==='learn')return header()+top+`<div class="sec"><div class="card stack glearn pop"><span class="chip" dir="ltr" style="align-self:flex-start">${t.e}</span><p style="margin:0;line-height:2">${bidi(t.r)}</p>
+  <div class="stack" style="gap:8px">${t.x.map(([en,ar])=>`<div class="gex"><button class="speak" data-say="${esc(en.replace(/[←→]/g,','))}">${ICON.spk}</button><span class="grow"><b dir="ltr" class="en">${esc(en)}</b><br><span class="note">${bidi(esc(ar))}</span></span></div>`).join('')}</div></div>
+  <button class="btn wide" data-gact="play">🚀 ${g('ابدأ','ابدئي')} التحدي (8 أسئلة)</button>${gStars(p,t.id)?`<p class="note" style="text-align:center;margin:0">أفضل نتيجة لك: ${'⭐'.repeat(gStars(p,t.id))}</p>`:''}</div>`;
+ if(GQ.phase==='done'){const st=GQ.stars,n=GQ.items.length;const msg=st===3?g('رائع! أنت نجم القواعد 🌟','رائعة! أنتِ نجمة القواعد 🌟'):st===2?g('أحسنت! اقتربت من النجوم الثلاث.','أحسنتِ! اقتربتِ من النجوم الثلاث.'):st===1?g('بداية جيدة، راجع الدرس وجرّب مرة أخرى.','بداية جيدة، راجعي الدرس وجرّبي مرة أخرى.'):g('لا بأس! اقرأ الدرس مرة أخرى ثم جرّب.','لا بأس! اقرئي الدرس مرة أخرى ثم جرّبي.');
+  return header()+top+`<div class="sec"><div class="card stack pop" style="align-items:center;text-align:center"><div class="gstars">${[1,2,3].map(k=>`<span class="${k<=st?'on':''}" style="animation-delay:${k*.25}s">⭐</span>`).join('')}</div><div class="big">${GQ.ok}/${n}</div><p style="margin:0">${msg}</p>${GQ.best>=3?`<span class="chip">🔥 أطول سلسلة صحيحة: ${GQ.best}</span>`:''}${GQ.newBest&&st?`<span class="chip" style="background:#FFF1C9;color:#8a5a00">🏅 رقم قياسي جديد في هذا الدرس!</span>`:''}</div>
+  <div class="row"><button class="btn grow" data-gact="play">إعادة التحدي</button><button class="btn plain grow" data-gact="learn">مراجعة الدرس</button></div><button class="btn plain wide" data-act="gram">درس آخر</button></div>`}
+ const it=GQ.items[GQ.i],r=GQ.res,n=GQ.items.length;let body='';
+ if(it.k==='mcq'){const parts=esc(it.q).split('___');body=`<p class="gtype">✍️ ${g('اختر','اختاري')} الكلمة المناسبة</p><div class="card gsent" dir="ltr">${parts[0]}<span class="gblank${r?(r.ok?' ok':' bad'):''}">${r?esc(it.c[it.a]):'____'}</span>${parts[1]||''}</div>
+  <div class="choices">${it.c.map((c,k)=>`<button class="choice ${r?(k===it.a?'ok':k===r.k?'bad':''):''}" data-gch="${k}" ${r?'disabled':''}><span class="t ltr">${esc(c)}</span></button>`).join('')}</div>`}
+ else if(it.k==='ord'){body=`<p class="gtype">🧩 ${g('رتّب','رتّبي')} الكلمات لتكوّن جملة صحيحة</p><div class="card gline${r?(r.ok?' ok':' bad'):''}" dir="ltr">${it.pick.length?it.pick.map((j,k)=>`<button class="gw on" data-gu="${k}" ${r?'disabled':''}>${esc(it.pool[j].x)}</button>`).join(''):'<span class="note">اضغط على الكلمات بالترتيب…</span>'}</div>
+  <div class="gpool" dir="ltr">${it.pool.map((o,j)=>it.pick.includes(j)?`<span class="gw ghost">${esc(o.x)}</span>`:`<button class="gw" data-gw="${j}" ${r?'disabled':''}>${esc(o.x)}</button>`).join('')}</div>
+  ${r?'':`<div class="row"><button class="btn grow" data-gact="check" ${it.pick.length===it.pool.length?'':'disabled'}>تحقّق ✓</button><button class="btn plain" data-gact="clear">مسح</button></div>`}`}
+ else{body=`<p class="gtype">🎯 ${g('اصطد','اصطادي')} الكلمة الخطأ في الجملة</p><div class="card gpool gerr" dir="ltr">${it.w.map((w,k)=>`<button class="gw${r?(k===it.bad?' fixme':k===r.k?' wrong':''):''}" data-ge="${k}" ${r?'disabled':''}>${esc(w)}</button>`).join('')}</div>`}
+ let fb='';if(r){const right=it.k==='mcq'?it.q.replace('___',it.c[it.a]):it.k==='ord'?it.ans:it.w.map((w,k)=>k===it.bad?(it.fix?it.fix+((w.match(/[.,!?]+$/)||[''])[0]):''):w).filter(Boolean).join(' ');
+  fb=`<div class="fb gfb ${r.ok?'ok':'bad'} pop"><h3>${r.ok?(GQ.combo>=3?`🔥 ${GQ.combo} متتالية! ممتاز`:g('✓ إجابة صحيحة!','✓ إجابة صحيحة!')):'✗ ليست صحيحة'}</h3>${it.k==='err'&&!r.ok?`<p style="margin:0">الكلمة الخطأ: <b dir="ltr">${esc(it.w[it.bad])}</b></p>`:''}${it.why?`<p style="margin:0">${bidi(esc(it.why))}</p>`:''}
+  <div class="gright" dir="ltr"><button class="speak" data-say="${esc(right)}">${ICON.spk}</button><b>${esc(right)}</b></div></div><button class="btn wide" data-gact="next">${GQ.i<n-1?'التالي':'عرض النتيجة'}</button>`}
+ return header()+top+`<div class="sec"><div class="row between"><p class="prog" style="margin:0">السؤال ${GQ.i+1} من ${n}</p>${GQ.combo>=2?`<span class="chip gcombo">🔥 ×${GQ.combo}</span>`:''}</div><div class="bar"><i style="width:${100*(GQ.i+(r?1:0))/n}%"></i></div>${body}${fb}</div>`}
+function gClick(d){if(!GQ&&!d.gtop)return false;
+ if(d.gtop){gStart(d.gtop);return true}
+ const it=GQ.items&&GQ.items[GQ.i];
+ if(d.gact){const a=d.gact;if(a==='play')gPlay();else if(a==='learn'){GQ.phase='learn';render()}else if(a==='next')gNext();
+  else if(a==='clear'&&it){it.pick=[];render()}else if(a==='check'&&it){const said=it.pick.map(j=>it.pool[j].x).join(' ');gAnswer(gSent(said)===gSent(it.ans))}return true}
+ if(d.gch!=null&&it&&!GQ.res){const k=+d.gch;gAnswer(k===it.a,{k});return true}
+ if(d.gw!=null&&it&&!GQ.res){it.pick.push(+d.gw);if(it.pick.length===it.pool.length){const said=it.pick.map(j=>it.pool[j].x).join(' ');gAnswer(gSent(said)===gSent(it.ans))}else render();return true}
+ if(d.gu!=null&&it&&!GQ.res){it.pick.splice(+d.gu,1);render();return true}
+ if(d.ge!=null&&it&&!GQ.res){const k=+d.ge;gAnswer(k===it.bad,{k});return true}
+ return false}
 /* ============ الشاشات ============ */
 const T=(t,mt,act,pri)=>`<button class="tile${pri?' pri':''}" data-act="${act}"><span class="grow"><h3>${t}</h3><span class="meta">${mt}</span></span><span class="go" aria-hidden="true">‹</span></button>`;
 function wpick(keys,st){const w=keys.map(k=>{const x=st[k];return(!x||x.t<3)?1:.3+(1-x.c/x.t)});let r=Math.random()*w.reduce((a,b)=>a+b,0);for(let i=0;i<keys.length;i++){if((r-=w[i])<=0)return keys[i]}return keys[keys.length-1]}
@@ -2088,6 +2273,7 @@ function vEn(){const p=cur();const hc=Object.keys(p.hard).length;const pl=planOf
  return header()+band('الإنجليزي',`${GRADES[p.grade]} · ${TERMS[p.term]}`)+`
  <div class="sec"><button class="talkcard" data-act="talk"><span class="tcmic">${pl.talk?'✓':MICSVG}</span><span class="grow"><b>المحادثة الصوتية</b><span>${pl.talk?'تم اليوم ✓ · اضغط لمحادثة أخرى':g('تكلّم','تكلّمي')+' بالإنجليزي، والتطبيق يسمع'+g('ك','كِ')+' ويصحّح ل'+g('ك','كِ')}</span></span><span class="go">‹</span></button>
  ${T('كلمات اليوم'+(pl.enDay?' ✓':''),pl.enDay?'تم اليوم · اضغط للتدريب مرة أخرى':'5 كلمات جديدة، ثم 10 أسئلة عليها وعلى القواعد والقراءة','enDay',!pl.enDay)}
+ <button class="gcard" data-act="gram"><span class="gi">🧪</span><span class="grow"><b>مختبر القواعد</b><span>${g('دروس قصيرة وتحديات ممتعة: اختر، ورتّب الجملة، واصطد الخطأ','دروس قصيرة وتحديات ممتعة: اختاري، ورتّبي الجملة، واصطادي الخطأ')} · ⭐ ${GTOP.reduce((a,t)=>a+gStars(p,t.id),0)}</span></span><span class="go">‹</span></button>
  ${T('تدريب إضافي','10 أسئلة جديدة: مفردات وقواعد واستماع وقراءة','enTrain')}
  ${hc?T('الكلمات الصعبة',hc+' كلمات أخطأت فيها تحتاج مراجعة','hard'):''}
  </div>`}
@@ -2207,7 +2393,7 @@ const AUTHV=['start','plogin','loading'];
 function render(){if(CLOUD){if(!C.ready&&view.name!=='loading')view={name:'loading'};else if(C.ready&&!C.user&&!['start','plogin'].includes(view.name))view={name:'start'};else if(C.ready&&C.mode==='admin'&&!ADMV.includes(view.name))view={name:'admin'};else if(C.ready&&C.mode==='student'&&S.profiles.length&&cur()&&cur().status==='pending'&&!C.asAdmin)view={name:'wait'};else if(C.ready&&C.mode==='student'&&!S.profiles.length&&!['start','loading','plogin'].includes(view.name))view={name:'start'};else if(C.ready&&C.mode==='student'&&isPar()&&!['pboard','who','wait'].includes(view.name))view={name:'pboard'}}
  const p=cur();document.body.dataset.sec=secOf();if(!CLOUD&&!AUTHV.includes(view.name)&&!S.profiles.length&&view.name!=='setup'){view={name:'setup',rows:[{name:'',gender:'m',grade:1,term:1}]}}
  document.body.dataset.g=(view.name==='form'?view.f.gender:view.name==='setup'?'m':(p?p.gender:'m'));
- const map={pboard:vPBoard,talkList:vTalkList,quran:vQuran,quranRun:vQuranRun,wait:vWait,talkRun:vTalkRun,admin:vAdmin,adBoard:vAdBoard,start:vStart,plogin:vPlogin,loading:vLoading,who:vWho,home:vHome,en:vEn,qd:vQd,flash:vFlash,readList:vReadList,hard:vHard,mist:vMist,quiz:vQuiz,result:vResult,parent:vParent,form:vForm,setup:vSetup,comp:vComp};
+ const map={gram:vGram,gramRun:vGramRun,pboard:vPBoard,talkList:vTalkList,quran:vQuran,quranRun:vQuranRun,wait:vWait,talkRun:vTalkRun,admin:vAdmin,adBoard:vAdBoard,start:vStart,plogin:vPlogin,loading:vLoading,who:vWho,home:vHome,en:vEn,qd:vQd,flash:vFlash,readList:vReadList,hard:vHard,mist:vMist,quiz:vQuiz,result:vResult,parent:vParent,form:vForm,setup:vSetup,comp:vComp};
  app.innerHTML=(map[view.name]||vWho)();
  const nav=$('#nav');nav.hidden=true||!p||['who','form','quiz','setup','talkRun',...AUTHV,...ADMV].includes(view.name);document.body.classList.toggle('has-nav',!nav.hidden);
  nav.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.go===view.name||(b.dataset.go==='en'&&['flash','readList','hard','talkList','talkRun'].includes(view.name))||(b.dataset.go==='qd'&&view.name==='mist')));
@@ -2271,6 +2457,7 @@ function act(a){const p=cur();if(cloudAct(a))return;
  case 'qSkip':if(Q.i<Q.vs.length-1){Q.i++;Q.fin='';render()}else{Q.done=true;qStopFlow(false);qAdvance(cur());save();render()}break;
  case 'tkEndFree':try{REC&&REC.abort()}catch(e){}if(TK){TK.done=true;if(TK.i>0)tkFinish();render();tkScroll()}break;
  case 'tkShow':tkShow();break;
+ case 'gram':go('gram');break;
  case 'enTrain':startQuiz({title:'تدريب الإنجليزي',kind:'enTrain',back:'en',items:enTrainItems(p)});break;
  case 'goQ':lastQtab='q';go('qd');break;
  case 'goT':lastQtab='t';go('qd');break;
@@ -2306,6 +2493,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
  if(d.say){speak(d.say);return}
  if(d.copy){const t=d.copy;try{navigator.clipboard.writeText(t).then(()=>toast(t.length>24?'تم نسخ الرابط':'تم النسخ: '+t),()=>toast(t))}catch(e){toast(t)}return}
  if(d.talk){startTalk(d.talk);return}
+ if((d.gtop||d.gact||d.gch!=null||d.gw!=null||d.gu!=null||d.ge!=null)&&gClick(d))return;
  if(d.qmode){Q.hafiz=d.qmode==='hafiz';Q.hint=null;render();return}
  if(d.qsurah){qPickSurah(+d.qsurah);return}
  if(d.tkfirst){const q=cur();q.talkFirst=d.tkfirst;save();render();return}
