@@ -313,6 +313,11 @@ const D = {
  'معلمة':['Teacher (female)','老师（女）'],
  'تغيير الصفة':['Change role','更改身份'],
  'تم تغيير الصفة':['Role changed','身份已更改'],
+ 'معاينة صفحة التسجيل':['Registration page preview','注册页面预览'],
+ 'هذه الصفحة كما يراها المسجّل الجديد عند فتح التطبيق أول مرة. الإرسال هنا معطّل، لأنها معاينة فقط.':['This is the page a new user sees when opening the app for the first time. Sending is disabled because this is only a preview.','这是新用户第一次打开应用时看到的页面。这里只是预览，无法提交。'],
+ 'هذه معاينة فقط، لا يُرسل الطلب.':['This is only a preview; the request is not sent.','这只是预览，申请不会提交。'],
+ 'صفحة التسجيل للجدد':['Registration page for newcomers','新用户注册页面'],
+ 'شاهد ما يراه المسجّل الجديد عند فتح التطبيق أول مرة':['See what a new user sees when opening the app for the first time','查看新用户第一次打开应用时看到的内容'],
  'تستطيع أيضاً تجربة المحادثات بالأسفل لتعرف ما يتدرّب عليه طلابك، دون أن تُحسب نقاط.':['You can also try the conversations below to see what your students practise — no points are counted.','你也可以试试下面的对话，了解学生在练什么，不计积分。'],
  'اختر صفتك: طالب، طالبة، ولي أمر، ولية أمر، معلم، أو معلمة.':['Choose your role: student, parent or teacher.','请选择身份：学生、家长或老师。'],
  'أرسل طلب الانضمام':['Send join request','发送加入申请'],
@@ -680,15 +685,23 @@ function vParent(m){
     <div><h2>تقدّم المتنافسين</h2><div>${!A ? '<p class="sub" style="margin:0">جارٍ التحميل…</p>' : !A.length ? '<p class="sub" style="margin:0">لا يوجد متنافسون بعد.</p>' : A.map(row).join('')}</div></div>
     <p class="sub" style="margin:0">${isTeacher(m) ? 'تستطيع أيضاً تجربة المحادثات بالأسفل لتعرف ما يتدرّب عليه طلابك، دون أن تُحسب نقاط.' : 'تستطيع أيضاً تجربة المحادثات بالأسفل لتعرف ما يتدرّب عليه ابنك أو ابنتك، دون أن تُحسب نقاط.'}</p></div>`;
 }
-function vComp(){
-  if (X.off) return '';
-  if (!X.ready || (X.uid && !X.meLoaded)) return `<div class="card"><p class="sub" style="margin:0">جارٍ تحميل المنافسة…</p></div>`;
-  const m = X.me;
-  if (!m) return `<form id="joinform" class="card stack"><div><h2>انضم إلى «ني هاو»</h2><p class="sub">سجّل اسمك وصفتك، ويُفتح لك التطبيق بعد موافقة المشرف. ولي الأمر والمعلم يدخلان للاطلاع والمتابعة فقط، ولا يدخلان المنافسة.</p></div>
+function joinForm(){ return `<form id="joinform" class="card stack"><div><h2>انضم إلى «ني هاو»</h2><p class="sub">سجّل اسمك وصفتك، ويُفتح لك التطبيق بعد موافقة المشرف. ولي الأمر والمعلم يدخلان للاطلاع والمتابعة فقط، ولا يدخلان المنافسة.</p></div>
     <label class="f">الاسم<input type="text" class="ar" id="jname" maxlength="20" autocomplete="off" value="${esc(JF.name)}" placeholder="اكتب اسمك"></label>
     <div class="seg">${[['m','student','طالب'],['f','student','طالبة'],['m','parent','ولي أمر'],['f','parent','ولية أمر'],['m','teacher','معلم'],['f','teacher','معلمة']].map(([gn, rl, lb]) => { const on = JF.gender === gn && (JF.role || 'student') === rl; return `<button type="button" class="${on ? 'on' : ''}" data-gen="${gn}" data-role="${rl}" aria-pressed="${on}" style="flex:1 1 40%">${lb}</button>`; }).join('')}</div>
     ${X.err ? `<div class="warn">${esc(X.err)}</div>` : ''}
     <button class="btn wide" type="submit" ${X.busy ? 'disabled' : ''}>${X.busy ? 'جارٍ الإرسال…' : 'أرسل طلب الانضمام'}</button></form>`;
+}
+/* معاينة المشرف لصفحة التسجيل كما يراها المسجّل الجديد */
+function vPreview(){
+  return header() + `<div class="qhead"><h2>معاينة صفحة التسجيل</h2><button class="x" data-act="admin">لوحة المشرف</button></div><div class="sec"><div class="warn">هذه الصفحة كما يراها المسجّل الجديد عند فتح التطبيق أول مرة. الإرسال هنا معطّل، لأنها معاينة فقط.</div>
+   <button type="button" class="ivcard" data-act="intro"><span class="ivplay"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" fill="currentColor"/></svg></span><b>تعرّف على ني هاو</b></button>
+   ${joinForm()}${lockNote(true)}</div>${CREDIT}`;
+}
+function vComp(){
+  if (X.off) return '';
+  if (!X.ready || (X.uid && !X.meLoaded)) return `<div class="card"><p class="sub" style="margin:0">جارٍ تحميل المنافسة…</p></div>`;
+  const m = X.me;
+  if (!m) return joinForm();
   if (m.status === 'pending') return `<div class="card"><h2>طلبك قيد المراجعة</h2><p class="sub">أهلاً ${esc(m.name)}. وصل طلبك إلى المشرف. ${isParent(m) ? 'تُفتح لك لوحة المتابعة هنا فور الموافقة.' : 'تُفتح لك المحادثات والمنافسة هنا فور الموافقة.'}</p></div>`;
   if (m.status === 'approved' && isParent(m)) return vParent(m);
   if (m.status !== 'approved') return `<div class="card"><h2>لم يُقبل طلب الانضمام</h2><p class="sub">${g('تواصل', 'تواصلي')} مع المشرف إن كان ذلك خطأ.</p></div>`;
@@ -703,8 +716,8 @@ function vComp(){
     <div><h2>ترتيب المتنافسين</h2><div>${list}</div></div>
     <p class="sub" style="margin:0">الفهم من أول محاولة: 10 نقاط × المستوى. بعد الإعادة: 5 × المستوى. إكمال المحادثة: 10 نقاط.</p></div>`;
 }
-function lockNote(){
-  const why = X.off ? 'تعذّر الاتصال بخدمة المنافسة. تحقق من الإنترنت ثم أعد فتح الصفحة.'
+function lockNote(guest){
+  const why = guest ? 'المحادثات مخصّصة للمتنافسين المقبولين. سجّل اسمك أولاً، وتُفتح لك بعد موافقة المشرف.' : X.off ? 'تعذّر الاتصال بخدمة المنافسة. تحقق من الإنترنت ثم أعد فتح الصفحة.'
     : !X.ready || (X.uid && !X.meLoaded) ? ''
     : !X.me ? 'المحادثات مخصّصة للمتنافسين المقبولين. سجّل اسمك أولاً، وتُفتح لك بعد موافقة المشرف.'
     : X.me.status === 'pending' ? 'المحادثات مقفلة حتى يوافق المشرف على طلبك.'
@@ -729,6 +742,7 @@ function vAdmin(){
   const who = r => `<span class="grow"><b>${esc(r.name || '')}</b> <select class="kindsel" data-kind="${esc(r.id)}" aria-label="تغيير الصفة" title="تغيير الصفة">${KINDS.map(([v, n]) => `<option value="${v}" ${kind(r) === v ? 'selected' : ''}>${n}</option>`).join('')}</select></span>`;
   const btn = (w, r, label, cls) => `<button class="x ${cls || ''}" data-adm="${w}" data-id="${esc(r.id)}">${X.confirm === w + r.id ? 'تأكيد: ' + label : label}</button>`;
   return header() + `<div class="qhead"><h2>لوحة المشرف</h2><button class="x" data-act="adminOut">خروج المشرف</button></div><div class="sec">
+    <button class="tile" data-act="preview"><span class="grow"><h3>صفحة التسجيل للجدد</h3><span class="meta">شاهد ما يراه المسجّل الجديد عند فتح التطبيق أول مرة</span></span><span class="go">‹</span></button>
     <div class="card"><h3>طلبات الانضمام (${P.length})</h3>${P.length ? P.map(r => `<div class="li">${who(r)}${btn('approve', r, 'موافقة', 'ok')}${btn('reject', r, 'رفض', 'bad')}</div>`).join('') : '<p class="sub">لا توجد طلبات جديدة.</p>'}</div>
     <div class="card"><h3>المتنافسون (${A.length})</h3>${A.length ? A.map(r => `<div class="li">${who(r)}<span class="chip">${r.total || 0} نقطة</span>${btn('reset', r, 'تصفير النقاط')}${btn('reject', r, 'إيقاف', 'bad')}</div>`).join('') : '<p class="sub">لا يوجد متنافسون بعد.</p>'}</div>
     ${PR.length ? `<div class="card"><h3>أولياء الأمور والمعلمون (${PR.length})</h3><p class="sub" style="margin:0">للاطلاع فقط، لا يظهرون في الترتيب.</p>${PR.map(r => `<div class="li">${who(r)}${btn('reject', r, 'إيقاف', 'bad')}</div>`).join('')}</div>` : ''}
@@ -1109,7 +1123,7 @@ function vRun(){
   <div class="sec"><p class="prog">الجملة ${Math.min(TK.i + 1, n)} من ${n} · المستوى ال${LV[s.l]} · ${TK.mode === 'me' ? 'أنت تبدأ' : 'التطبيق يبدأ'}${AIOK ? ' · تصحيح بالذكاء الاصطناعي' : ''}${isParent(X.me) ? ' · وضع الاطلاع (بلا نقاط)' : ''}</p><div class="bar"><i style="width:${100 * (TK.done ? n : TK.i) / n}%"></i></div>
   ${tutorCard()}<div class="chat" aria-live="polite">${log}</div>${ctl}</div>${CREDIT}`;
 }
-function render(){ app.innerHTML = view === 'run' && TK ? vRun() : view === 'admin' ? vAdmin() : vList(); }
+function render(){ app.innerHTML = view === 'run' && TK ? vRun() : view === 'admin' ? vAdmin() : view === 'preview' && X.admin ? vPreview() : vList(); }
 
 /* ============ المقطع التعريفي ============ */
 function closeIntro(){ const el = document.getElementById('intro'); if (!el) return; const v = el.querySelector('video'); if (v){ try{ v.pause(); }catch(e){} } el.remove(); document.body.style.overflow = ''; }
@@ -1138,6 +1152,7 @@ app.addEventListener('click', e => {
   if (b.dataset.lang){ setLang(b.dataset.lang); return; }
   if (b.dataset.gen){ JF.gender = b.dataset.gen; JF.role = b.dataset.role || 'student'; X.err = ''; render(); return; }
   if (b.dataset.adm){ adminDo(b.dataset.adm, b.dataset.id); return; }
+  if (b.dataset.act === 'preview'){ X.err = ''; go('preview'); return; }
   if (b.dataset.act === 'admin'){ X.err = ''; go('admin'); return; }
   if (b.dataset.act === 'home'){ X.err = ''; X.confirm = ''; go('list'); return; }
   if (b.dataset.act === 'adminOut'){ if (authA) authA.signOut(); go('list'); return; }
@@ -1160,7 +1175,7 @@ app.addEventListener('change', e => {
 });
 app.addEventListener('submit', e => {
   e.preventDefault();
-  if (e.target.id === 'joinform'){ if (!X.busy) join(); return; }
+  if (e.target.id === 'joinform'){ if (view === 'preview'){ toast('هذه معاينة فقط، لا يُرسل الطلب.'); return; } if (!X.busy) join(); return; }
   if (e.target.id === 'admform'){ if (!X.busy) adminLogin(); return; }
   const i = $('#tkin'); if (!i || !TK || TK.busy) return;
   const v = i.value.trim(); if (v) tkEval([v.slice(0, 300)]);
