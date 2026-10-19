@@ -81,13 +81,13 @@ input::placeholder{font-family:var(--fb);font-size:15px}
 .bub{max-width:86%;padding:10px 14px;border-radius:18px;line-height:1.55;overflow-wrap:anywhere}
 .bub.bot{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-bottom-left-radius:6px;font-family:var(--fz);font-size:22px}
 .bub.me{align-self:flex-end;background:linear-gradient(135deg,var(--acc),var(--acc2));color:var(--onacc);border-bottom-right-radius:6px;font-family:var(--fz);font-size:20px}
-.bub.sys{align-self:stretch;max-width:100%;direction:rtl;text-align:right;background:var(--badbg);border-radius:14px;font-size:15px}
+.bub.sys{align-self:stretch;max-width:100%;direction:var(--dir);text-align:start;background:var(--badbg);border-radius:14px;font-size:15px}
 .bub.sys.ok{background:var(--okbg)}
 .py{font-family:"Segoe UI","Noto Sans",system-ui,sans-serif;font-size:14px;color:var(--acc);direction:ltr;text-align:left}
-.bubtools{display:flex;gap:6px;margin-top:6px;direction:rtl;justify-content:flex-end}
+.bubtools{display:flex;gap:6px;margin-top:6px;direction:var(--dir);justify-content:flex-end}
 .bubtools .x{font-size:12px;padding:4px 10px;display:inline-flex;align-items:center;gap:4px;font-family:var(--fb)}
 .x svg{width:14px;height:14px}
-.bubar{direction:rtl;text-align:right;font-family:var(--fb);font-size:14px;color:var(--muted);margin-top:4px}
+.bubar{direction:var(--dir);text-align:start;font-family:var(--fb);font-size:14px;color:var(--muted);margin-top:4px}
 .bub.sys .x{margin-top:6px;display:inline-flex;align-items:center;gap:4px}
 .tknote{margin-top:6px;font-size:14px;unicode-bidi:plaintext}
 .tkmodel{font-family:var(--fz);font-size:20px;font-weight:500;margin:6px 0 0;text-align:left;direction:ltr}
@@ -189,15 +189,20 @@ label.f{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:14p
 .tutor.happy .av .eyes{animation:none;transform:scaleY(.75)}
 @media (prefers-reduced-motion:reduce){.tutor *{animation:none!important}}
 .tutor.wait .ts i{background:var(--chalk);animation:tsp .8s infinite}.tutor.wait .av .head{transform:rotate(4deg)}.tutor.wait .av .pupils{transform:translate(-1.2px,-.6px)}
-.toast{position:fixed;inset-inline:16px;bottom:calc(20px + env(safe-area-inset-bottom,0px));margin-inline:auto;max-width:420px;background:var(--ink);color:var(--paper);padding:12px 16px;border-radius:12px;font-size:14px;text-align:center;z-index:20;direction:rtl}
+:root{--dir:rtl}:root[dir="ltr"]{--dir:ltr}
+html[lang="zh-CN"] body{font-family:var(--fz),var(--fb)}
+html[lang="en"] body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.topr{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.langs{display:flex;border:1.5px solid var(--line);border-radius:999px;overflow:hidden;background:var(--card)}
+.langs button{border:none;background:none;padding:5px 10px;font-weight:700;font-size:13px;color:var(--muted);min-width:34px;font-family:var(--fb)}
+.langs button.on{background:var(--acc);color:var(--onacc)}
+.toast{position:fixed;inset-inline:16px;bottom:calc(20px + env(safe-area-inset-bottom,0px));margin-inline:auto;max-width:420px;background:var(--ink);color:var(--paper);padding:12px 16px;border-radius:12px;font-size:14px;text-align:center;z-index:20;direction:var(--dir)}
 @media (min-width:720px){.wrap{max-width:680px;padding-inline:28px}h1{font-size:30px}}
 </style>
 
 <div id="app" class="wrap" dir="rtl" lang="ar"></div>
 
 <script>
-document.documentElement.lang = "ar";
-document.documentElement.dir = "rtl";
 
 /* ============ المحادثات ============
    كل جملة: [كلام التطبيق, بينيين, الترجمة, التلميح, الإجابة النموذجية, بينيين الإجابة, الكلمات المقبولة (| بين البدائل، + للجمع)] */
@@ -267,6 +272,310 @@ const KEY = 'zh-talk-v1';
 let SAVE = {best:{}, level:0};
 try{ const v = JSON.parse(localStorage.getItem(KEY)); if (v && typeof v === 'object') SAVE = Object.assign(SAVE, v); if (!SAVE.best || typeof SAVE.best !== 'object') SAVE.best = {}; }catch(e){}
 const persist = () => { try{ localStorage.setItem(KEY, JSON.stringify(SAVE)); }catch(e){} };
+
+/* ============ لغة الواجهة: عربي / English / 中文 ============
+   الصفحة تُكتب بالعربية، ثم تُترجم نصوصها المعروضة حسب اللغة المختارة.
+   القاموس D: النص العربي ← [الإنجليزي، الصيني]. والأنماط P للنصوص التي فيها أسماء أو أرقام. */
+const LANGS = ['ar', 'en', 'zh'];
+let LANG = 'ar';
+try{ const v = localStorage.getItem('nihao-lang'); if (LANGS.includes(v)) LANG = v; }catch(e){}
+const LI = () => LANG === 'en' ? 0 : 1;
+const D = {
+ // عام
+ 'ني هاو':['Nǐ hǎo','你好'],
+ 'ثبّت التطبيق':['Install app','安装应用'],
+ 'ثبّت التطبيق على جوالك':['Install the app on your phone','把应用安装到手机'],
+ 'المحادثة الصوتية':['Voice conversation','语音对话'],
+ 'تحدّث بالصينية، والتطبيق يسمعك ويصحّح لك.':['Speak Chinese — the app listens and corrects you.','说中文，应用会听并帮你纠正。'],
+ 'تعرّف على ني هاو':['Meet Nǐ hǎo','认识「你好」'],
+ 'تعريف بتطبيق ني هاو':['About the Nǐ hǎo app','「你好」应用介绍'],
+ 'جارٍ تحميل المنافسة…':['Loading the competition…','正在加载比赛…'],
+ 'دخول المشرف':['Supervisor login','管理员登录'],
+ '© الحقوق محفوظة':['© All rights reserved','© 版权所有'],
+ 'فكرة وتنفيذ':['Idea & development','创意与制作'],
+ 'بواسطة':['built with','由'], '· بواسطة':['· built with','· 由'],
+ 'رجوع':['Back','返回'],
+ 'إغلاق':['Close','关闭'],
+ 'إرسال':['Send','发送'],
+ 'جارٍ التحميل…':['Loading…','加载中…'],
+ // الانضمام
+ 'انضم إلى «ني هاو»':['Join “Nǐ hǎo”','加入「你好」'],
+ 'سجّل اسمك وصفتك، ويُفتح لك التطبيق بعد موافقة المشرف. ولي الأمر يدخل للاطلاع والمتابعة فقط، ولا يدخل المنافسة.':['Enter your name and role. The app opens once the supervisor approves you. Parents can only view and follow progress; they do not compete.','填写你的名字和身份，管理员批准后即可使用。家长只能查看和关注进度，不参加比赛。'],
+ 'الاسم':['Name','名字'],
+ 'اكتب اسمك':['Type your name','输入你的名字'],
+ 'اكتب اسمك.':['Please type your name.','请输入你的名字。'],
+ 'طالب':['Student (boy)','学生（男）'],
+ 'طالبة':['Student (girl)','学生（女）'],
+ 'ولي أمر':['Parent (father)','家长（父亲）'],
+ 'ولية أمر':['Parent (mother)','家长（母亲）'],
+ 'اختر صفتك: طالب، طالبة، ولي أمر، أو ولية أمر.':['Choose your role: student or parent.','请选择身份：学生或家长。'],
+ 'أرسل طلب الانضمام':['Send join request','发送加入申请'],
+ 'جارٍ الإرسال…':['Sending…','正在发送…'],
+ 'المنافسة لم تُفعَّل بعد من المشرف. حاول لاحقاً.':['The supervisor has not enabled the competition yet. Try again later.','管理员尚未开启比赛，请稍后再试。'],
+ 'تعذّر إرسال الطلب. تحقق من الإنترنت ثم حاول مرة أخرى.':['Could not send the request. Check your internet and try again.','申请发送失败，请检查网络后重试。'],
+ 'طلبك قيد المراجعة':['Your request is under review','你的申请正在审核'],
+ 'وصل طلبك إلى المشرف.':['Your request reached the supervisor.','你的申请已送达管理员。'],
+ 'تُفتح لك المحادثات والمنافسة هنا فور الموافقة.':['Conversations and the competition open here as soon as you are approved.','批准后，对话和比赛会在这里开放。'],
+ 'تُفتح لك لوحة المتابعة هنا فور الموافقة.':['Your follow-up board opens here as soon as you are approved.','批准后，你的关注面板会在这里开放。'],
+ 'لم يُقبل طلب الانضمام':['Your join request was not accepted','你的加入申请未通过'],
+ 'تواصل مع المشرف إن كان ذلك خطأ.':['Contact the supervisor if this is a mistake.','如有误会，请联系管理员。'],
+ 'تواصلي مع المشرف إن كان ذلك خطأ.':['Contact the supervisor if this is a mistake.','如有误会，请联系管理员。'],
+ 'المحادثات مخصّصة للمتنافسين المقبولين. سجّل اسمك أولاً، وتُفتح لك بعد موافقة المشرف.':['Conversations are for approved competitors. Register your name first; they open after the supervisor approves you.','对话仅对已批准的参赛者开放。请先登记名字，管理员批准后即可使用。'],
+ 'المحادثات مقفلة حتى يوافق المشرف على طلبك.':['Conversations are locked until the supervisor approves your request.','管理员批准申请前，对话处于锁定状态。'],
+ 'المحادثات متاحة للمتنافسين المقبولين فقط.':['Conversations are for approved competitors only.','对话仅对已批准的参赛者开放。'],
+ 'تعذّر الاتصال بخدمة المنافسة. تحقق من الإنترنت ثم أعد فتح الصفحة.':['Could not reach the competition service. Check your internet and reopen the page.','无法连接比赛服务，请检查网络后重新打开页面。'],
+ // المنافسة
+ 'نقاطك':['Your points','你的积分'], 'نقاطكِ':['Your points','你的积分'],
+ 'ترتيب المتنافسين':['Leaderboard','排行榜'],
+ 'جارٍ تحميل الترتيب…':['Loading the leaderboard…','正在加载排行榜…'],
+ 'لا نقاط بعد. ابدأ محادثة لتتصدّر الترتيب.':['No points yet. Start a conversation to top the leaderboard.','还没有积分。开始一段对话，争取排名第一！'],
+ 'لا نقاط بعد. ابدئي محادثة لتتصدّري الترتيب.':['No points yet. Start a conversation to top the leaderboard.','还没有积分。开始一段对话，争取排名第一！'],
+ 'عرض الترتيب كاملاً':['Show full leaderboard','查看完整排行榜'],
+ 'عرض أقل':['Show less','收起'],
+ 'الفهم من أول محاولة: 10 نقاط × المستوى. بعد الإعادة: 5 × المستوى. إكمال المحادثة: 10 نقاط.':['Understood on the first try: 10 points × level. After a retry: 5 × level. Finishing a conversation: 10 points.','第一次就被听懂：10分×级别。重试后听懂：5分×级别。完成一段对话：10分。'],
+ 'فارس المنافسة':['Champion','冠军'], 'فارسة المنافسة':['Champion','冠军'],
+ 'منافس شرس':['Fierce rival','强劲对手'], 'منافسة شرسة':['Fierce rival','强劲对手'],
+ 'منافس قوي':['Strong rival','实力选手'], 'منافسة قوية':['Strong rival','实力选手'],
+ 'صاعد بقوة':['Rising fast','快速上升'], 'صاعدة بقوة':['Rising fast','快速上升'],
+ // ولي الأمر
+ 'تقدّم المتنافسين':['Competitors’ progress','参赛者进度'],
+ 'لا يوجد متنافسون بعد.':['No competitors yet.','还没有参赛者。'],
+ 'تستطيع أيضاً تجربة المحادثات بالأسفل لتعرف ما يتدرّب عليه ابنك أو ابنتك، دون أن تُحسب نقاط.':['You can also try the conversations below to see what your child practises — no points are counted.','你也可以试试下面的对话，了解孩子在练什么，不计积分。'],
+ 'لم يبدأ بعد':['not started yet','尚未开始'],
+ 'الآن':['just now','刚刚'],
+ // المشرف
+ 'بحساب المدير نفسه المستخدم في مِران.':['Use the same admin account as in Miran.','使用与 Miran 相同的管理员账号。'],
+ 'البريد الإلكتروني':['Email','邮箱'],
+ 'كلمة المرور':['Password','密码'],
+ 'دخول':['Log in','登录'],
+ 'جارٍ الدخول…':['Logging in…','正在登录…'],
+ 'اكتب البريد وكلمة المرور.':['Enter the email and password.','请输入邮箱和密码。'],
+ 'تعذّر الدخول. تحقق من البريد وكلمة المرور.':['Login failed. Check the email and password.','登录失败，请检查邮箱和密码。'],
+ 'هذا الحساب ليس حساب المشرف.':['This account is not the supervisor account.','该账号不是管理员账号。'],
+ 'لوحة المشرف':['Supervisor panel','管理员面板'],
+ 'خروج المشرف':['Supervisor logout','管理员退出'],
+ 'موافقة':['Approve','批准'], 'رفض':['Reject','拒绝'], 'قبول':['Accept','接受'], 'حذف':['Delete','删除'],
+ 'إيقاف':['Suspend','停用'], 'تصفير النقاط':['Reset points','积分清零'],
+ 'لا توجد طلبات جديدة.':['No new requests.','没有新的申请。'],
+ 'للاطلاع فقط، لا يظهرون في الترتيب.':['View only; they do not appear on the leaderboard.','仅可查看，不出现在排行榜中。'],
+ 'لم يُنفَّذ الطلب. تحقق من الإنترنت ومن نشر قواعد قاعدة البيانات.':['The action failed. Check the internet and that the database rules are published.','操作失败，请检查网络以及数据库规则是否已发布。'],
+ // الصفحة الرئيسية
+ 'من يبدأ الحوار؟':['Who starts the conversation?','谁先开口？'],
+ 'التطبيق يسأل وأنا أجيب':['The app asks, I answer','应用提问，我回答'],
+ 'أنا أبدأ والتطبيق يرد':['I start, the app replies','我先说，应用回应'],
+ 'التطبيق المبادر:':['The app leads:','应用主导：'],
+ 'أنت المبادر:':['You lead:','你主导：'],
+ 'يسألك التطبيق بصوته، وأنت تجيب بما تريد. تُقبل أي جملة صينية مفهومة ولها علاقة بالحوار، ثم يُعرض لك الرد المثالي لتقارن وتتعلّم.':['The app asks you out loud and you answer as you like. Any understandable Chinese sentence that fits the conversation is accepted, then you see the ideal reply to compare and learn.','应用用语音提问，你自由回答。只要是听得懂、与对话相关的中文句子都算对，之后会显示理想回答，方便对比学习。'],
+ 'يظهر لك معنى الجملة بالعربية، فتقولها أنت بالصينية بصوتك، والتطبيق يرد عليك فقط ولا يسألك. أنت من يقود الحوار. تُقبل أي جملة صينية مفهومة ولها علاقة بالحوار، ثم يُعرض لك الرد المثالي لتقارن وتتعلّم.':['You see the meaning of a sentence and say it in Chinese out loud; the app only replies and never asks you. You lead the conversation. Any understandable Chinese sentence that fits is accepted, then you see the ideal wording to compare and learn.','你会看到一句话的意思，然后用中文说出来；应用只回应，不提问。由你主导对话。只要是听得懂、与对话相关的中文句子都算对，之后会显示理想说法，方便对比学习。'],
+ 'المستوى':['Level','级别'], '(اختياري)':['(optional)','（可选）'],
+ 'الكل':['All','全部'], 'بسيط':['Easy','简单'], 'متوسط':['Medium','中等'], 'صعب':['Hard','困难'],
+ 'المستوى البسيط':['Easy level','简单级'], 'المستوى المتوسط':['Medium level','中等级'], 'المستوى الصعب':['Hard level','困难级'],
+ 'محادثات المستوى البسيط':['Easy conversations','简单对话'],
+ 'محادثات المستوى المتوسط':['Medium conversations','中等对话'],
+ 'محادثات المستوى الصعب':['Hard conversations','困难对话'],
+ 'التعارف':['Getting to know you','认识新朋友'], 'العائلة':['Family','我的家'], 'في المطعم':['At the restaurant','在饭馆'],
+ 'الهوايات':['Hobbies','爱好'], 'التسوّق':['Shopping','买东西'], 'الطقس والعطلة':['Weather & weekend','天气和周末'],
+ 'العمل والمستقبل':['Work & the future','工作与未来'], 'البيئة':['The environment','环境保护'], 'التقنية':['Technology','科技与生活'],
+ // المحادثة
+ 'إنهاء':['End','结束'],
+ 'معلّمتك للمحادثة الصينية':['Your Chinese conversation teacher','你的中文会话老师'],
+ 'تتحدث…':['Speaking…','正在说话…'], 'تستمع إليك…':['Listening to you…','正在听你说…'],
+ 'تقرأ إجابتك…':['Reading your answer…','正在看你的回答…'],
+ 'أحسنت! 👏':['Well done! 👏','太棒了！👏'], 'حاول مرة أخرى 🙂':['Try again 🙂','再试一次 🙂'],
+ 'دورك:':['Your turn:','轮到你：'],
+ 'استمع':['Listen','听'], 'ترجمة':['Translate','翻译'], 'استمع للإجابة':['Listen to the answer','听答案'],
+ 'تكلّم':['Speak','说话'],
+ 'اضغط وتكلّم بالصينية':['Tap and speak Chinese','点击后说中文'],
+ 'أستمع إليك… تكلّم الآن، ثم اضغط للإيقاف':['Listening… speak now, then tap to stop','正在听…请说话，说完点击停止'],
+ 'اكتب بدلاً من ذلك':['Type instead','改为打字'],
+ 'العودة للتحدث بالصوت':['Back to speaking','返回语音'],
+ 'للإجابة بصوتك: اضغط زر المايكروفون في لوحة المفاتيح الصينية.':['To answer by voice, tap the microphone on your Chinese keyboard.','如需语音回答，请点击中文键盘上的麦克风。'],
+ 'اكتب إجابتك بالصينية…':['Type your answer in Chinese…','用中文输入你的回答…'],
+ 'اكتب جملتك بالصينية…':['Type your sentence in Chinese…','用中文输入你的句子…'],
+ 'إجابتك':['Your answer','你的回答'],
+ 'أصحّح إجابتك':['Checking your answer','正在批改'],
+ 'لا أعرف، أظهر الجملة':['I don’t know — show the sentence','我不会，显示句子'],
+ 'لا أعرف، اقترح رداً':['I don’t know — suggest a reply','我不会，给个建议'],
+ 'الجملة التالية':['Next sentence','下一句'], 'عرض النتيجة':['Show result','查看结果'],
+ 'إعادة المحادثة':['Repeat conversation','重新对话'], 'محادثة أخرى':['Another conversation','换一段对话'],
+ 'ممتاز! جملة سليمة.':['Excellent! A correct sentence.','非常好！句子完全正确。'],
+ 'أحسنت! فهمتك.':['Well done! I understood you.','很好！我听懂了。'],
+ 'أحسنت! هذه المرة فهمتك.':['Well done! This time I understood you.','很好！这次我听懂了。'],
+ 'الرد المثالي بكلماتك:':['Ideal reply in your words:','用你的话说的理想回答：'],
+ 'الصيغة المثالية بكلماتك:':['Ideal wording in your words:','用你的话说的理想说法：'],
+ 'الرد المثالي لجملتك:':['Ideal version of your sentence:','你这句话的理想说法：'],
+ 'الصيغة المثالية للجملة:':['Ideal wording of the sentence:','这句话的理想说法：'],
+ 'الرد المثالي:':['Ideal reply:','理想回答：'],
+ 'صيغة أخرى صحيحة:':['Another correct wording:','另一种正确说法：'],
+ 'رد آخر صحيح:':['Another correct reply:','另一种正确回答：'],
+ 'لم أسمع كلاماً صينياً واضحاً. أعد الكلام بنطق أوضح.':['I didn’t hear clear Chinese. Say it again more clearly.','没有听到清楚的中文，请说得更清楚一些。'],
+ 'كرّرت السؤال نفسه. أجب عنه بجملة منك.':['You repeated the question. Answer it with your own sentence.','你重复了问题，请用自己的话回答。'],
+ 'جملتك لا تحمل المعنى المطلوب. حاول مرة أخرى.':['Your sentence doesn’t carry the required meaning. Try again.','你的句子没有表达要求的意思，请再试一次。'],
+ 'فهمت كلامك، لكنه لا يجيب عن السؤال. حاول مرة أخرى.':['I understood you, but it doesn’t answer the question. Try again.','我听懂了，但这没有回答问题，请再试一次。'],
+ 'تلميح:':['Hint:','提示：'],
+ 'تلميح: تبدأ الجملة بـ':['Hint: the sentence starts with','提示：句子以此开头'],
+ 'جرّب هذه الجملة:':['Try this sentence:','试试这句话：'],
+ 'استمع إليها ثم كرّرها بصوتك.':['Listen to it, then repeat it out loud.','先听，然后大声跟读。'],
+ 'لا بأس، ننتقل للجملة التالية. تدرّب عليها لاحقاً:':['No problem, let’s move on. Practise this later:','没关系，我们继续。之后再练这句：'],
+ 'الجملة التي تقولها:':['The sentence to say:','你要说的句子：'],
+ 'رد مقترح:':['Suggested reply:','建议回答：'],
+ 'لم أستطع استخدام المايكروفون من هذه الصفحة. اكتب إجابتك في الخانة، أو أمْلِها بصوتك من زر المايكروفون في لوحة المفاتيح الصينية.':['I couldn’t use the microphone on this page. Type your answer, or dictate it with the microphone on your Chinese keyboard.','此页面无法使用麦克风。请输入回答，或用中文键盘上的麦克风语音输入。'],
+ 'التعرّف على الصوت يحتاج اتصالاً بالإنترنت. تحقق من الاتصال ثم حاول مرة أخرى، أو اكتب إجابتك.':['Speech recognition needs the internet. Check your connection and try again, or type your answer.','语音识别需要联网，请检查网络后重试，或直接输入回答。'],
+ 'لم أسمع صوتك. اضغط زر المايكروفون، ثم تكلّم بوضوح وقرّب الجوال منك.':['I didn’t hear you. Tap the microphone, then speak clearly with the phone close to you.','没有听到你的声音。请点击麦克风，靠近手机清楚地说。'],
+ 'تصحيح بالذكاء الاصطناعي':['AI correction','AI 批改'],
+ 'وضع الاطلاع (بلا نقاط)':['view mode (no points)','浏览模式（不计分）'],
+ 'أنت تبدأ':['you start','你先说'], 'التطبيق يبدأ':['the app starts','应用先说'],
+ // ملاحظات القواعد المحلية
+ 'لا نضع 是 قبل الصفة: نقول 我很高兴 وليس 我是很高兴.':['Don’t put 是 before an adjective: say 我很高兴, not 我是很高兴.','形容词前不用「是」：说「我很高兴」，不说「我是很高兴」。'],
+ 'قبل كلمة العدّ نستخدم 两 وليس 二: نقول 两个 و 两位.':['Before a measure word use 两, not 二: 两个, 两位.','量词前用「两」不用「二」：两个、两位。'],
+ 'نفي 有 يكون بـ 没有 وليس 不有.':['The negative of 有 is 没有, not 不有.','「有」的否定是「没有」，不是「不有」。'],
+ 'لا تجتمع 吗 مع أداة استفهام مثل 什么 أو 谁 في السؤال نفسه.':['吗 doesn’t go with question words like 什么 or 谁 in the same question.','「吗」不和「什么」「谁」等疑问词用在同一个问句里。'],
+ // الصوت
+ 'هذا المتصفح لا يدعم نطق الجمل. جرّب Chrome أو Safari.':['This browser can’t read sentences aloud. Try Chrome or Safari.','此浏览器不支持朗读，请使用 Chrome 或 Safari。'],
+ 'لا يوجد صوت صيني مثبّت على جهازك، لذلك لا أستطيع نطق الجمل. أضف اللغة الصينية من إعدادات «تحويل النص إلى كلام» في الجهاز.':['No Chinese voice is installed on your device, so sentences can’t be read aloud. Add Chinese in your device’s text-to-speech settings.','设备上没有安装中文语音，无法朗读。请在设备的「文字转语音」设置中添加中文。'],
+ 'لم يعمل الصوت. ارفع صوت الجهاز وأوقف الوضع الصامت، ثم اضغط «استمع».':['No sound. Turn up the volume, turn off silent mode, then tap “Listen”.','没有声音。请调高音量、关闭静音，然后点「听」。'],
+ // التثبيت والمشاركة
+ 'ثبّت «ني هاو» على جوالك':['Install “Nǐ hǎo” on your phone','把「你好」安装到手机'],
+ '«ني هاو» مثبّت على جهازك':['“Nǐ hǎo” is installed on your device','「你好」已安装在你的设备上'],
+ 'يظهر بأيقونته بين تطبيقاتك ويفتح مباشرة.':['It appears with its icon among your apps and opens directly.','它会以图标出现在你的应用中，可直接打开。'],
+ 'تفتحه الآن كتطبيق.':['You are using it as an app now.','你现在正以应用方式打开它。'],
+ 'لتثبيته عند غيرك أرسل له الرابط، فيفتحه ويضغط «ثبّت التطبيق» أعلى الصفحة.':['To install it for someone else, send them the link; they open it and tap “Install app” at the top.','想让别人安装，把链接发给对方，打开后点页面顶部的「安装应用」。'],
+ 'إذا ظهر لك أنه مثبّت، فابحث عن أيقونة «ني هاو» بين تطبيقات جوالك. ولإرساله لغيرك:':['If it says it is already installed, look for the “Nǐ hǎo” icon among your apps. To send it to others:','如果提示已安装，请在手机应用中找「你好」图标。发送给别人：'],
+ 'نسخ الرابط':['Copy link','复制链接'], 'واتساب':['WhatsApp','WhatsApp'], 'تم نسخ الرابط':['Link copied','链接已复制'],
+ 'افتح الصفحة في متصفح':['Open the page in','用以下浏览器打开页面：'],
+ 'اضغط':['Tap','点击'], 'اضغط زر':['Tap the','点击'], 'القائمة':['menu','菜单'], 'المشاركة':['Share button','分享按钮'],
+ '(النقاط الثلاث) أعلى الشاشة.':['(three dots) at the top of the screen.','（右上角三个点）。'],
+ '(المربع والسهم للأعلى) أسفل الشاشة.':['(square with an up arrow) at the bottom of the screen.','（方框加向上箭头，在屏幕底部）。'],
+ 'اختر':['Choose','选择'], 'أو':['or','或'], '، ثم':[', then',' ，然后'], 'ثم':['then','然后'],
+ '«تثبيت التطبيق»':['“Install app”','「安装应用」'], '«إضافة إلى الشاشة الرئيسية»':['“Add to Home screen”','「添加到主屏幕」'],
+ '«تثبيت»':['“Install”','「安装」'], '«إضافة»':['“Add”','「添加」'],
+ 'حمّل تطبيق «ني هاو» للمحادثة بالصينية والمنافسة:':['Get the “Nǐ hǎo” app to practise Chinese conversation and compete:','下载「你好」应用，练习中文对话并参加比赛：'],
+ 'تثبيت التطبيق':['Install the app','安装应用'],
+ // معاني جمل المحادثات
+ 'مرحباً! ما اسمك؟':['Hi! What’s your name?','你好！你叫什么名字？'],
+ 'تشرفت بمعرفتك. من أي بلد أنت؟':['Nice to meet you. Which country are you from?','很高兴认识你。你是哪国人？'],
+ 'كم عمرك هذا العام؟':['How old are you this year?','你今年多大？'],
+ 'هل تتكلم الصينية؟':['Do you speak Chinese?','你会说汉语吗？'],
+ 'تتكلم جيداً! إلى اللقاء!':['You speak well! Goodbye!','你说得很好！再见！'],
+ 'كم عدد أفراد عائلتك؟':['How many people are in your family?','你家有几口人？'],
+ 'هل عندك أخ أكبر؟':['Do you have an older brother?','你有哥哥吗？'],
+ 'ما عمل والدك؟':['What does your father do?','你爸爸做什么工作？'],
+ 'هل والدتك بخير؟':['Is your mother well?','你妈妈好吗？'],
+ 'هل تحب عائلتك؟':['Do you love your family?','你爱你的家人吗？'],
+ 'أهلاً بك! كم شخصاً؟':['Welcome! How many people?','欢迎光临！您几位？'],
+ 'ماذا تود أن تأكل؟':['What would you like to eat?','您想吃什么？'],
+ 'ماذا تود أن تشرب؟':['What would you like to drink?','您想喝什么？'],
+ 'هل الطعام لذيذ؟':['Is the food tasty?','菜好吃吗？'],
+ 'المجموع خمسون يواناً.':['That’s fifty yuan in total.','一共五十块。'],
+ 'ما هواياتك؟':['What are your hobbies?','你有什么爱好？'],
+ 'كم مرة تمارسها؟':['How often do you do it?','你多长时间做一次？'],
+ 'مع من تمارسها عادةً؟':['Who do you usually do it with?','你一般跟谁一起？'],
+ 'لماذا تحب هذه الهواية؟':['Why do you like this hobby?','你为什么喜欢这个爱好？'],
+ 'هل تود تعلم هواية جديدة؟':['Would you like to learn a new hobby?','你想学一个新的爱好吗？'],
+ 'مرحباً، ماذا تريد أن تشتري؟':['Hello, what would you like to buy?','你好，你想买什么？'],
+ 'أي لون تفضل؟':['Which colour do you prefer?','你喜欢什么颜色的？'],
+ 'ما مقاسك؟':['What size are you?','你穿多大号的？'],
+ 'سعر هذه القطعة مئتا يوان.':['This one costs two hundred yuan.','这件两百块。'],
+ 'حسناً، مئة وخمسون. كيف ستدفع؟':['OK, one hundred and fifty. How will you pay?','好吧，一百五十块。你怎么付钱？'],
+ 'كيف الطقس اليوم؟':['How’s the weather today?','今天天气怎么样？'],
+ 'ماذا فعلت في العطلة الماضية؟':['What did you do last weekend?','上个周末你做了什么？'],
+ 'هل استمتعت؟':['Did you have fun?','你玩得开心吗？'],
+ 'ماذا تنوي أن تفعل في العطلة القادمة؟':['What are you planning to do next weekend?','下个周末你打算做什么？'],
+ 'أتمنى لك عطلة سعيدة!':['Have a nice weekend!','祝你周末愉快！'],
+ 'ما المهنة التي تريد أن تعمل بها مستقبلاً؟':['What job do you want to do in the future?','你将来想从事什么工作？'],
+ 'لماذا اخترت هذه المهنة؟':['Why did you choose this job?','你为什么选择这个职业？'],
+ 'ما المهارات اللازمة لهذا العمل؟':['What skills does this job need?','做这份工作需要具备哪些能力？'],
+ 'ماذا ستفعل إن واجهت صعوبات؟':['What will you do if you face difficulties?','如果遇到困难，你会怎么办？'],
+ 'أنا واثق أنك ستنجح!':['I’m sure you will succeed!','我相信你一定会成功的！'],
+ 'ما أخطر مشكلة بيئية حالياً برأيك؟':['What do you think is the most serious environmental problem now?','你认为现在最严重的环境问题是什么？'],
+ 'كيف نقلل التلوث؟':['How can we reduce pollution?','我们怎样才能减少污染？'],
+ 'هل تفرزون النفايات في البيت؟':['Do you sort your rubbish at home?','你家里进行垃圾分类吗？'],
+ 'ماذا تفعل عادةً لتوفير الماء؟':['What do you usually do to save water?','为了节约用水，你平时会怎么做？'],
+ 'كلامك منطقي جداً!':['That makes a lot of sense!','你说得很有道理！'],
+ 'كم من الوقت تقضي على الجوال يومياً؟':['How much time do you spend on your phone each day?','你每天花多长时间用手机？'],
+ 'فيمَ تستخدمه أساساً؟':['What do you mainly use it for?','你主要用手机做什么？'],
+ 'هل نفع التقنية للطلاب أكثر من ضررها أم العكس؟':['For students, does technology do more good than harm, or the opposite?','你觉得科技对学生利大于弊还是弊大于利？'],
+ 'كيف نحمي أنفسنا على الإنترنت؟':['How should we protect ourselves online?','我们上网的时候应该怎样保护自己？'],
+ 'رأيك ناضج جداً.':['Your view is very mature.','你的看法很成熟。'],
+ // تلميحات المحادثات
+ 'اذكر اسمك. ابدأ بـ 我叫':['Say your name. Start with 我叫','说出你的名字，用「我叫」开头'],
+ 'اذكر بلدك: 我是…人':['Say your country: 我是…人','说出你的国家：我是…人'],
+ 'اذكر عمرك: 我…岁':['Say your age: 我…岁','说出你的年龄：我…岁'],
+ 'اشكره وودّعه: 谢谢，再见':['Thank them and say goodbye: 谢谢，再见','道谢并告别：谢谢，再见'],
+ '我有… أو 我没有…':['我有… or 我没有…','我有… 或 我没有…'],
+ 'اذكر العدد: 两位 أو 一个人':['Say how many: 两位 or 一个人','说人数：两位 或 一个人'],
+ '我想吃… أو 我要…':['我想吃… or 我要…','我想吃… 或 我要…'],
+ 'ادفع واشكره: 给你，谢谢':['Pay and thank them: 给你，谢谢','付钱并道谢：给你，谢谢'],
+ '我喜欢… أو 我的爱好是…':['我喜欢… or 我的爱好是…','我喜欢… 或 我的爱好是…'],
+ '每天 أو 每个星期两次':['每天 or 每个星期两次','每天 或 每个星期两次'],
+ '跟朋友一起 أو 我一个人':['跟朋友一起 or 我一个人','跟朋友一起 或 我一个人'],
+ 'ابدأ بـ 因为':['Start with 因为','用「因为」开头'],
+ 'اذكر لوناً: 蓝色的 / 黑色的':['Name a colour: 蓝色的 / 黑色的','说一种颜色：蓝色的 / 黑色的'],
+ 'ساوم: 太贵了，便宜一点儿吧':['Bargain: 太贵了，便宜一点儿吧','讨价还价：太贵了，便宜一点儿吧'],
+ 'استخدم 了 للماضي: 我去了… / 我看了…':['Use 了 for the past: 我去了… / 我看了…','用「了」表示过去：我去了… / 我看了…'],
+ '很开心 أو 不太开心':['很开心 or 不太开心','很开心 或 不太开心'],
+ '我想当… أو 我想成为…':['我想当… or 我想成为…','我想当… 或 我想成为…'],
+ '我们可以… أو 我们应该…':['我们可以… or 我们应该…','我们可以… 或 我们应该…'],
+ 'تواضع واشكره: 过奖了，谢谢':['Be modest and thank them: 过奖了，谢谢','谦虚并道谢：过奖了，谢谢'],
+ 'اشكره: 谢谢夸奖':['Thank them: 谢谢夸奖','道谢：谢谢夸奖']
+};
+const P = [
+ [/^أهلاً (.+?)\. وصل طلبك إلى المشرف\. (.+)$/, m => [`Hello ${m[1]}. Your request reached the supervisor. ${tx(m[2])}`, `${m[1]}，你好。你的申请已送达管理员。${tx(m[2])}`]],
+ [/^أهلاً (.+?)\. هذه اللوحة للاطلاع والمتابعة فقط، ولا تدخل المنافسة ولا تُحتسب لك نقاط\.$/, m => [`Hello ${m[1]}. This board is for viewing and following progress only; you are not in the competition and earn no points.`, `${m[1]}，你好。此面板仅供查看和关注进度，你不参加比赛，也不计积分。`]],
+ [/^لوحة (ولي أمر|ولية أمر)$/, m => ['Parent board', '家长面板']],
+ [/^الجملة (\d+) من (\d+)$/, m => [`Sentence ${m[1]} of ${m[2]}`, `第 ${m[1]} 句，共 ${m[2]} 句`]],
+ [/^(\d+) جمل$/, m => [`${m[1]} sentences`, `${m[1]} 句`]],
+ [/^أفضل نتيجة (\d+)%$/, m => [`best ${m[1]}%`, `最好成绩 ${m[1]}%`]],
+ [/^(ترتيبكِ?) من (\d+)$/, m => [`Your rank of ${m[2]}`, `你的排名（共 ${m[2]} 人）`]],
+ [/^(ترتيبكِ?)$/, m => ['Your rank', '你的排名']],
+ [/^\+(\d+) نقطة$/, m => [`+${m[1]} points`, `+${m[1]} 分`]],
+ [/^(\d+) نقطة$/, m => [`${m[1]} points`, `${m[1]} 分`]],
+ [/^\+(\d+) نقطة في هذه المحادثة$/, m => [`+${m[1]} points in this conversation`, `本次对话 +${m[1]} 分`]],
+ [/^فهمتك من أول محاولة في (\d+) من (\d+) جمل \((\d+)%\)\.$/, m => [`Understood on the first try in ${m[1]} of ${m[2]} sentences (${m[3]}%).`, `${m[2]} 句中有 ${m[1]} 句第一次就被听懂（${m[3]}%）。`]],
+ [/^قل بالصينية: «(.+)»$/, m => [`Say in Chinese: “${tx(m[1])}”`, `用中文说：「${tx(m[1])}」`]],
+ [/^تلميح: (.+)$/, m => [`Hint: ${tx(m[1])}`, `提示：${tx(m[1])}`]],
+ [/^(طلبات الانضمام|المتنافسون|أولياء الأمور|المرفوضون والموقوفون) \((\d+)\)$/, m => [`${({'طلبات الانضمام':'Join requests','المتنافسون':'Competitors','أولياء الأمور':'Parents','المرفوضون والموقوفون':'Rejected & suspended'})[m[1]]} (${m[2]})`, `${({'طلبات الانضمام':'加入申请','المتنافسون':'参赛者','أولياء الأمور':'家长','المرفوضون والموقوفون':'已拒绝和已停用'})[m[1]]}（${m[2]}）`]],
+ [/^طلبات انضمام بانتظارك: (\d+)$/, m => [`Join requests waiting: ${m[1]}`, `待处理的加入申请：${m[1]}`]],
+ [/^تأكيد: (.+)$/, m => [`Confirm: ${tx(m[1])}`, `确认：${tx(m[1])}`]],
+ [/^محادثات مكتملة: (\d+)$/, m => [`Conversations completed: ${m[1]}`, `已完成对话：${m[1]}`]],
+ [/^آخر نشاط: (.+)$/, m => [`Last active: ${tx(m[1])}`, `最近活动：${tx(m[1])}`]],
+ [/^قبل (\d+) (دقيقة|ساعة|يوم)$/, m => [`${m[1]} ${({'دقيقة':'min','ساعة':'h','يوم':'d'})[m[2]]} ago`, `${m[1]} ${({'دقيقة':'分钟','ساعة':'小时','يوم':'天'})[m[2]]}前`]],
+ [/^(🥇|🥈|🥉|🔥) (.+)$/, m => [`${m[1]} ${tx(m[2])}`, `${m[1]} ${tx(m[2])}`]],
+ [/^النطق: سُمعت (.*?) والمقصود (.*?)\. (.*)$/, m => [`Pronunciation: heard ${m[1]}, meant ${m[2]}. ${m[3]}`, `发音：听到 ${m[1]}，应为 ${m[2]}。${m[3]}`]]
+];
+function tx(s){
+  if (LANG === 'ar' || !s || !/[؀-ۿ]/.test(s)) return s;
+  const k = s.trim();
+  if (D[k]) return D[k][LI()];
+  for (const [re, f] of P){ const m = k.match(re); if (m) return f(m)[LI()]; }
+  if (k.startsWith('· ')) return '· ' + tx(k.slice(2));
+  if (k.includes(' · ')) return k.split(' · ').map(tx).join(' · ');
+  return s;
+}
+function txNode(n){
+  const v = n.nodeValue; if (!/[؀-ۿ]/.test(v)) return;
+  const t = v.trim(); const r = tx(t); if (r !== t) n.nodeValue = v.replace(t, r);
+}
+function txTree(root){
+  if (LANG === 'ar' || !root) return;
+  if (root.nodeType === 3){ txNode(root); return; }
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let n;
+  while ((n = w.nextNode())) if (!n.parentElement || !n.parentElement.closest('script,style')) txNode(n);
+  if (root.querySelectorAll) [root, ...root.querySelectorAll('[placeholder],[aria-label],[title]')].forEach(e => ['placeholder', 'aria-label', 'title'].forEach(a => { const v = e.getAttribute && e.getAttribute(a); if (v && /[؀-ۿ]/.test(v)) e.setAttribute(a, tx(v)); }));
+}
+new MutationObserver(ms => { if (LANG === 'ar') return; for (const m of ms){ if (m.type === 'characterData') txNode(m.target); else m.addedNodes.forEach(txTree); } })
+  .observe(document.documentElement, {subtree:true, childList:true, characterData:true});
+function applyLang(){
+  const h = document.documentElement;
+  h.lang = LANG === 'zh' ? 'zh-CN' : LANG; h.dir = LANG === 'ar' ? 'rtl' : 'ltr';
+  const a = document.getElementById('app'); if (a){ a.dir = h.dir; a.lang = h.lang; }
+  document.title = LANG === 'ar' ? 'ني هاو' : D['ني هاو'][LI()];
+}
+function setLang(l){ if (!LANGS.includes(l)) return; LANG = l; try{ localStorage.setItem('nihao-lang', l); }catch(e){} applyLang(); render(); }
+const AILANG = () => LANG === 'en' ? 'ENGLISH' : LANG === 'zh' ? 'SIMPLIFIED CHINESE' : 'ARABIC';
+const langPick = () => `<div class="langs" role="group" aria-label="Language">${[['ar','ع'],['en','EN'],['zh','中']].map(([k, n]) => `<button type="button" data-lang="${k}" class="${LANG === k ? 'on' : ''}" aria-pressed="${LANG === k}">${n}</button>`).join('')}</div>`;
+
+applyLang();
 
 /* ============ المنافسة: تسجيل بالاسم، والانضمام بموافقة المشرف ============
    قاعدة البيانات نفسها التي يستخدمها مِران، لكن في مجموعة مستقلة (zhPlayers) وبجلسة دخول مستقلة. */
@@ -569,14 +878,14 @@ async function aiJudge(turn, said, me, scene){
   if (!hasHan(said)) return null;
   const freeRule = `PERSONAL DETAILS ARE FREE: names, ages, numbers, quantities, prices, dates, times, places, nationalities, jobs, foods and other personal details are the learner's own choice. Never treat a difference from the example in these details as a mistake, never mark it as not fitting, and never change them in "corrected" (fix only grammar or wrong words around them).`;
   const common = `You check one spoken answer in a Mandarin speaking drill for an Arabic-speaking learner. Scenario: "${scene}". The learner's text is a speech-recognition transcript and may contain homophone mis-recognitions. ${freeRule}`;
-  const fields = `"corrected": the learner's OWN sentence with its mistakes fixed, simplified characters, changing as little as possible (identical when already correct; empty when fits is false). "pinyin": tone-marked pinyin of "corrected". "notes": 0-2 short explanations IN ARABIC of real grammar or word mistakes, naming the exact word; never invent mistakes; ignore punctuation. "ideal": a complete, natural model sentence in simplified Chinese that KEEPS every correctly-said word of the learner (their names, numbers, ages, colors, cities, countries, foods, jobs, hobbies and other details) and only fixes errors and adds what is missing to make a full, natural sentence for this exchange; never replace the learner's details with the example's; empty when fits is false. "ideal_pinyin": tone-marked pinyin of "ideal". "pronunciation": words that make no sense but sound like the intended word (wrong tone or similar sound) as {"said","said_pinyin","meant","meant_pinyin","tip"} with tip in ARABIC; [] if none.`;
+  const fields = `"corrected": the learner's OWN sentence with its mistakes fixed, simplified characters, changing as little as possible (identical when already correct; empty when fits is false). "pinyin": tone-marked pinyin of "corrected". "notes": 0-2 short explanations IN ${AILANG()} of real grammar or word mistakes, naming the exact word; never invent mistakes; ignore punctuation. "ideal": a complete, natural model sentence in simplified Chinese that KEEPS every correctly-said word of the learner (their names, numbers, ages, colors, cities, countries, foods, jobs, hobbies and other details) and only fixes errors and adds what is missing to make a full, natural sentence for this exchange; never replace the learner's details with the example's; empty when fits is false. "ideal_pinyin": tone-marked pinyin of "ideal". "pronunciation": words that make no sense but sound like the intended word (wrong tone or similar sound) as {"said","said_pinyin","meant","meant_pinyin","tip"} with tip in ${AILANG()}; [] if none.`;
   const prompt = me
     ? `${common}
 The learner starts the exchange and should say, in Chinese, a sentence meaning (Arabic): «${turn[2]}». Reference sentence: ${turn[0]}
 Learner said: ${said}
 You are the other person in the scenario. Reply ONLY with JSON:
 {"fits":true,"corrected":"","pinyin":"","ideal":"","ideal_pinyin":"","notes":[],"pronunciation":[],"reply":{"zh":"","pinyin":"","ar":""}}
-"fits": true only when the learner's sentence is understandable Chinese that carries the requested meaning (any natural wording counts). ${fields} "reply": ONE short natural sentence in simple Chinese that answers or reacts to the learner's sentence, with pinyin and an Arabic translation. The learner leads this conversation: do NOT ask any question, do NOT end with a question mark, and do NOT start a new topic. Empty strings when fits is false.`
+"fits": true only when the learner's sentence is understandable Chinese that carries the requested meaning (any natural wording counts). ${fields} "reply": ONE short natural sentence in simple Chinese that answers or reacts to the learner's sentence, with pinyin and a translation into ${AILANG().toLowerCase()}. The learner leads this conversation: do NOT ask any question, do NOT end with a question mark, and do NOT start a new topic. Empty strings when fits is false.`
     : `${common}
 The app asked: ${turn[0]} (Arabic: «${turn[2]}»). Example of a good answer: ${turn[4]}
 Learner said: ${said}
@@ -723,7 +1032,7 @@ function tkShow(){
 
 /* ============ الصفحات ============ */
 const standalone = () => { try{ return matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; }catch(e){ return false; } };
-const header = () => `<div class="top"><div class="brand">ني هاو</div>${`<button type="button" class="instbtn" data-act="install" aria-label="ثبّت التطبيق على جوالك"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3" fill="none"/><path d="M12 7v7M9 11l3 3 3-3M10 18h4" fill="none"/></svg><span>ثبّت التطبيق</span></button>`}</div>`;
+const header = () => `<div class="top"><div class="brand">ني هاو</div><div class="topr">${langPick()}${`<button type="button" class="instbtn" data-act="install" aria-label="ثبّت التطبيق على جوالك"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3" fill="none"/><path d="M12 7v7M9 11l3 3 3-3M10 18h4" fill="none"/></svg><span>ثبّت التطبيق</span></button>`}</div></div>`;
 function installHelp(){
   closeIntro();
   const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -734,7 +1043,7 @@ function installHelp(){
     ? ['افتح الصفحة في متصفح <b>Safari</b>.', 'اضغط زر <b>المشاركة</b> (المربع والسهم للأعلى) أسفل الشاشة.', 'اختر <b>«إضافة إلى الشاشة الرئيسية»</b> ثم <b>«إضافة»</b>.']
     : ['افتح الصفحة في متصفح <b>Chrome</b>.', 'اضغط <b>القائمة</b> (النقاط الثلاث) أعلى الشاشة.', 'اختر <b>«تثبيت التطبيق»</b> أو <b>«إضافة إلى الشاشة الرئيسية»</b>، ثم <b>«تثبيت»</b>.'];
   const el = document.createElement('div');
-  el.id = 'intro'; el.className = 'iv-ov'; el.dir = 'rtl'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'تثبيت التطبيق');
+  el.id = 'intro'; el.className = 'iv-ov'; el.dir = document.documentElement.dir; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'تثبيت التطبيق');
   el.innerHTML = `<div class="iv-box"><div class="card stack"><div class="row"><img src="zh-icon-192.png" alt="" style="width:56px;height:56px;border-radius:14px"><div class="grow"><h2>${standalone() ? '«ني هاو» مثبّت على جهازك' : 'ثبّت «ني هاو» على جوالك'}</h2><p class="sub" style="margin:0">${standalone() ? 'تفتحه الآن كتطبيق.' : 'يظهر بأيقونته بين تطبيقاتك ويفتح مباشرة.'}</p></div></div>${standalone()
     ? `<p style="margin:0;font-size:15px">لتثبيته عند غيرك أرسل له الرابط، فيفتحه ويضغط «ثبّت التطبيق» أعلى الصفحة.</p>${share}`
     : `<ol style="margin:0;padding-inline-start:22px;display:flex;flex-direction:column;gap:8px;font-size:15px">${steps.map(x => `<li>${x}</li>`).join('')}</ol><p class="note" style="text-align:start">إذا ظهر لك أنه مثبّت، فابحث عن أيقونة «ني هاو» بين تطبيقات جوالك. ولإرساله لغيرك:</p>${share}`}<button type="button" class="btn plain wide" id="ivclose">إغلاق</button></div></div>`;
@@ -747,7 +1056,7 @@ function installHelp(){
 const CREDIT = '<p class="credit">© الحقوق محفوظة · فكرة وتنفيذ <b dir="ltr">alfifitop2015</b> · بواسطة <b>Claude</b></p>';
 function vList(){
   const lv = SAVE.level || 0;
-  const tile = s => { const b = SAVE.best[s.id]; return `<button class="tile" data-talk="${s.id}"><span class="grow"><h3>${s.t}</h3><span class="meta"><span class="zh" lang="zh">${s.z}</span> · ${s.turns.length} جمل${b != null ? ' · أفضل نتيجة ' + b + '%' : ''}</span></span><span class="go">‹</span></button>`; };
+  const tile = s => { const b = SAVE.best[s.id]; return `<button class="tile" data-talk="${s.id}"><span class="grow"><h3>${s.t}</h3><span class="meta">${LANG === 'zh' ? '' : `<span class="zh" lang="zh">${s.z}</span> · `}${s.turns.length} جمل${b != null ? ' · أفضل نتيجة ' + b + '%' : ''}</span></span><span class="go">‹</span></button>`; };
   const groups = [1, 2, 3].filter(l => !lv || l === lv).map(l => `<h2>محادثات المستوى ال${LV[l]}</h2>${TALKS.filter(x => x.l === l).map(tile).join('')}`).join('');
   return header() + `<div class="band"><span class="tcmic">${MICSVG}</span><div class="grow"><h1>المحادثة الصوتية</h1><p class="sub">تحدّث بالصينية، والتطبيق يسمعك ويصحّح لك.</p></div></div>
   <div class="sec">
@@ -786,7 +1095,7 @@ function vRun(){
     ? `<form id="tkform" class="row" style="width:100%"><input type="text" id="tkin" lang="zh" dir="ltr" autocomplete="off" placeholder="${TK.mode === 'me' ? 'اكتب جملتك بالصينية…' : 'اكتب إجابتك بالصينية…'}" class="grow" aria-label="إجابتك"><button class="btn" type="submit">إرسال</button></form><p class="note">للإجابة بصوتك: اضغط زر المايكروفون في لوحة المفاتيح الصينية.</p>${SR ? '<button class="x" data-act="tkMicMode">العودة للتحدث بالصوت</button>' : ''}`
     : `<button class="mic ${TK.listening ? 'on' : ''}" data-act="tkMic" aria-label="${TK.listening ? 'إيقاف' : 'تكلّم'}">${MICSVG}</button><div class="tklive" id="tklive" lang="zh">${TK.listening ? '…' : ''}</div><p class="note">${TK.listening ? 'أستمع إليك… تكلّم الآن، ثم اضغط للإيقاف' : 'اضغط وتكلّم بالصينية'}</p><button class="x" data-act="tkType">اكتب بدلاً من ذلك</button>`}
     ${TK.attempts < 2 ? `<button class="x" data-act="tkShow">${TK.mode === 'me' ? 'لا أعرف، أظهر الجملة' : 'لا أعرف، اقترح رداً'}</button>` : ''}</div>`;
-  return header() + `<div class="qhead"><h2>${s.t} <span class="zh" lang="zh" style="font-size:16px;color:var(--muted)">${s.z}</span></h2><button class="x" data-act="tkQuit">إنهاء</button></div>
+  return header() + `<div class="qhead"><h2>${s.t}${LANG === 'zh' ? '' : ` <span class="zh" lang="zh" style="font-size:16px;color:var(--muted)">${s.z}</span>`}</h2><button class="x" data-act="tkQuit">إنهاء</button></div>
   <div class="sec"><p class="prog">الجملة ${Math.min(TK.i + 1, n)} من ${n} · المستوى ال${LV[s.l]} · ${TK.mode === 'me' ? 'أنت تبدأ' : 'التطبيق يبدأ'}${AIOK ? ' · تصحيح بالذكاء الاصطناعي' : ''}${isParent(X.me) ? ' · وضع الاطلاع (بلا نقاط)' : ''}</p><div class="bar"><i style="width:${100 * (TK.done ? n : TK.i) / n}%"></i></div>
   ${tutorCard()}<div class="chat" aria-live="polite">${log}</div>${ctl}</div>${CREDIT}`;
 }
@@ -797,7 +1106,7 @@ function closeIntro(){ const el = document.getElementById('intro'); if (!el) ret
 function openIntro(){
   closeIntro(); try{ speechSynthesis.cancel(); }catch(e){}
   const el = document.createElement('div');
-  el.id = 'intro'; el.className = 'iv-ov'; el.dir = 'rtl'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'تعريف بتطبيق ني هاو');
+  el.id = 'intro'; el.className = 'iv-ov'; el.dir = document.documentElement.dir; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'تعريف بتطبيق ني هاو');
   el.innerHTML = '<div class="iv-box"><div class="iv-bar"><span>تعرّف على ني هاو</span><button type="button" class="x" id="ivclose">إغلاق</button></div><video class="iv-video" src="intro.mp4?v=2" poster="intro-poster.jpg" controls playsinline autoplay preload="auto"></video></div>';
   el.addEventListener('click', e => { if (e.target === el || e.target.id === 'ivclose') closeIntro(); });
   document.body.appendChild(el); document.body.style.overflow = 'hidden';
@@ -816,6 +1125,7 @@ app.addEventListener('click', e => {
   if (b.dataset.say){ speak(b.dataset.say); return; }
   if (b.dataset.tr){ const a = b.closest('.bub').querySelector('.bubar'); if (a) a.hidden = !a.hidden; return; }
   if (b.dataset.act === 'intro'){ openIntro(); return; }
+  if (b.dataset.lang){ setLang(b.dataset.lang); return; }
   if (b.dataset.gen){ JF.gender = b.dataset.gen; JF.role = b.dataset.role || 'student'; X.err = ''; render(); return; }
   if (b.dataset.adm){ adminDo(b.dataset.adm, b.dataset.id); return; }
   if (b.dataset.act === 'admin'){ X.err = ''; go('admin'); return; }
