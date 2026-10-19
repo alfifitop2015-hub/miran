@@ -300,7 +300,7 @@ const D = {
  'جارٍ التحميل…':['Loading…','加载中…'],
  // الانضمام
  'انضم إلى «ني هاو»':['Join “Nǐ hǎo”','加入「你好」'],
- 'سجّل اسمك وصفتك، ويُفتح لك التطبيق بعد موافقة المشرف. ولي الأمر يدخل للاطلاع والمتابعة فقط، ولا يدخل المنافسة.':['Enter your name and role. The app opens once the supervisor approves you. Parents can only view and follow progress; they do not compete.','填写你的名字和身份，管理员批准后即可使用。家长只能查看和关注进度，不参加比赛。'],
+ 'سجّل اسمك وصفتك، ويُفتح لك التطبيق بعد موافقة المشرف. ولي الأمر والمعلم يدخلان للاطلاع والمتابعة فقط، ولا يدخلان المنافسة.':['Enter your name and role. The app opens once the supervisor approves you. Parents and teachers can only view and follow progress; they do not compete.','填写你的名字和身份，管理员批准后即可使用。家长和老师只能查看和关注进度，不参加比赛。'],
  'الاسم':['Name','名字'],
  'اكتب اسمك':['Type your name','输入你的名字'],
  'اكتب اسمك.':['Please type your name.','请输入你的名字。'],
@@ -308,7 +308,10 @@ const D = {
  'طالبة':['Student (girl)','学生（女）'],
  'ولي أمر':['Parent (father)','家长（父亲）'],
  'ولية أمر':['Parent (mother)','家长（母亲）'],
- 'اختر صفتك: طالب، طالبة، ولي أمر، أو ولية أمر.':['Choose your role: student or parent.','请选择身份：学生或家长。'],
+ 'معلم':['Teacher (male)','老师（男）'],
+ 'معلمة':['Teacher (female)','老师（女）'],
+ 'تستطيع أيضاً تجربة المحادثات بالأسفل لتعرف ما يتدرّب عليه طلابك، دون أن تُحسب نقاط.':['You can also try the conversations below to see what your students practise — no points are counted.','你也可以试试下面的对话，了解学生在练什么，不计积分。'],
+ 'اختر صفتك: طالب، طالبة، ولي أمر، ولية أمر، معلم، أو معلمة.':['Choose your role: student, parent or teacher.','请选择身份：学生、家长或老师。'],
  'أرسل طلب الانضمام':['Send join request','发送加入申请'],
  'جارٍ الإرسال…':['Sending…','正在发送…'],
  'المنافسة لم تُفعَّل بعد من المشرف. حاول لاحقاً.':['The supervisor has not enabled the competition yet. Try again later.','管理员尚未开启比赛，请稍后再试。'],
@@ -523,6 +526,7 @@ const P = [
  [/^أهلاً (.+?)\. وصل طلبك إلى المشرف\. (.+)$/, m => [`Hello ${m[1]}. Your request reached the supervisor. ${tx(m[2])}`, `${m[1]}，你好。你的申请已送达管理员。${tx(m[2])}`]],
  [/^أهلاً (.+?)\. هذه اللوحة للاطلاع والمتابعة فقط، ولا تدخل المنافسة ولا تُحتسب لك نقاط\.$/, m => [`Hello ${m[1]}. This board is for viewing and following progress only; you are not in the competition and earn no points.`, `${m[1]}，你好。此面板仅供查看和关注进度，你不参加比赛，也不计积分。`]],
  [/^لوحة (ولي أمر|ولية أمر)$/, m => ['Parent board', '家长面板']],
+ [/^لوحة (معلم|معلمة)$/, m => ['Teacher board', '老师面板']],
  [/^الجملة (\d+) من (\d+)$/, m => [`Sentence ${m[1]} of ${m[2]}`, `第 ${m[1]} 句，共 ${m[2]} 句`]],
  [/^(\d+) جمل$/, m => [`${m[1]} sentences`, `${m[1]} 句`]],
  [/^أفضل نتيجة (\d+)%$/, m => [`best ${m[1]}%`, `最好成绩 ${m[1]}%`]],
@@ -534,7 +538,7 @@ const P = [
  [/^فهمتك من أول محاولة في (\d+) من (\d+) جمل \((\d+)%\)\.$/, m => [`Understood on the first try in ${m[1]} of ${m[2]} sentences (${m[3]}%).`, `${m[2]} 句中有 ${m[1]} 句第一次就被听懂（${m[3]}%）。`]],
  [/^قل بالصينية: «(.+)»$/, m => [`Say in Chinese: “${tx(m[1])}”`, `用中文说：「${tx(m[1])}」`]],
  [/^تلميح: (.+)$/, m => [`Hint: ${tx(m[1])}`, `提示：${tx(m[1])}`]],
- [/^(طلبات الانضمام|المتنافسون|أولياء الأمور|المرفوضون والموقوفون) \((\d+)\)$/, m => [`${({'طلبات الانضمام':'Join requests','المتنافسون':'Competitors','أولياء الأمور':'Parents','المرفوضون والموقوفون':'Rejected & suspended'})[m[1]]} (${m[2]})`, `${({'طلبات الانضمام':'加入申请','المتنافسون':'参赛者','أولياء الأمور':'家长','المرفوضون والموقوفون':'已拒绝和已停用'})[m[1]]}（${m[2]}）`]],
+ [/^(طلبات الانضمام|المتنافسون|أولياء الأمور والمعلمون|أولياء الأمور|المرفوضون والموقوفون) \((\d+)\)$/, m => [`${({'طلبات الانضمام':'Join requests','المتنافسون':'Competitors','أولياء الأمور':'Parents','أولياء الأمور والمعلمون':'Parents & teachers','المرفوضون والموقوفون':'Rejected & suspended'})[m[1]]} (${m[2]})`, `${({'طلبات الانضمام':'加入申请','المتنافسون':'参赛者','أولياء الأمور':'家长','أولياء الأمور والمعلمون':'家长和老师','المرفوضون والموقوفون':'已拒绝和已停用'})[m[1]]}（${m[2]}）`]],
  [/^طلبات انضمام بانتظارك: (\d+)$/, m => [`Join requests waiting: ${m[1]}`, `待处理的加入申请：${m[1]}`]],
  [/^تأكيد: (.+)$/, m => [`Confirm: ${tx(m[1])}`, `确认：${tx(m[1])}`]],
  [/^محادثات مكتملة: (\d+)$/, m => [`Conversations completed: ${m[1]}`, `已完成对话：${m[1]}`]],
@@ -586,8 +590,9 @@ const JF = {name:'', gender:'', role:''};
 let fsP = null, fsA = null, authP = null, authA = null, INC = null, unsubMe = null, unsubBoard = null, unsubAdmin = null;
 const g = (m, f) => X.me && X.me.gender === 'f' ? f : m;
 const COL = 'zhPlayers';
-const isParent = r => !!r && r.role === 'parent';          // وليّ الأمر: للاطلاع فقط ولا يدخل المنافسة
-const parentWord = r => r.gender === 'f' ? 'ولية أمر' : 'ولي أمر';
+const isParent = r => !!r && (r.role === 'parent' || r.role === 'teacher');   // وليّ الأمر والمعلّم: للاطلاع فقط ولا يدخلان المنافسة
+const isTeacher = r => !!r && r.role === 'teacher';
+const parentWord = r => isTeacher(r) ? (r.gender === 'f' ? 'معلمة' : 'معلم') : (r.gender === 'f' ? 'ولية أمر' : 'ولي أمر');
 function loadScript(src){ return new Promise((res, rej) => { const e = document.createElement('script'); e.src = src; e.onload = res; e.onerror = rej; document.head.appendChild(e); }); }
 const allowed = () => X.admin || !!(X.me && X.me.status === 'approved');   // المحادثات للمقبولين فقط
 function soft(){ if (view === 'run' && !allowed()){ quit(); return; } if (view !== 'run') render(); }
@@ -626,12 +631,12 @@ function fbStart(){
 async function join(){
   const name = JF.name.trim().slice(0, 20);
   if (!name){ X.err = 'اكتب اسمك.'; return render(); }
-  if (!JF.gender){ X.err = 'اختر صفتك: طالب، طالبة، ولي أمر، أو ولية أمر.'; return render(); }
+  if (!JF.gender){ X.err = 'اختر صفتك: طالب، طالبة، ولي أمر، ولية أمر، معلم، أو معلمة.'; return render(); }
   X.busy = true; X.err = ''; render();
   try{
     if (!authP.currentUser) await authP.signInAnonymously();
     const u = authP.currentUser;
-    await fsP.collection(COL).doc(u.uid).set({name, gender:JF.gender, role:JF.role === 'parent' ? 'parent' : 'student', status:'pending', total:0, talks:0, created:Date.now(), updated:Date.now()});
+    await fsP.collection(COL).doc(u.uid).set({name, gender:JF.gender, role:['parent', 'teacher'].includes(JF.role) ? JF.role : 'student', status:'pending', total:0, talks:0, created:Date.now(), updated:Date.now()});
   }catch(e){
     X.err = e && e.code === 'permission-denied' ? 'المنافسة لم تُفعَّل بعد من المشرف. حاول لاحقاً.' : 'تعذّر إرسال الطلب. تحقق من الإنترنت ثم حاول مرة أخرى.';
   }
@@ -670,15 +675,15 @@ function vParent(m){
     return `<div class="brd"><span class="n">${i >= 0 ? i + 1 : '–'}</span><span class="nm">${esc(r.name)} ${t ? `<span class="tier">${t}</span>` : ''}<span class="sub" style="display:block;margin:0;font-size:12.5px">محادثات مكتملة: ${r.talks || 0} · آخر نشاط: ${ago(r.total ? r.updated : 0)}</span></span><span class="sc">${r.total || 0}</span></div>`; };
   return `<div class="card stack"><div class="row"><span class="lock" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" fill="none"/><circle cx="12" cy="12" r="3" fill="none"/></svg></span><div class="grow"><h2>لوحة ${parentWord(m)}</h2><p class="sub" style="margin:0">أهلاً ${esc(m.name)}. هذه اللوحة للاطلاع والمتابعة فقط، ولا تدخل المنافسة ولا تُحتسب لك نقاط.</p></div></div>
     <div><h2>تقدّم المتنافسين</h2><div>${!A ? '<p class="sub" style="margin:0">جارٍ التحميل…</p>' : !A.length ? '<p class="sub" style="margin:0">لا يوجد متنافسون بعد.</p>' : A.map(row).join('')}</div></div>
-    <p class="sub" style="margin:0">تستطيع أيضاً تجربة المحادثات بالأسفل لتعرف ما يتدرّب عليه ابنك أو ابنتك، دون أن تُحسب نقاط.</p></div>`;
+    <p class="sub" style="margin:0">${isTeacher(m) ? 'تستطيع أيضاً تجربة المحادثات بالأسفل لتعرف ما يتدرّب عليه طلابك، دون أن تُحسب نقاط.' : 'تستطيع أيضاً تجربة المحادثات بالأسفل لتعرف ما يتدرّب عليه ابنك أو ابنتك، دون أن تُحسب نقاط.'}</p></div>`;
 }
 function vComp(){
   if (X.off) return '';
   if (!X.ready || (X.uid && !X.meLoaded)) return `<div class="card"><p class="sub" style="margin:0">جارٍ تحميل المنافسة…</p></div>`;
   const m = X.me;
-  if (!m) return `<form id="joinform" class="card stack"><div><h2>انضم إلى «ني هاو»</h2><p class="sub">سجّل اسمك وصفتك، ويُفتح لك التطبيق بعد موافقة المشرف. ولي الأمر يدخل للاطلاع والمتابعة فقط، ولا يدخل المنافسة.</p></div>
+  if (!m) return `<form id="joinform" class="card stack"><div><h2>انضم إلى «ني هاو»</h2><p class="sub">سجّل اسمك وصفتك، ويُفتح لك التطبيق بعد موافقة المشرف. ولي الأمر والمعلم يدخلان للاطلاع والمتابعة فقط، ولا يدخلان المنافسة.</p></div>
     <label class="f">الاسم<input type="text" class="ar" id="jname" maxlength="20" autocomplete="off" value="${esc(JF.name)}" placeholder="اكتب اسمك"></label>
-    <div class="seg">${[['m','student','طالب'],['f','student','طالبة'],['m','parent','ولي أمر'],['f','parent','ولية أمر']].map(([gn, rl, lb]) => { const on = JF.gender === gn && (JF.role || 'student') === rl; return `<button type="button" class="${on ? 'on' : ''}" data-gen="${gn}" data-role="${rl}" aria-pressed="${on}" style="flex:1 1 40%">${lb}</button>`; }).join('')}</div>
+    <div class="seg">${[['m','student','طالب'],['f','student','طالبة'],['m','parent','ولي أمر'],['f','parent','ولية أمر'],['m','teacher','معلم'],['f','teacher','معلمة']].map(([gn, rl, lb]) => { const on = JF.gender === gn && (JF.role || 'student') === rl; return `<button type="button" class="${on ? 'on' : ''}" data-gen="${gn}" data-role="${rl}" aria-pressed="${on}" style="flex:1 1 40%">${lb}</button>`; }).join('')}</div>
     ${X.err ? `<div class="warn">${esc(X.err)}</div>` : ''}
     <button class="btn wide" type="submit" ${X.busy ? 'disabled' : ''}>${X.busy ? 'جارٍ الإرسال…' : 'أرسل طلب الانضمام'}</button></form>`;
   if (m.status === 'pending') return `<div class="card"><h2>طلبك قيد المراجعة</h2><p class="sub">أهلاً ${esc(m.name)}. وصل طلبك إلى المشرف. ${isParent(m) ? 'تُفتح لك لوحة المتابعة هنا فور الموافقة.' : 'تُفتح لك المحادثات والمنافسة هنا فور الموافقة.'}</p></div>`;
@@ -721,7 +726,7 @@ function vAdmin(){
   return header() + `<div class="qhead"><h2>لوحة المشرف</h2><button class="x" data-act="adminOut">خروج المشرف</button></div><div class="sec">
     <div class="card"><h3>طلبات الانضمام (${P.length})</h3>${P.length ? P.map(r => `<div class="li">${who(r)}${btn('approve', r, 'موافقة', 'ok')}${btn('reject', r, 'رفض', 'bad')}</div>`).join('') : '<p class="sub">لا توجد طلبات جديدة.</p>'}</div>
     <div class="card"><h3>المتنافسون (${A.length})</h3>${A.length ? A.map(r => `<div class="li">${who(r)}<span class="chip">${r.total || 0} نقطة</span>${btn('reset', r, 'تصفير النقاط')}${btn('reject', r, 'إيقاف', 'bad')}</div>`).join('') : '<p class="sub">لا يوجد متنافسون بعد.</p>'}</div>
-    ${PR.length ? `<div class="card"><h3>أولياء الأمور (${PR.length})</h3><p class="sub" style="margin:0">للاطلاع فقط، لا يظهرون في الترتيب.</p>${PR.map(r => `<div class="li">${who(r)}${btn('reject', r, 'إيقاف', 'bad')}</div>`).join('')}</div>` : ''}
+    ${PR.length ? `<div class="card"><h3>أولياء الأمور والمعلمون (${PR.length})</h3><p class="sub" style="margin:0">للاطلاع فقط، لا يظهرون في الترتيب.</p>${PR.map(r => `<div class="li">${who(r)}${btn('reject', r, 'إيقاف', 'bad')}</div>`).join('')}</div>` : ''}
     ${J.length ? `<div class="card"><h3>المرفوضون والموقوفون (${J.length})</h3>${J.map(r => `<div class="li">${who(r)}${btn('approve', r, 'قبول', 'ok')}${btn('del', r, 'حذف', 'bad')}</div>`).join('')}</div>` : ''}
     ${back}</div>`;
 }
