@@ -196,6 +196,7 @@ html[lang="en"] body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-
 .langs{display:flex;border:1.5px solid var(--line);border-radius:999px;overflow:hidden;background:var(--card)}
 .langs button{border:none;background:none;padding:5px 10px;font-weight:700;font-size:13px;color:var(--muted);min-width:34px;font-family:var(--fb)}
 .langs button.on{background:var(--acc);color:var(--onacc)}
+.kindsel{font:inherit;font-size:12.5px;font-weight:600;color:var(--acc);background:var(--accsoft);border:1.5px solid color-mix(in srgb,var(--acc) 35%,transparent);border-radius:999px;padding:2px 8px;margin-inline-start:4px;max-width:100%}
 .toast{position:fixed;inset-inline:16px;bottom:calc(20px + env(safe-area-inset-bottom,0px));margin-inline:auto;max-width:420px;background:var(--ink);color:var(--paper);padding:12px 16px;border-radius:12px;font-size:14px;text-align:center;z-index:20;direction:var(--dir)}
 @media (min-width:720px){.wrap{max-width:680px;padding-inline:28px}h1{font-size:30px}}
 </style>
@@ -310,6 +311,8 @@ const D = {
  'ولية أمر':['Parent (mother)','家长（母亲）'],
  'معلم':['Teacher (male)','老师（男）'],
  'معلمة':['Teacher (female)','老师（女）'],
+ 'تغيير الصفة':['Change role','更改身份'],
+ 'تم تغيير الصفة':['Role changed','身份已更改'],
  'تستطيع أيضاً تجربة المحادثات بالأسفل لتعرف ما يتدرّب عليه طلابك، دون أن تُحسب نقاط.':['You can also try the conversations below to see what your students practise — no points are counted.','你也可以试试下面的对话，了解学生在练什么，不计积分。'],
  'اختر صفتك: طالب، طالبة، ولي أمر، ولية أمر، معلم، أو معلمة.':['Choose your role: student, parent or teacher.','请选择身份：学生、家长或老师。'],
  'أرسل طلب الانضمام':['Send join request','发送加入申请'],
@@ -721,7 +724,9 @@ function vAdmin(){
   if (!R) return header() + `<div class="sec"><p class="sub">جارٍ التحميل…</p>${back}</div>`;
   const by = st => R.filter(r => (st === 'rejected' ? r.status !== 'pending' && r.status !== 'approved' : r.status === st));
   const P = by('pending').sort((a, b) => (a.created || 0) - (b.created || 0)), AA = by('approved').sort((a, b) => (b.total || 0) - (a.total || 0)), A = AA.filter(r => !isParent(r)), PR = AA.filter(isParent), J = by('rejected');
-  const who = r => `<span class="grow"><b>${esc(r.name || '')}</b> <span class="chip">${isParent(r) ? parentWord(r) : r.gender === 'f' ? 'طالبة' : 'طالب'}</span></span>`;
+  const kind = r => (['parent', 'teacher'].includes(r.role) ? r.role : 'student') + ':' + (r.gender === 'f' ? 'f' : 'm');
+  const KINDS = [['student:m','طالب'],['student:f','طالبة'],['parent:m','ولي أمر'],['parent:f','ولية أمر'],['teacher:m','معلم'],['teacher:f','معلمة']];
+  const who = r => `<span class="grow"><b>${esc(r.name || '')}</b> <select class="kindsel" data-kind="${esc(r.id)}" aria-label="تغيير الصفة" title="تغيير الصفة">${KINDS.map(([v, n]) => `<option value="${v}" ${kind(r) === v ? 'selected' : ''}>${n}</option>`).join('')}</select></span>`;
   const btn = (w, r, label, cls) => `<button class="x ${cls || ''}" data-adm="${w}" data-id="${esc(r.id)}">${X.confirm === w + r.id ? 'تأكيد: ' + label : label}</button>`;
   return header() + `<div class="qhead"><h2>لوحة المشرف</h2><button class="x" data-act="adminOut">خروج المشرف</button></div><div class="sec">
     <div class="card"><h3>طلبات الانضمام (${P.length})</h3>${P.length ? P.map(r => `<div class="li">${who(r)}${btn('approve', r, 'موافقة', 'ok')}${btn('reject', r, 'رفض', 'bad')}</div>`).join('') : '<p class="sub">لا توجد طلبات جديدة.</p>'}</div>
@@ -1147,6 +1152,12 @@ app.addEventListener('click', e => {
   else if (act === 'tkQuit' || act === 'tkList') quit();
 });
 app.addEventListener('input', e => { if (e.target.id === 'jname') JF.name = e.target.value; });
+/* المشرف يصحّح صفة المسجّل إذا أخطأ في التسجيل (طالب، ولي أمر، معلم…) */
+app.addEventListener('change', e => {
+  const id = e.target.dataset && e.target.dataset.kind; if (!id || !X.admin || !fsA) return;
+  const [role, gender] = e.target.value.split(':');
+  fsA.collection(COL).doc(id).update({role, gender, updated:Date.now()}).then(() => toast('تم تغيير الصفة'), () => toast('لم يُنفَّذ الطلب. تحقق من الإنترنت ومن نشر قواعد قاعدة البيانات.'));
+});
 app.addEventListener('submit', e => {
   e.preventDefault();
   if (e.target.id === 'joinform'){ if (!X.busy) join(); return; }
