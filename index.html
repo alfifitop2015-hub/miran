@@ -349,7 +349,8 @@ a.btn{text-decoration:none}
 .gstars{display:flex;gap:6px;font-size:44px}.gstars span{opacity:.18;filter:grayscale(1)}.gstars span.on{opacity:1;filter:none;animation:gpop .5s both}
 @keyframes gshake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}@keyframes gpulse{50%{transform:scale(1.08)}}@keyframes gpop{from{transform:scale(.2) rotate(-30deg);opacity:0}}
 .loginbox summary{cursor:pointer;font-weight:800;font-size:16px;list-style:none}.loginbox summary::-webkit-details-marker{display:none}.loginbox{border:2px solid color-mix(in srgb,var(--acc) 35%,transparent)}
-.pinin{font-family:var(--fe);font-size:24px;letter-spacing:8px;text-align:center}.pincard{border:2px solid #E9C46A;background:#FFFBEF}
+.pinin{font-family:var(--fe);font-size:24px;letter-spacing:8px;text-align:center}.pinov .pincard{border:none;background:none;padding:0;box-shadow:none}.pinov .pincard h3,.pinov .pincard .note{display:none}
+.pincard{border:2px solid #E9C46A;background:#FFFBEF}
 .pinshow{font-family:var(--fe);font-size:34px;font-weight:800;letter-spacing:10px;text-align:center;background:#F6F4FF;border-radius:14px;padding:6px}
 .lobtn{color:var(--bad);font-weight:700}.lopanel{border:2px solid var(--bad);margin-bottom:10px}.pinbox{box-shadow:none;background:#F6F4FF}
 .certbtn{font-weight:700;color:#B7791F;background:#FFF6DB;border-radius:99px;padding:4px 10px}
@@ -968,6 +969,12 @@ function loadMyPin(){if(!fb||!C.sid||C.asAdmin||C.pinFor===C.sid)return;C.pinFor
  readPin(C.sid).then(v=>{C.myPin=v==null?null:(PINRE.test(v)?v:'');if(['home','wait','pboard','who'].includes(view.name)||LO)render()})}
 const pinCard=()=>C.myPin===''&&!C.asAdmin?`<form id="pinform" class="card stack pincard"><div><h3 style="margin:0">🔐 ${g('اختر','اختاري')} رقمك السري</h3><p class="note" style="margin:4px 0 0">4 أرقام ${g('تختارها','تختارينها')} بنفسك، ${g('تدخل','تدخلين')} بها إلى حسابك من أي جهاز. ${g('تختاره','تختارينه')} مرة واحدة، ومدير النظام يستطيع تغييره إن نسيته.</p></div>
  <div class="row"><input type="text" id="spin" class="grow pinin" inputmode="numeric" pattern="[0-9]*" maxlength="4" dir="ltr" autocomplete="off" placeholder="••••"><button class="btn" type="submit">حفظ</button></div><p class="warn" id="pinerr" hidden></p></form>`:'';
+// للحسابات القديمة: نافذة واضحة تطلب إضافة الرقم السري مرة واحدة، دون أي أثر على النقاط
+let PINASK=(()=>{try{return sessionStorage.getItem('pinask')==='0'}catch(e){return false}})();
+function pinPrompt(){if(C.myPin!==''||C.asAdmin)return '';if(PINASK)return pinCard();
+ return `<div class="iv-ov pinov" dir="rtl"><div class="card stack pop" style="width:min(420px,100%)"><div style="font-size:40px;text-align:center">🔐</div>
+ <h2 style="margin:0;text-align:center">${g('أضف','أضيفي')} رقمك السري</h2><p style="margin:0;line-height:1.8;text-align:center">صار بإمكانك الدخول إلى حسابك من أي جهاز باسمك ورقم سري من 4 أرقام. ${g('اختره','اختاريه')} الآن مرة واحدة.<br><b>نقاطك وترتيبك وشهاداتك تبقى كما هي.</b></p>
+ ${pinCard()}<button class="btn plain wide" data-act="pinLater">لاحقاً</button></div></div>`}
 async function savePin(v){await fb.collection('studentSecrets').doc(C.sid).set({pin:v,at:Date.now(),by:'self'})}
 // قائمة أسماء المقبولين لشاشة الدخول
 const LG={open:false,list:null,err:'',busy:false};
@@ -1248,7 +1255,7 @@ function pbList(){const q=PB.q.trim();const all=(PB.rows||[]).filter(r=>(r.total
  return rows.length?`<div class="list">${rows.map(r=>`<div class="brd${q?' me':''}"><span class="n p${r.rk}">${r.rk}</span><span>${esc(r.nick)}${winBadge(r.sid,r.cn)}<br><span class="note">${GRADES[r.grade]||''}</span>${rkTitle(r.rk,r.total,r.gender)?`<br><span class="rkl">${rkTitle(r.rk,r.total,r.gender)}</span>`:''}</span>${tierBadge(r.life!=null?r.life:r.total)}<span class="sc">${(r.total||0).toLocaleString('en')}</span></div>`).join('')}</div>`:`<div class="card">${q?'لا يوجد متنافس بهذا الاسم في هذه القائمة.':'لا يوجد متنافسون بعد.'}</div>`}
 const parentRewardNote=()=>`<div class="card" style="border:2px dashed #E9C46A;background:#FFFBEF"><p style="margin:0;line-height:1.9">🎁 التكريم في مِران مقتصر على <b>الشهادات والتحفيز</b>. أما المكافأة العينية أو المادية فمتروكة للأسرة: من أتمّ مرحلة تكرّمه أسرته وتشجّعه بما تراه مناسباً.</p></div>`;
 function vPBoard(){const p=cur();if(PB.rows==null&&fb&&Date.now()-PB.at>3000)setTimeout(pbLoad,0);const sg=(k,l)=>`<button type="button" class="${PB.st===k?'on':''}" data-pbst="${k}">${l}</button>`;
- loadMyPin();return header()+band(`أهلاً يا ${esc(p.name)}`,'تابع ترتيب جميع المتنافسين لتعرف موقع أبنائك وتحفّزهم.')+`<div class="sec">${pinCard()}
+ loadMyPin();return header()+band(`أهلاً يا ${esc(p.name)}`,'تابع ترتيب جميع المتنافسين لتعرف موقع أبنائك وتحفّزهم.')+`<div class="sec">${pinPrompt()}
  <div class="card"><p style="margin:0;line-height:1.9">👀 حساب ولي الأمر للاطلاع فقط، ولا يظهر اسمك في الترتيب. ابحث باسم ابنك أو ابنتك لتعرف مركزه، ثم ${p.gender==='f'?'شجّعيه':'شجّعه'} على التدريب اليومي: كل تدريب يرفع نقاطه.</p></div>
  <label class="f" for="pbq">ابحث باسم ابنك أو ابنتك<input type="text" id="pbq" value="${esc(PB.q)}" placeholder="اكتب الاسم…"></label>
  <div class="seg">${sg('all','الجميع')}${sg('p','ابتدائي')}${sg('m','متوسط')}${sg('s','ثانوي')}</div>
@@ -1280,6 +1287,7 @@ function cloudAct(a){if(a==='intro'){openIntro();return true}if(a==='install'){d
  case 'adBoard':go('adBoard');adBoardLoad();return true;
  case 'adHome':go('admin');return true;
  case 'pbReload':pbLoad();return true;
+ case 'pinLater':PINASK=true;try{sessionStorage.setItem('pinask','0')}catch(e){}render();return true;
  case 'loTop':LO=!LO;loadMyPin();render();window.scrollTo(0,0);return true;
  case 'loNo2':LO=false;render();return true;
  case 'loDo':loDo();return true;
@@ -1326,7 +1334,7 @@ function cloudClick(d){if(!CLOUD)return false;
 function bindAuthForms(){
  const pf=$('#pinform');if(pf)pf.addEventListener('submit',async e=>{e.preventDefault();const v=(($('#spin')||{}).value||'').replace(/\D/g,'');const er=$('#pinerr');
   if(!PINRE.test(v)){er.textContent='الرقم السري 4 أرقام بالضبط.';er.hidden=false;return}
-  try{await savePin(v);C.myPin=v;toast('تم حفظ رقمك السري: '+v);render()}catch(x){er.textContent='تعذّر الحفظ. ربما لديك رقم سري من قبل، فاطلبه من مدير النظام.';er.hidden=false}});
+  try{await savePin(v);C.myPin=v;document.body.style.overflow='';toast('تم حفظ رقمك السري: '+v+' — نقاطك كما هي ✓');render()}catch(x){er.textContent='تعذّر الحفظ. ربما لديك رقم سري من قبل، فاطلبه من مدير النظام.';er.hidden=false}});
  const lb=$('#lgbox');if(lb)lb.addEventListener('toggle',()=>{LG.open=lb.open;if(lb.open){lgLoad()}});
  const lgf=$('#lgform');if(lgf)lgf.addEventListener('submit',e=>{e.preventDefault();const sid=($('#lgname')||{}).value,pin=(($('#lgpin')||{}).value||'').replace(/\D/g,'');
   if(!sid){LG.err='اختر اسمك من القائمة.';render();return}if(!PINRE.test(pin)){LG.err='اكتب رقمك السري (4 أرقام).';render();return}
@@ -2336,7 +2344,7 @@ function celebrate(p){const tot=lifetime(p),t=tierOf(tot);if(p.tierSeen==null||p
  if(t.i<p.tierSeen)p.tierSeen=t.i;return ''}
 function vHome(){const p=cur();const pl=planOf(p);const st=planStep(p);const done=PLAN.filter(x=>pl[x.k]).length;const bs=view.bs||'all';
  const card=x=>{const d=x.items.filter(k=>pl[k]).length,all=d===x.items.length;return `<button class="seccard" ${x.go==='en'?'data-go="en"':`data-act="${x.go}"`} style="--c:var(--${x.c});--c2:var(--${x.c2})"><span class="sci">${x.i}</span><span class="grow"><b>${x.t}</b><span>${x.m}</span>${d?`<span class="scst">✓ ${g('تدرّبت','تدرّبتِ')} اليوم</span>`:''}</span><span class="go">‹</span></button>`};
- loadMyPin();return header()+`<h1>أهلاً يا ${esc(p.name)}</h1>${pinCard()}
+ loadMyPin();return header()+`<h1>أهلاً يا ${esc(p.name)}</h1>${pinPrompt()}
  ${introCard(false)}<div class="homegrid"><div class="sec">${qHomeCards(p)}${SECS.map(card).join('')}</div>
  <div><p class="motto">${g('كلما تدرّبت أكثر زادت نقاطك','كلما تدرّبتِ أكثر زادت نقاطكِ')}</p>${newCertBanner(p)}${celebrate(p)}${heroPath(p)}${myCertsCard(p)}${CLOUD?`${hofCard()}<div class="sec"><div class="row between"><h2>🏆 الترتيب</h2><button class="x" data-go="comp">عرض الكل</button></div><div class="card"><div class="seg">${['all','st','gr'].map(k=>`<button type="button" class="${bs===k?'on':''}" data-bs="${k}">${k==='all'?'الجميع':k==='st'?STAGES[stageOf(p.grade)]:'صفّي'}</button>`).join('')}</div><div id="board" style="margin-top:10px"></div>${stageNote()}</div></div>`:`<div class="sec"><button class="btn plain wide" data-go="comp">🏆 الترتيب</button><button class="btn plain wide" data-go="parent">لوحة ولي الأمر</button></div>`}</div></div>`}
 
