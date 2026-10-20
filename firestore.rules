@@ -53,8 +53,12 @@ service cloud.firestore {
     // «ني هاو»: الدخول من جهاز آخر برابط ورمز سري
     function zhDev() { return /databases/$(database)/documents/zhDevices/$(request.auth.uid); }
     function isZh(sid) { return signed() && (request.auth.uid == sid || (exists(zhDev()) && get(zhDev()).data.sid == sid)); }
+    // الرقم السري: يختاره صاحبه مرة واحدة (4 أرقام)، وتغييره للمشرف فقط
     match /zhSecrets/{sid} {
-      allow read, write: if isZh(sid);
+      allow read: if isZh(sid);
+      allow create: if isZh(sid) && request.resource.data.pin is string && request.resource.data.pin.matches('^[0-9]{4}$');
+      allow update: if isZh(sid) && request.resource.data.pin is string && request.resource.data.pin.matches('^[0-9]{4}$')
+        && !(resource.data.pin is string && resource.data.pin.matches('^[0-9]{4}$'));
     }
     match /zhDevices/{uid} {
       allow read, delete: if signed() && request.auth.uid == uid;

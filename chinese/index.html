@@ -629,7 +629,7 @@ applyLang();
 const FB = {apiKey:"AIzaSyDfDRNr06QJKPShAvjuc0UOaFYNlvU5NEo",authDomain:"miran-7ad31.firebaseapp.com",projectId:"miran-7ad31",storageBucket:"miran-7ad31.firebasestorage.app",messagingSenderId:"1089204486985",appId:"1:1089204486985:web:986b4a4ad56190c878d098"};
 const ADMIN_EMAIL = 'alfifitop2015@gmail.com';
 const X = {ready:false, off:false, uid:null, me:null, meLoaded:false, board:null, full:false, admin:false, rows:null, err:'', busy:false, confirm:''};
-const JF = {name:'', gender:'', role:''};
+const JF = {name:'', gender:'', role:'', pin:''};
 let fsP = null, fsA = null, authP = null, authA = null, INC = null, unsubMe = null, unsubBoard = null, unsubAdmin = null;
 const g = (m, f) => X.me && X.me.gender === 'f' ? f : m;
 const COL = 'zhPlayers';
@@ -721,29 +721,42 @@ async function enterWithCode(){
   catch(e){ X.err2 = v.trim() ? 'الرابط غير صالح أو قديم. اطلب رابطاً جديداً.' : 'الرقم السري غير صحيح. اطلبه من المشرف.'; }
   X.busy = false; soft();
 }
-async function makePin(db, sid){
-  const ref = db.collection('zhSecrets').doc(sid);
-  const d = await ref.get(); if (d.exists && /^\d{4}$/.test(d.data().pin || '')) return d.data().pin;
-  const pin = String(1000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 9000));   // رقم سري من 4 أرقام
-  await ref.set({pin, at:Date.now()}); return pin;
+/* الرقم السري: يختاره الشخص بنفسه مرة واحدة (عند التسجيل أو بعده)، والمشرف يراه ويغيّره */
+const PINRE = /^\d{4}$/;
+async function readPin(db, sid){ const d = await db.collection('zhSecrets').doc(sid).get(); return d.exists ? (d.data().pin || '') : ''; }
+function loadMyPin(){
+  if (!fsP || !X.uid || X.pinFor === X.uid) return; X.pinFor = X.uid; X.myPin = undefined;
+  readPin(fsP, X.uid).then(p => { X.myPin = PINRE.test(p) ? p : ''; soft(); }, () => { X.myPin = null; });
 }
-function linkSheet(name, url, pin){
+async function savePin(){
+  const v = (($('#spin') && $('#spin').value) || '').replace(/\D/g, '');
+  if (!PINRE.test(v)){ X.err3 = 'اكتب 4 أرقام.'; return render(); }
+  X.busy = true; X.err3 = ''; render();
+  try{ await fsP.collection('zhSecrets').doc(X.uid).set({pin:v, at:Date.now(), by:'self'}); X.myPin = v; toast('تم حفظ رقمك السري'); }
+  catch(e){ X.err3 = 'تعذّر الحفظ. ربما لديك رقم سري من قبل، فاطلبه من المشرف.'; }
+  X.busy = false; soft();
+}
+const pinCard = () => (X.myPin === '' && X.pinFor === X.uid) ? `<form id="pinform" class="card stack"><div><h2>اختر رقمك السري</h2><p class="sub" style="margin:0">4 أرقام تختارها بنفسك، تدخل بها إلى حسابك من أي جهاز. تختاره مرة واحدة، ويستطيع المشرف تغييره لك إن نسيته.</p></div>
+    <label class="f">الرقم السري<input type="text" id="spin" inputmode="numeric" dir="ltr" autocomplete="off" maxlength="4" pattern="[0-9]*" placeholder="••••"></label>
+    ${X.err3 ? `<div class="warn">${esc(X.err3)}</div>` : ''}<button class="btn wide" type="submit" ${X.busy ? 'disabled' : ''}>حفظ الرقم السري</button></form>` : '';
+function linkSheet(name, url, pin, aid){
   closeIntro();
   const msg = 'الدخول إلى «ني هاو» من جهاز آخر:\n1) افتح التطبيق: ' + APPURL + '\n2) اضغط «مسجّل من قبل؟ ادخل إلى حسابك»\n3) اختر اسمك' + (name ? ': ' + name : '') + '\n4) اكتب الرقم السري: ' + pin;
   const el = document.createElement('div');
   el.id = 'intro'; el.className = 'iv-ov'; el.dir = document.documentElement.dir; el.setAttribute('role', 'dialog');
-  el.innerHTML = `<div class="iv-box"><div class="card stack"><h2>الدخول من جهاز آخر</h2>${name ? `<p style="margin:0;font-weight:700">${esc(name)}</p>` : ''}<p class="sub" style="margin:0">على الجهاز الآخر: يفتح التطبيق، ويضغط «مسجّل من قبل؟ ادخل إلى حسابك»، ثم يختار اسمه ويكتب هذا الرقم السري. لا ترسله إلا لصاحب الحساب.</p><div class="pinbox"><span>الرقم السري</span><b dir="ltr">${esc(pin)}</b></div><div class="row"><button type="button" class="btn plain grow" id="cplink2">نسخ الرقم</button><a class="btn grow" href="https://wa.me/?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener" style="text-decoration:none">واتساب</a></div><button type="button" class="btn plain wide" id="ivclose">إغلاق</button></div></div>`;
-  el.addEventListener('click', e => { if (e.target === el || e.target.id === 'ivclose') closeIntro(); if (e.target.id === 'cplink2'){ try{ navigator.clipboard.writeText(pin).then(() => toast('تم نسخ الرقم'), () => toast(pin)); }catch(x){ toast(pin); } } });
+  el.innerHTML = `<div class="iv-box"><div class="card stack"><h2>الدخول من جهاز آخر</h2>${name ? `<p style="margin:0;font-weight:700">${esc(name)}</p>` : ''}<p class="sub" style="margin:0">على الجهاز الآخر: يفتح التطبيق، ويضغط «مسجّل من قبل؟ ادخل إلى حسابك»، ثم يختار اسمه ويكتب هذا الرقم السري. لا ترسله إلا لصاحب الحساب.</p>${pin ? `<div class="pinbox"><span>الرقم السري</span><b dir="ltr">${esc(pin)}</b></div>` : `<div class="warn">لم يختر رقمه السري بعد. يستطيع اختياره من حسابه، أو اكتب له رقماً هنا.</div>`}${aid ? `<div class="row"><input type="text" id="apin" inputmode="numeric" dir="ltr" autocomplete="off" maxlength="4" pattern="[0-9]*" placeholder="رقم جديد" class="grow" style="font-size:18px;text-align:center;letter-spacing:3px"><button type="button" class="btn plain" id="setapin">تغيير</button></div>` : ''}${pin ? `<div class="row"><button type="button" class="btn plain grow" id="cplink2">نسخ الرقم</button><a class="btn grow" href="https://wa.me/?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener" style="text-decoration:none">واتساب</a></div>` : ''}<button type="button" class="btn plain wide" id="ivclose">إغلاق</button></div></div>`;
+  el.addEventListener('click', e => { if (e.target === el || e.target.id === 'ivclose') closeIntro(); if (e.target.id === 'setapin'){ const v = (($('#apin') && $('#apin').value) || '').replace(/\D/g, ''); if (!PINRE.test(v)) return toast('اكتب 4 أرقام.'); fsA.collection('zhSecrets').doc(aid).set({pin:v, at:Date.now(), by:'admin'}).then(() => { closeIntro(); toast('تم تغيير الرقم السري'); linkSheet(name, loginLink(aid, v), v, aid); }, () => toast('تعذّر التغيير. تحقق من الإنترنت.')); }
+    if (e.target.id === 'cplink2'){ try{ navigator.clipboard.writeText(pin).then(() => toast('تم نسخ الرقم'), () => toast(pin)); }catch(x){ toast(pin); } } });
   document.body.appendChild(el); document.body.style.overflow = 'hidden';
 }
 /* خروج الطالب من حسابه على هذا الجهاز: يُعرض رقمه السري أولاً حتى يستطيع الدخول لاحقاً */
 async function askLogout(){
   let pin = '';
-  try{ pin = await makePin(fsP, X.uid); }catch(e){}
+  try{ pin = await readPin(fsP, X.uid); if (!PINRE.test(pin)) pin = ''; }catch(e){}
   closeIntro();
   const el = document.createElement('div');
   el.id = 'intro'; el.className = 'iv-ov'; el.dir = document.documentElement.dir; el.setAttribute('role', 'dialog');
-  el.innerHTML = `<div class="iv-box"><div class="card stack"><h2>الخروج من حسابك</h2><p class="sub" style="margin:0">للعودة لاحقاً: اضغط «مسجّل من قبل؟ ادخل إلى حسابك»، واختر اسمك، واكتب رقمك السري. احفظه قبل الخروج.</p>${pin ? `<div class="pinbox"><span>الرقم السري</span><b dir="ltr">${esc(pin)}</b></div>` : '<div class="warn">تعذّر عرض رقمك السري الآن. اطلبه من المشرف عند العودة.</div>'}<div class="row"><button type="button" class="btn plain grow" id="ivclose">إلغاء</button><button type="button" class="btn grow" id="dologout" style="background:var(--bad)">خروج</button></div></div></div>`;
+  el.innerHTML = `<div class="iv-box"><div class="card stack"><h2>الخروج من حسابك</h2><p class="sub" style="margin:0">للعودة لاحقاً: اضغط «مسجّل من قبل؟ ادخل إلى حسابك»، واختر اسمك، واكتب رقمك السري. احفظه قبل الخروج.</p>${pin ? `<div class="pinbox"><span>الرقم السري</span><b dir="ltr">${esc(pin)}</b></div>` : '<div class="warn">لم تختر رقماً سرياً بعد. اختره من بطاقة «اختر رقمك السري» قبل الخروج، وإلا فاطلبه من المشرف عند العودة.</div>'}<div class="row"><button type="button" class="btn plain grow" id="ivclose">إلغاء</button><button type="button" class="btn grow" id="dologout" style="background:var(--bad)">خروج</button></div></div></div>`;
   el.addEventListener('click', e => { if (e.target === el || e.target.id === 'ivclose') closeIntro(); if (e.target.id === 'dologout'){ closeIntro(); doLogout(); } });
   document.body.appendChild(el); document.body.style.overflow = 'hidden';
 }
@@ -753,23 +766,26 @@ async function doLogout(){
   const u = authP && authP.currentUser;
   if (u && u.uid !== X.uid){ try{ await fsP.collection('zhDevices').doc(u.uid).delete(); }catch(e){} }
   if (unsubMe){ unsubMe(); unsubMe = null; }
-  X.me = null; X.uid = null; X.names = null; X.linked = true; JF.name = ''; JF.gender = ''; JF.role = '';
+  X.me = null; X.uid = null; X.names = null; X.pinFor = null; X.myPin = undefined; X.linked = true; JF.name = ''; JF.gender = ''; JF.role = '';
   subBoard();
   try{ await authP.signOut(); }catch(e){}
   view = 'list'; render(); window.scrollTo(0, 0); toast('تم الخروج من حسابك');
 }
-async function myLink(){ try{ const pin = await makePin(fsP, X.uid); linkSheet('', loginLink(X.uid, pin), pin); }catch(e){ toast('تعذّر إنشاء الرابط. تحقق من الإنترنت ومن نشر قواعد قاعدة البيانات.'); } }
-async function adminLink(id){ try{ const pin = await makePin(fsA, id); const r = (X.rows || []).find(x => x.id === id); linkSheet(r ? r.name : '', loginLink(id, pin), pin); }catch(e){ toast('تعذّر إنشاء الرابط. تحقق من الإنترنت ومن نشر قواعد قاعدة البيانات.'); } }
+async function myLink(){ try{ const pin = await readPin(fsP, X.uid); if (!PINRE.test(pin)){ X.myPin = ''; X.pinFor = X.uid; render(); const f = $('#pinform'); if (f) f.scrollIntoView({behavior:'smooth', block:'center'}); return toast('اختر رقمك السري أولاً'); } linkSheet('', loginLink(X.uid, pin), pin); }catch(e){ toast('تعذّر إنشاء الرابط. تحقق من الإنترنت ومن نشر قواعد قاعدة البيانات.'); } }
+async function adminLink(id){ try{ let pin = await readPin(fsA, id); if (!PINRE.test(pin)) pin = ''; const r = (X.rows || []).find(x => x.id === id); linkSheet(r ? r.name : '', loginLink(id, pin), pin, id); }catch(e){ toast('تعذّر إنشاء الرابط. تحقق من الإنترنت ومن نشر قواعد قاعدة البيانات.'); } }
 
 async function join(){
   const name = JF.name.trim().slice(0, 20);
   if (!name){ X.err = 'اكتب اسمك.'; return render(); }
   if (!JF.gender){ X.err = 'اختر صفتك: طالب، طالبة، ولي أمر، ولية أمر، معلم، أو معلمة.'; return render(); }
+  const pin = JF.pin.replace(/\D/g, '');
+  if (pin && !PINRE.test(pin)){ X.err = 'الرقم السري 4 أرقام، أو اتركه فارغاً واختره لاحقاً.'; return render(); }
   X.busy = true; X.err = ''; render();
   try{
     if (!authP.currentUser) await authP.signInAnonymously();
     const u = authP.currentUser;
     await fsP.collection(COL).doc(u.uid).set({name, gender:JF.gender, role:['parent', 'teacher'].includes(JF.role) ? JF.role : 'student', status:'pending', total:0, talks:0, created:Date.now(), updated:Date.now()});
+    if (pin){ try{ await fsP.collection('zhSecrets').doc(u.uid).set({pin, at:Date.now(), by:'self'}); X.myPin = pin; X.pinFor = u.uid; }catch(e){} }
   }catch(e){
     X.err = e && e.code === 'permission-denied' ? 'المنافسة لم تُفعَّل بعد من المشرف. حاول لاحقاً.' : 'تعذّر إرسال الطلب. تحقق من الإنترنت ثم حاول مرة أخرى.';
   }
@@ -813,6 +829,8 @@ function vParent(m){
 function joinForm(){ return `<form id="joinform" class="card stack"><div><h2>انضم إلى «ني هاو»</h2><p class="sub">سجّل اسمك وصفتك، ويُفتح لك التطبيق بعد موافقة المشرف. ولي الأمر والمعلم يدخلان للاطلاع والمتابعة فقط، ولا يدخلان المنافسة.</p></div>
     <label class="f">الاسم<input type="text" class="ar" id="jname" maxlength="20" autocomplete="off" value="${esc(JF.name)}" placeholder="اكتب اسمك"></label>
     <div class="seg">${[['m','student','طالب'],['f','student','طالبة'],['m','parent','ولي أمر'],['f','parent','ولية أمر'],['m','teacher','معلم'],['f','teacher','معلمة']].map(([gn, rl, lb]) => { const on = JF.gender === gn && (JF.role || 'student') === rl; return `<button type="button" class="${on ? 'on' : ''}" data-gen="${gn}" data-role="${rl}" aria-pressed="${on}" style="flex:1 1 40%">${lb}</button>`; }).join('')}</div>
+    <label class="f">رقمك السري (اختياري، 4 أرقام)<input type="text" id="jpin" inputmode="numeric" dir="ltr" autocomplete="off" maxlength="4" pattern="[0-9]*" value="${esc(JF.pin)}" placeholder="••••"></label>
+    <p class="sub" style="margin:-4px 0 0">تدخل به إلى حسابك من أي جهاز. تستطيع اختياره الآن أو لاحقاً.</p>
     ${X.err ? `<div class="warn">${esc(X.err)}</div>` : ''}
     <button class="btn wide" type="submit" ${X.busy ? 'disabled' : ''}>${X.busy ? 'جارٍ الإرسال…' : 'أرسل طلب الانضمام'}</button></form>
     <details class="card" id="logindet" ${X.err2 || X.names ? 'open' : ''}><summary style="cursor:pointer;font-weight:700">مسجّل من قبل؟ ادخل إلى حسابك</summary>
@@ -833,8 +851,10 @@ function vComp(){
   if (!X.ready || (X.uid && !X.meLoaded)) return `<div class="card"><p class="sub" style="margin:0">جارٍ تحميل المنافسة…</p></div>`;
   const m = X.me;
   if (!m) return joinForm();
-  if (m.status === 'pending') return `<div class="card"><h2>طلبك قيد المراجعة</h2><p class="sub">أهلاً ${esc(m.name)}. وصل طلبك إلى المشرف. ${isParent(m) ? 'تُفتح لك لوحة المتابعة هنا فور الموافقة.' : 'تُفتح لك المحادثات والمنافسة هنا فور الموافقة.'}</p></div>`;
-  if (m.status === 'approved' && isParent(m)) return vParent(m);
+  loadMyPin();
+  const pc = m.status === 'rejected' ? '' : pinCard();
+  if (m.status === 'pending') return pc + `<div class="card"><h2>طلبك قيد المراجعة</h2><p class="sub">أهلاً ${esc(m.name)}. وصل طلبك إلى المشرف. ${isParent(m) ? 'تُفتح لك لوحة المتابعة هنا فور الموافقة.' : 'تُفتح لك المحادثات والمنافسة هنا فور الموافقة.'}</p></div>`;
+  if (m.status === 'approved' && isParent(m)) return pc + vParent(m);
   if (m.status !== 'approved') return `<div class="card"><h2>لم يُقبل طلب الانضمام</h2><p class="sub">${g('تواصل', 'تواصلي')} مع المشرف إن كان ذلك خطأ.</p></div>`;
   const B = X.board, my = B ? B.findIndex(r => r.id === X.uid) : -1;
   const row = (r, i) => `<div class="brd ${r.id === X.uid ? 'me' : ''}"><span class="n">${i + 1}</span><span class="nm">${esc(r.name)} ${TITLE(i, r.gender === 'f') ? `<span class="tier">${TITLE(i, r.gender === 'f')}</span>` : ''}</span><span class="sc">${r.total}</span></div>`;
@@ -843,7 +863,7 @@ function vComp(){
   if (!B) list = `<p class="sub" style="margin:0">جارٍ تحميل الترتيب…</p>`;
   else if (!B.length) list = `<p class="sub" style="margin:0">لا نقاط بعد. ${g('ابدأ', 'ابدئي')} محادثة ${g('لتتصدّر', 'لتتصدّري')} الترتيب.</p>`;
   else list = B.slice(0, lim).map(row).join('') + (my >= lim ? row(B[my], my) : '') + (B.length > 5 ? `<button class="x" data-act="full" style="margin-top:8px">${X.full ? 'عرض أقل' : 'عرض الترتيب كاملاً'}</button>` : '');
-  return `<div class="card stack"><div class="stats"><div class="stat"><b>${m.total || 0}</b><span>${g('نقاطك', 'نقاطكِ')}</span></div><div class="stat"><b>${my >= 0 ? my + 1 : '–'}</b><span>${g('ترتيبك', 'ترتيبكِ')}${B ? ' من ' + B.length : ''}</span></div></div>
+  return pc + `<div class="card stack"><div class="stats"><div class="stat"><b>${m.total || 0}</b><span>${g('نقاطك', 'نقاطكِ')}</span></div><div class="stat"><b>${my >= 0 ? my + 1 : '–'}</b><span>${g('ترتيبك', 'ترتيبكِ')}${B ? ' من ' + B.length : ''}</span></div></div>
     <div><h2>ترتيب المتنافسين</h2><div>${list}</div></div>
     <p class="sub" style="margin:0">الفهم من أول محاولة: 10 نقاط × المستوى. بعد الإعادة: 5 × المستوى. إكمال المحادثة: 10 نقاط.</p></div>`;
 }
@@ -875,7 +895,7 @@ function vAdmin(){
   const btn = (w, r, label, cls) => `<button class="x ${cls || ''}" data-adm="${w}" data-id="${esc(r.id)}">${X.confirm === w + r.id ? 'تأكيد: ' + label : label}</button>`;
   return header() + `<div class="qhead"><h2>لوحة المشرف</h2><button class="x" data-act="adminOut">خروج المشرف</button></div><div class="sec">
     <button class="tile" data-act="preview"><span class="grow"><h3>صفحة التسجيل للجدد</h3><span class="meta">شاهد ما يراه المسجّل الجديد عند فتح التطبيق أول مرة</span></span><span class="go">‹</span></button>
-    <div class="card"><h3>طلبات الانضمام (${P.length})</h3>${P.length ? P.map(r => `<div class="li">${who(r)}${btn('approve', r, 'موافقة', 'ok')}${btn('reject', r, 'رفض', 'bad')}</div>`).join('') : '<p class="sub">لا توجد طلبات جديدة.</p>'}</div>
+    <div class="card"><h3>طلبات الانضمام (${P.length})</h3>${P.length ? P.map(r => `<div class="li">${who(r)}${lk(r)}${btn('approve', r, 'موافقة', 'ok')}${btn('reject', r, 'رفض', 'bad')}</div>`).join('') : '<p class="sub">لا توجد طلبات جديدة.</p>'}</div>
     <div class="card"><h3>المتنافسون (${A.length})</h3>${A.length ? A.map(r => `<div class="li">${who(r)}<span class="chip">${r.total || 0} نقطة</span>${lk(r)}${btn('reset', r, 'تصفير النقاط')}${btn('reject', r, 'إيقاف', 'bad')}</div>`).join('') : '<p class="sub">لا يوجد متنافسون بعد.</p>'}</div>
     ${PR.length ? `<div class="card"><h3>أولياء الأمور والمعلمون (${PR.length})</h3><p class="sub" style="margin:0">للاطلاع فقط، لا يظهرون في الترتيب.</p>${PR.map(r => `<div class="li">${who(r)}${lk(r)}${btn('reject', r, 'إيقاف', 'bad')}</div>`).join('')}</div>` : ''}
     ${J.length ? `<div class="card"><h3>المرفوضون والموقوفون (${J.length})</h3>${J.map(r => `<div class="li">${who(r)}${btn('approve', r, 'قبول', 'ok')}${btn('del', r, 'حذف', 'bad')}</div>`).join('')}</div>` : ''}
@@ -1308,7 +1328,7 @@ app.addEventListener('click', e => {
   else if (act === 'tkQuit' || act === 'tkList') quit();
 });
 document.addEventListener('toggle', e => { if (e.target && e.target.id === 'logindet' && e.target.open && view !== 'preview') loadNames(); }, true);
-app.addEventListener('input', e => { if (e.target.id === 'jname') JF.name = e.target.value; });
+app.addEventListener('input', e => { if (e.target.id === 'jname') JF.name = e.target.value; if (e.target.id === 'jpin') JF.pin = e.target.value; });
 /* المشرف يصحّح صفة المسجّل إذا أخطأ في التسجيل (طالب، ولي أمر، معلم…) */
 app.addEventListener('change', e => {
   const id = e.target.dataset && e.target.dataset.kind; if (!id || !X.admin || !fsA) return;
@@ -1318,6 +1338,7 @@ app.addEventListener('change', e => {
 app.addEventListener('submit', e => {
   e.preventDefault();
   if (e.target.id === 'loginform'){ if (view === 'preview'){ toast('هذه معاينة فقط، لا يُرسل الطلب.'); return; } if (!X.busy) enterWithCode(); return; }
+  if (e.target.id === 'pinform'){ if (!X.busy) savePin(); return; }
   if (e.target.id === 'joinform'){ if (view === 'preview'){ toast('هذه معاينة فقط، لا يُرسل الطلب.'); return; } if (!X.busy) join(); return; }
   if (e.target.id === 'admform'){ if (!X.busy) adminLogin(); return; }
   const i = $('#tkin'); if (!i || !TK || TK.busy) return;
