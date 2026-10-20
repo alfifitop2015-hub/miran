@@ -1197,14 +1197,29 @@ function adForm(id){const v=A.form;const sg=(k,o)=>`<div class="seg">${o.map(([x
  <div class="f stack"><b style="font-size:14px">الفصل الدراسي</b>${sg('term',[[1,'الأول'],[2,'الثاني']])}</div>
  ${id?'':'<p class="note" style="margin:0">بعد الحفظ يظهر رابط دخول ترسله للمنافس، فيفتحه ويبدأ مباشرة.</p>'}
  <p class="warn" id="aderr" hidden></p><div class="row"><button class="btn grow" type="submit">حفظ</button><button type="button" class="btn plain grow" data-act="adCancel">إلغاء</button></div></form>`}
+
+/* ============ تغيير صفة المشارك: طالب / طالبة / أب / أم ============ */
+const KINDS=[['sm','🎓 طالب'],['sf','🎓 طالبة'],['pm','👨 أب'],['pf','👩 أم']];
+const kindOf=s=>(s.role==='parent'?'p':'s')+(s.gender==='f'?'f':'m');
+function adRoleBox(s){if(!A.rl||A.rl.id!==s.id)return '';const o=A.rl;const toStu=o.k[0]==='s';
+ return `<div class="card stack pinbox"><b>🔄 تغيير صفة ${esc(s.name)}</b><div class="seg" style="flex-wrap:wrap">${KINDS.map(([k,l])=>`<button type="button" class="${o.k===k?'on':''}" data-adrlk="${k}">${l}</button>`).join('')}</div>
+ ${toStu?`<div class="f stack"><b style="font-size:14px">الصف</b>${gradeSeg('data-adrlg',o.g)}<span class="note">${GRADES[o.g]||'اختر الصف'}</span></div>`:''}
+ <p class="note" style="margin:0">${toStu?'كطالب يدخل المنافسة ويظهر في الترتيب.':'كولي أمر يصبح للاطلاع فقط ويُخفى من الترتيب.'} نقاطه وسجلّه محفوظة، وتعود إن رجع طالباً. وحسابه ورقمه السري لا يتغيران.</p>
+ <div class="row"><button class="btn grow" data-adrlok="${s.id}" ${o.k===kindOf(s)&&(!toStu||o.g===s.grade)?'disabled':''}>حفظ</button><button class="btn plain grow" data-act="adRlNo">إلغاء</button></div></div>`}
+async function adminRole(id,k,gr){const ref=stuRef(id);const sn=await ref.get();const d=sn.data()||{};const toPar=k[0]==='p';const gender=k[1]==='f'?'f':'m';
+ d.gender=gender;if(toPar){d.role='parent';d.online=false}else{delete d.role;d.online=true;if(gr){if(d.grade!==gr){d.grade=gr;d.daily={}}}}
+ await ref.set(d);
+ const pl=fb.collection('players').doc(id);
+ if(toPar)await pl.delete().catch(()=>{});else{const ps=await pl.get();if(ps.exists)await pl.set(Object.assign(ps.data(),{gender,grade:d.grade,stage:stageOf(d.grade)}))}
+ if((d.status||'approved')!=='pending')await fb.collection('names').doc(id).set({n:String(d.name||'').slice(0,20),r:toPar?'p':'s',g:toPar?0:(d.grade||0),at:Date.now()}).catch(()=>{})}
 function adRow(s){if(A.edit===s.id)return adForm(s.id);const l=A.links[s.id];
  return `<div class="card stack"><div class="row"><span class="av ${s.gender}">${esc((s.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(s.name)}</b><br><span class="note">${GRADES[s.grade]} · ${TERMS[s.term]||''} · ${s.score} نقطة · ${s.answers} سؤال${s.last?' · آخر تدريب '+s.last:''}</span></span></div>${adCertBtns(s)}
  ${l?`<div class="tklink" dir="ltr">${esc(l)}</div><div class="row"><button class="btn plain grow" data-copy="${esc(l)}">نسخ الرابط</button><a class="btn grow" href="${esc(wa('رابط دخولك إلى مِران يا '+s.name+':\n'+l))}" target="_blank" rel="noopener">واتساب</a></div>`:''}
  ${A.rst===s.id?`<div class="warn stack">تصفير رصيد ${esc(s.name)} يجعل نقاطه صفراً ويبدأ المنافسة من جديد، ويبقى اسمه وحسابه.<div class="row"><button class="btn danger" data-adrstok="${s.id}">نعم، صفّر الرصيد</button><button class="btn plain" data-act="adCancel">إلغاء</button></div></div>`:A.del===s.id?`<div class="warn stack">حذف ${esc(s.name)} يمسح حسابه وكل تقدّمه نهائياً.<div class="row"><button class="btn danger" data-addelok="${s.id}">نعم، احذف</button><button class="btn plain" data-act="adCancel">إلغاء</button></div></div>`
- :`<div class="row" style="flex-wrap:wrap"><button class="x" style="font-weight:700" data-adas="${s.id}">دخول حسابه</button><button class="x" data-adedit="${s.id}">تعديل</button><button class="x" data-adpin="${s.id}">🔐 الرقم السري</button><button class="x" data-adlink="${s.id}">رابط دخول</button><button class="x" style="color:var(--cp)" data-adrst="${s.id}">تصفير الرصيد</button><button class="x" style="color:var(--bad)" data-addel="${s.id}">حذف</button></div>`}${adPinBox(s)}</div>`}
+ :`<div class="row" style="flex-wrap:wrap"><button class="x" style="font-weight:700" data-adas="${s.id}">دخول حسابه</button><button class="x" data-adedit="${s.id}">تعديل</button><button class="x" data-adpin="${s.id}">🔐 الرقم السري</button><button class="x" data-adrl="${s.id}">🔄 تغيير الصفة</button><button class="x" data-adlink="${s.id}">رابط دخول</button><button class="x" style="color:var(--cp)" data-adrst="${s.id}">تصفير الرصيد</button><button class="x" style="color:var(--bad)" data-addel="${s.id}">حذف</button></div>`}${adPinBox(s)}${adRoleBox(s)}</div>`}
 async function adminApprove(id){await stuRef(id).update({status:'approved',approvedAt:Date.now()})}
 function adPendRow(s){return `<div class="card stack" style="border:2px solid #FFCB5C"><div class="row"><span class="av ${s.gender}">${esc((s.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(s.name)}</b><br><span class="note">${s.role==='parent'?`👨‍👩‍👧 ولي أمر (${s.gender==='f'?'أم':'أب'}) · للاطلاع فقط`:`${s.gender==='f'?'طالبة':'طالب'} · ${GRADES[s.grade]} · ${TERMS[s.term]||''}`}${s.created?' · '+new Date(s.created).toLocaleDateString('ar-SA'):''}</span></span></div>
- ${adPinBox(s)}<div class="row" style="flex-wrap:wrap"><button class="x" data-adpin="${s.id}">🔐 الرقم السري</button></div><div class="row"><button class="btn grow" data-adok="${s.id}">✓ قبول</button><button class="btn plain grow" style="color:var(--bad)" data-adno="${s.id}">رفض</button></div>${adLinkBox(s)}</div>`}
+ ${adPinBox(s)}${adRoleBox(s)}<div class="row" style="flex-wrap:wrap"><button class="x" data-adpin="${s.id}">🔐 الرقم السري</button><button class="x" data-adrl="${s.id}">🔄 تغيير الصفة</button></div><div class="row"><button class="btn grow" data-adok="${s.id}">✓ قبول</button><button class="btn plain grow" style="color:var(--bad)" data-adno="${s.id}">رفض</button></div>${adLinkBox(s)}</div>`}
 const anorm=t=>QNORM(t||'').replace(/^(ال)/,'');
 function adSimilar(s,o){const a=anorm(s.name).split(' ')[0],b=anorm(o.name).split(' ')[0];return (o.grade===s.grade?2:0)+(a&&b&&(a===b||a.includes(b)||b.includes(a))?3:0)+(o.gender===s.gender?1:0)}
 function adLinkBox(s){const others=(A.list||[]).filter(o=>o.status!=='pending'&&o.role===s.role);if(!others.length)return '';
@@ -1219,7 +1234,7 @@ function adLkCands(s){const q=anorm(A.lkQ||'');return (A.list||[]).filter(o=>o.s
 function adLkList(list,s){return list.map(([o,sc])=>`<button class="tile" data-adlkto="${o.id}" style="padding:10px 12px"><span class="av ${o.gender}">${esc((o.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(o.name)}</b>${sc>=5?' <span class="note" style="color:#9a5b00">⚠️ مشابه</span>':''}<br><span class="note">${s.role==='parent'?'ولي أمر':GRADES[o.grade]+' · '+o.score+' نقطة'}${o.last?' · آخر تدريب '+o.last:''}</span></span></button>`).join('')||'<p class="note" style="margin:0">لا يوجد حساب بهذا الاسم.</p>'}
 async function adminLinkReq(reqId,targetId){await fb.collection('devices').doc(reqId).set({sid:targetId,at:Date.now(),byAdmin:true});await stuRef(reqId).delete();await fb.collection('studentSecrets').doc(reqId).delete().catch(()=>{})}
 function adParRow(s){return `<div class="card stack" style="box-shadow:none"><div class="row"><span class="av ${s.gender}">${esc((s.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(s.name)}</b><br><span class="note">${s.gender==='f'?'أم':'أب'} · ولي أمر${s.created?' · '+new Date(s.created).toLocaleDateString('ar-SA'):''}</span></span></div>
- ${A.del===s.id?`<div class="warn stack">حذف حساب ولي الأمر ${esc(s.name)} نهائياً؟<div class="row"><button class="btn danger" data-addelok="${s.id}">نعم، احذف</button><button class="btn plain" data-act="adCancel">إلغاء</button></div></div>`:`<div class="row" style="flex-wrap:wrap"><button class="x" style="font-weight:700" data-adas="${s.id}">دخول حسابه</button><button class="x" data-adpin="${s.id}">🔐 الرقم السري</button><button class="x" data-adlink="${s.id}">رابط دخول لجهاز آخر</button><button class="x" style="color:var(--bad)" data-addel="${s.id}">حذف</button></div>`}${A.links[s.id]?`<div class="tklink" dir="ltr">${esc(A.links[s.id])}</div><div class="row"><button class="btn plain grow" data-copy="${esc(A.links[s.id])}">نسخ الرابط</button><a class="btn grow" href="${esc(wa('رابط دخولك إلى مِران (ولي أمر):\n'+A.links[s.id]))}" target="_blank" rel="noopener">واتساب</a></div><p class="note" style="margin:0">يفتحه ولي الأمر على الجوال أو المتصفح الجديد فيدخل حسابه مباشرة.</p>`:''}${adPinBox(s)}</div>`}
+ ${A.del===s.id?`<div class="warn stack">حذف حساب ولي الأمر ${esc(s.name)} نهائياً؟<div class="row"><button class="btn danger" data-addelok="${s.id}">نعم، احذف</button><button class="btn plain" data-act="adCancel">إلغاء</button></div></div>`:`<div class="row" style="flex-wrap:wrap"><button class="x" style="font-weight:700" data-adas="${s.id}">دخول حسابه</button><button class="x" data-adpin="${s.id}">🔐 الرقم السري</button><button class="x" data-adrl="${s.id}">🔄 تغيير الصفة</button><button class="x" data-adlink="${s.id}">رابط دخول لجهاز آخر</button><button class="x" style="color:var(--bad)" data-addel="${s.id}">حذف</button></div>`}${A.links[s.id]?`<div class="tklink" dir="ltr">${esc(A.links[s.id])}</div><div class="row"><button class="btn plain grow" data-copy="${esc(A.links[s.id])}">نسخ الرابط</button><a class="btn grow" href="${esc(wa('رابط دخولك إلى مِران (ولي أمر):\n'+A.links[s.id]))}" target="_blank" rel="noopener">واتساب</a></div><p class="note" style="margin:0">يفتحه ولي الأمر على الجوال أو المتصفح الجديد فيدخل حسابه مباشرة.</p>`:''}${adPinBox(s)}${adRoleBox(s)}</div>`}
 function adAlertCard(){const on=window.Notification&&Notification.permission==='granted';
  return `<div class="card stack" style="box-shadow:none"><div class="row between"><b>🔔 تنبيهات طلبات الانضمام</b>${on?'<span class="note" style="color:var(--th)">مفعّلة ✓</span>':''}</div>
  <p class="note" style="margin:0">عند وصول طلب جديد تسمع نغمة ويصلك إشعار ما دامت مِران مفتوحة عندك كمدير، ويصلك أيضاً بريد على ${esc(ADMIN_EMAIL)}.</p>
@@ -1241,7 +1256,7 @@ function vAdmin(){let body;
   <label class="f" for="adq">بحث بالاسم<input type="text" id="adq" value="${esc(view.q||'')}" placeholder="ابحث…"></label>
   <div class="seg">${sg('all','الكل')}${sg('p','ابتدائي')}${sg('m','متوسط')}${sg('s','ثانوي')}</div>
   ${hofCard()}<div class="stack" id="adlist">${adFiltered().map(adRow).join('')||'<div class="card">لا يوجد منافسون بعد.</div>'}</div>
-  ${PR.length?`<details class="card" ${PR.some(x=>A.links[x.id]||A.del===x.id)?'open':''}><summary style="cursor:pointer"><b>👨‍👩‍👧 أولياء الأمور (${PR.length})</b> <span class="note">للاطلاع فقط، لا يظهرون في الترتيب</span></summary><div class="stack" style="margin-top:10px">${PR.map(adParRow).join('')}</div></details>`:''}
+  ${PR.length?`<details class="card" ${PR.some(x=>A.links[x.id]||A.del===x.id||ADPIN[x.id]||(A.rl&&A.rl.id===x.id))?'open':''}><summary style="cursor:pointer"><b>👨‍👩‍👧 أولياء الأمور (${PR.length})</b> <span class="note">للاطلاع فقط، لا يظهرون في الترتيب</span></summary><div class="stack" style="margin-top:10px">${PR.map(adParRow).join('')}</div></details>`:''}
   <button class="btn plain wide" data-act="adReload">تحديث القائمة</button>`}
  return startTop()+band('إدارة النظام','كل الطلاب في التطبيق: إضافة وتعديل وحذف وروابط الدخول.')+`<div class="sec">${body}<p class="note" style="margin:0">${esc((C.user&&C.user.email)||'')}</p><button class="btn plain wide" data-act="logoutOk">تسجيل الخروج</button></div>`}
 function adAs(id){flushSave();stopSub();if(unsub){unsub();unsub=null}boardKey='';C.mode='student';C.asAdmin=true;C.sid=id;S={profiles:[],active:null};subStudent()}
@@ -1287,6 +1302,7 @@ function cloudAct(a){if(a==='intro'){openIntro();return true}if(a==='install'){d
  case 'adBoard':go('adBoard');adBoardLoad();return true;
  case 'adHome':go('admin');return true;
  case 'pbReload':pbLoad();return true;
+ case 'adRlNo':A.rl=null;render();return true;
  case 'pinLater':PINASK=true;try{sessionStorage.setItem('pinask','0')}catch(e){}render();return true;
  case 'loTop':LO=!LO;loadMyPin();render();window.scrollTo(0,0);return true;
  case 'loNo2':LO=false;render();return true;
@@ -1322,6 +1338,10 @@ function cloudClick(d){if(!CLOUD)return false;
  if(d.adlkto){A.lkTo=d.adlkto;render();return true}
  if(d.adlkok){const id=d.adlkok,to=A.lkTo;const t=(A.list||[]).find(x=>x.id===to);adBusy(()=>adminLinkReq(id,to),'تم الدمج: يدخل '+(t?t.name:'المتنافس')+' بحسابه القديم من جواله الجديد مباشرة').then(()=>{A.lk=null;A.lkTo=null;render()});return true}
  if(d.adpin){adPinToggle(d.adpin);return true}
+ if(d.adrl){const x=(A.list||[]).find(y=>y.id===d.adrl);if(!x)return true;A.rl=A.rl&&A.rl.id===x.id?null:{id:x.id,k:kindOf(x),g:x.role==='parent'?0:x.grade};render();return true}
+ if(d.adrlk){if(A.rl){A.rl.k=d.adrlk;render()}return true}
+ if(d.adrlg==='grade'){if(A.rl){A.rl.g=+d.v;render()}return true}
+ if(d.adrlok){const o=A.rl;if(!o)return true;if(o.k[0]==='s'&&!o.g){toast('اختر الصف أولاً');return true}const l=KINDS.find(x=>x[0]===o.k)[1];adBusy(()=>adminRole(o.id,o.k,o.g),'تم تغيير الصفة إلى '+l.replace(/^\S+ /,'')).then(()=>{A.rl=null;render()});return true}
  if(d.adpinset){adPinSet(d.adpinset);return true}
  if(d.adok){const id=d.adok;const it=(A.list||[]).find(x=>x.id===id);adBusy(()=>adminApprove(id),it&&it.role==='parent'?'تمت الموافقة، ويدخل ولي الأمر مباشرة دون رابط':'تمت الموافقة، ويدخل مباشرة من جهازه');return true}
  if(d.adno){const id=d.adno;adBusy(()=>adminDel(id),'رُفض الطلب');return true}
