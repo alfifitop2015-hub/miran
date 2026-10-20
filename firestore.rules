@@ -22,9 +22,22 @@ service cloud.firestore {
         && request.resource.data.get('role', 'student') == resource.data.get('role', 'student');
     }
 
-    // رمز رابط النقل لجهاز آخر
+    // الرقم السري لمِران (4 أرقام): يقرؤه صاحبه، ويختاره مرة واحدة، والمشرف وحده يغيّره بعد ذلك
+    function pin4(d) { return d.get('pin', '') is string && d.get('pin', '').matches('^[0-9]{4}$'); }
     match /studentSecrets/{sid} {
-      allow read, write: if isOwner(sid);
+      allow read: if isOwner(sid);
+      allow create: if isOwner(sid) && pin4(request.resource.data);
+      allow update: if isOwner(sid) && !pin4(resource.data) && pin4(request.resource.data);
+    }
+
+    // أسماء المقبولين في مِران لقائمة «مسجّل من قبل؟ ادخل إلى حسابك»
+    match /names/{sid} {
+      allow read: if true;
+      allow create, update: if isOwner(sid) && approved(sid)
+        && request.resource.data.n is string
+        && request.resource.data.n.size() > 0
+        && request.resource.data.n.size() <= 20;
+      allow delete: if isOwner(sid);
     }
 
     // ربط جهاز برابط النقل: يُقبل فقط إذا طابق الرمز

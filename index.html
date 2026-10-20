@@ -348,6 +348,10 @@ a.btn{text-decoration:none}
 .gcombo{background:linear-gradient(135deg,#F6AD55,#E8468A);color:#fff;animation:gpulse 1s infinite}
 .gstars{display:flex;gap:6px;font-size:44px}.gstars span{opacity:.18;filter:grayscale(1)}.gstars span.on{opacity:1;filter:none;animation:gpop .5s both}
 @keyframes gshake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}@keyframes gpulse{50%{transform:scale(1.08)}}@keyframes gpop{from{transform:scale(.2) rotate(-30deg);opacity:0}}
+.loginbox summary{cursor:pointer;font-weight:800;font-size:16px;list-style:none}.loginbox summary::-webkit-details-marker{display:none}.loginbox{border:2px solid color-mix(in srgb,var(--acc) 35%,transparent)}
+.pinin{font-family:var(--fe);font-size:24px;letter-spacing:8px;text-align:center}.pincard{border:2px solid #E9C46A;background:#FFFBEF}
+.pinshow{font-family:var(--fe);font-size:34px;font-weight:800;letter-spacing:10px;text-align:center;background:#F6F4FF;border-radius:14px;padding:6px}
+.lobtn{color:var(--bad);font-weight:700}.lopanel{border:2px solid var(--bad);margin-bottom:10px}.pinbox{box-shadow:none;background:#F6F4FF}
 .certbtn{font-weight:700;color:#B7791F;background:#FFF6DB;border-radius:99px;padding:4px 10px}
 .certbox{width:min(560px,100%);display:flex;flex-direction:column;align-items:center;gap:12px}.certbox img{width:100%;border-radius:14px;box-shadow:0 30px 60px -20px #000}
 .certgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:10px}
@@ -936,14 +940,14 @@ function subStudent(){stopSub();C.ready=false;render();
   if(l&&l.id===r.id&&(l.resetAt||0)===(r.resetAt||0)){const gc=l.grade!==r.grade||l.term!==r.term;['name','gender','grade','term','nick','online','status','role'].forEach(k=>l[k]=r[k]);if(gc)Object.keys(l.daily).forEach(k=>{if(l.daily[k])delete l.daily[k].words})}else S.profiles=[r];
   S.active=r.id;const first=!C.ready;C.ready=true;
   if(r.status==='pending'&&!C.asAdmin){view={name:'wait'};return render()}
-  if(first||view.name==='wait')setTimeout(()=>pushAll(true),500);
+  if(first||view.name==='wait')setTimeout(()=>pushAll(true),500);syncName(r);
   if(view.name==='wait'){toast(r.role==='parent'?'تمت الموافقة! يمكنك الآن متابعة ترتيب المتنافسين':g('تمت الموافقة! أهلاً بك في المنافسة','تمت الموافقة! أهلاً بكِ في المنافسة'));return go('home')}
   if(first||['start','loading'].includes(view.name))go('home');else if(!['quiz','flash','form','result','talkRun'].includes(view.name))render()
  },e=>{C.ready=true;if(C.asAdmin){toast(authErr(e));return adBack()}if(/permission/.test(e.code||'')){fb.collection('devices').doc(C.user.uid).delete().catch(()=>{});if(C.sid!==C.user.uid){C.sid=C.user.uid;return subStudent()}}toast(authErr(e));render()})}
 async function register(row){const FA=firebase.auth();C.joining=true;
  try{if(!FA.currentUser)await FA.signInAnonymously();const u=FA.currentUser;C.user=u;fbUid=u.uid;
   const par=row.role==='p';const p=newP(row.name.trim(),row.gender,par?1:row.grade,par?1:row.term);const d=JSON.parse(JSON.stringify(p));delete d.id;d.created=Date.now();d.status='pending';if(par){d.role='parent';d.online=false}
-  await stuRef(u.uid).set(d);notifyAdminMail(d);notifyAdminPush(d);C.joining=false;C.mode='student';C.sid=u.uid;subStudent()}
+  await stuRef(u.uid).set(d);if(row.pin&&PINRE.test(row.pin)){try{await fb.collection('studentSecrets').doc(u.uid).set({pin:row.pin,at:Date.now(),by:'self'})}catch(e){}}notifyAdminMail(d);notifyAdminPush(d);C.joining=false;C.mode='student';C.sid=u.uid;subStudent()}
  catch(e){C.joining=false;throw e}}
 async function linkJoin(){C.ready=false;view={name:'loading'};render();const FA=firebase.auth();C.joining=true;
  try{if(!FA.currentUser)await FA.signInAnonymously();const u=FA.currentUser;
@@ -954,7 +958,56 @@ let csT=null;
 function stuDoc(p){const d=JSON.parse(JSON.stringify(p));delete d.id;return d}
 function cloudSave(){if(!fb||!C.sid)return;const p=cur();if(!p)return;clearTimeout(csT);csT=setTimeout(()=>{csT=null;const q=cur();if(q)stuRef(q.id).set(stuDoc(q)).catch(()=>{})},4000)}
 function flushSave(){if(csT){clearTimeout(csT);csT=null;const p=cur();if(p&&fb&&C.sid)stuRef(p.id).set(stuDoc(p)).catch(()=>{})}}
-async function makeTransfer(sid){const pin=rndCode(8);await fb.collection('studentSecrets').doc(sid).set({pin,at:Date.now()});return BASE()+'?j='+sid+'.'+pin}
+
+/* ============ الدخول بالاسم والرقم السري (مثل «ني هاو») ============
+   الرقم السري 4 أرقام يختاره الشخص مرة واحدة ويُحفظ في studentSecrets، والمشرف يراه ويغيّره.
+   الدخول من جهاز آخر: يختار اسمه ويكتب رقمه، فيُربط الجهاز بالحساب في devices إذا طابق الرقم. */
+const PINRE=/^\d{4}$/;
+async function readPin(sid){try{const d=await fb.collection('studentSecrets').doc(sid).get();return d.exists?String(d.data().pin||''):''}catch(e){return null}}
+function loadMyPin(){if(!fb||!C.sid||C.asAdmin||C.pinFor===C.sid)return;C.pinFor=C.sid;C.myPin=undefined;
+ readPin(C.sid).then(v=>{C.myPin=v==null?null:(PINRE.test(v)?v:'');if(['home','wait','pboard','who'].includes(view.name)||LO)render()})}
+const pinCard=()=>C.myPin===''&&!C.asAdmin?`<form id="pinform" class="card stack pincard"><div><h3 style="margin:0">🔐 ${g('اختر','اختاري')} رقمك السري</h3><p class="note" style="margin:4px 0 0">4 أرقام ${g('تختارها','تختارينها')} بنفسك، ${g('تدخل','تدخلين')} بها إلى حسابك من أي جهاز. ${g('تختاره','تختارينه')} مرة واحدة، ومدير النظام يستطيع تغييره إن نسيته.</p></div>
+ <div class="row"><input type="text" id="spin" class="grow pinin" inputmode="numeric" pattern="[0-9]*" maxlength="4" dir="ltr" autocomplete="off" placeholder="••••"><button class="btn" type="submit">حفظ</button></div><p class="warn" id="pinerr" hidden></p></form>`:'';
+async function savePin(v){await fb.collection('studentSecrets').doc(C.sid).set({pin:v,at:Date.now(),by:'self'})}
+// قائمة أسماء المقبولين لشاشة الدخول
+const LG={open:false,list:null,err:'',busy:false};
+function lgLoad(){if(LG.list||!fb)return;LG.list='loading';fb.collection('names').get().then(sn=>{LG.list=sn.docs.map(d=>Object.assign({id:d.id},d.data())).filter(x=>x.n).sort((a,b)=>a.n.localeCompare(b.n,'ar'));if(view.name==='start')render()}).catch(()=>{LG.list=[];if(view.name==='start')render()})}
+function loginBox(){if(!FB)return '';const L=Array.isArray(LG.list)?LG.list:null;const cnt={};(L||[]).forEach(x=>cnt[x.n]=(cnt[x.n]||0)+1);
+ const lab=x=>esc(x.n)+(x.r==='p'?' (ولي أمر)':cnt[x.n]>1||1?(GRADES[x.g]?' · '+GRADES[x.g]:''):'');
+ return `<details class="card loginbox" id="lgbox" ${LG.open?'open':''}><summary>🔑 مسجّل من قبل؟ ادخل إلى حسابك</summary>
+ <form id="lgform" class="stack" style="margin-top:10px">${L==null?'<p class="note" style="margin:0">جارٍ تحميل الأسماء…</p>':L.length?`<label class="f" for="lgname">اسمك<select id="lgname"><option value="">اختر اسمك من القائمة…</option>${L.map(x=>`<option value="${x.id}">${lab(x)}</option>`).join('')}</select></label>
+ <label class="f" for="lgpin">رقمك السري<input type="text" id="lgpin" class="pinin" inputmode="numeric" pattern="[0-9]*" maxlength="4" dir="ltr" autocomplete="off" placeholder="••••"></label>
+ <p class="warn" id="lgerr" ${LG.err?'':'hidden'}>${esc(LG.err)}</p><button class="btn wide" type="submit" id="lgbtn">دخول</button>
+ <p class="note" style="margin:0">نسيت رقمك السري؟ اطلبه من مدير النظام.</p>`:'<p class="note" style="margin:0">لا توجد حسابات مقبولة بعد.</p>'}</form></details>`}
+async function lgLogin(sid,pin){const FA=firebase.auth();C.joining=true;LG.busy=true;
+ try{if(!FA.currentUser)await FA.signInAnonymously();const u=FA.currentUser;
+  await fb.collection('devices').doc(u.uid).set({sid,pin,at:Date.now()});
+  C.joining=false;LG.busy=false;LG.open=false;LG.err='';C.user=u;fbUid=u.uid;C.mode='student';C.sid=sid;C.pinFor=null;S={profiles:[],active:null};boardKey='';toast('أهلاً بعودتك! تم ربط هذا الجهاز بحسابك');subStudent()}
+ catch(e){C.joining=false;LG.busy=false;LG.err=/permission|insufficient/i.test(String(e&&(e.code||e.message)))?'الرقم السري غير صحيح، أو لم يختر صاحب الحساب رقمه السري بعد. اطلبه من مدير النظام.':authErr(e);render()}}
+// اسم الحساب في قائمة الدخول (يكتبه صاحب الحساب بعد قبوله)
+function syncName(r){if(!fb||C.asAdmin||!r||r.status==='pending')return;const k=r.id+'|'+r.name+'|'+r.grade+'|'+(r.role||'');if(C.nameKey===k)return;C.nameKey=k;
+ fb.collection('names').doc(r.id).set({n:String(r.name||'').slice(0,20),r:r.role==='parent'?'p':'s',g:r.role==='parent'?0:(r.grade||0),at:Date.now()}).catch(()=>{})}
+// الخروج من الجهاز: يعرض الرقم السري أولاً ثم يفصل الجهاز ويحذف ربطه
+let LO=false;
+function loPanel(){if(!LO)return '';const pin=C.myPin;
+ return `<div class="card stack lopanel pop"><h3 style="margin:0">🚪 الخروج من هذا الجهاز</h3>
+ ${PINRE.test(pin||'')?`<p style="margin:0">احفظ رقمك السري لتدخل به من أي جهاز:</p><div class="pinshow" dir="ltr">${pin}</div><p class="note" style="margin:0">للعودة: «مسجّل من قبل؟ ادخل إلى حسابك» ← اختر اسمك ← اكتب هذا الرقم.</p>`
+  :pin===''?`<p class="warn" style="margin:0">لم تختر رقمك السري بعد. اختره الآن قبل الخروج، وإلا فاطلبه من مدير النظام عند العودة.</p>${pinCard()}`:'<p class="note" style="margin:0">جارٍ تحميل رقمك السري…</p>'}
+ <div class="row"><button class="btn danger grow" data-act="loDo">خروج</button><button class="btn plain grow" data-act="loNo2">إلغاء</button></div></div>`}
+async function loDo(){const FA=firebase.auth();const u=FA.currentUser;LO=false;
+ try{if(u)await fb.collection('devices').doc(u.uid).delete().catch(()=>{})}catch(e){}
+ C.pinFor=null;C.myPin=undefined;C.nameKey=null;await logout()}
+// مدير النظام: عرض الرقم السري وتغييره وإرساله
+const ADPIN={};
+function adPinToggle(id){if(ADPIN[id]){delete ADPIN[id];render();return}ADPIN[id]={v:undefined};render();readPin(id).then(v=>{if(ADPIN[id]){ADPIN[id].v=v==null?null:v;render()}})}
+function adPinBox(s){const o=ADPIN[s.id];if(!o)return '';const v=o.v;const ok=PINRE.test(v||'');
+ const msg=ok?`مرحباً ${s.name}، للدخول إلى مِران من أي جهاز:\n1) افتح الرابط: ${APPURL}\n2) اضغط «مسجّل من قبل؟ ادخل إلى حسابك»\n3) اختر اسمك: ${s.name}\n4) اكتب رقمك السري: ${v}\nلا تشارك رقمك السري مع أحد.`:'';
+ return `<div class="card stack pinbox"><b>🔐 الرقم السري لـ ${esc(s.name)}</b>${v===undefined?'<p class="note" style="margin:0">جارٍ التحميل…</p>':v===null?'<p class="warn" style="margin:0">تعذّر قراءة الرقم.</p>':ok?`<div class="pinshow" dir="ltr">${v}</div><div class="row"><button class="btn plain grow" data-copy="${v}">نسخ الرقم</button><a class="btn grow" href="${esc(wa(msg))}" target="_blank" rel="noopener">واتساب: خطوات الدخول</a></div>`:'<p class="note" style="margin:0">لم يختر رقمه السري بعد.</p>'}
+ <div class="row"><input type="text" id="adpin_${s.id}" class="grow pinin" inputmode="numeric" pattern="[0-9]*" maxlength="4" dir="ltr" autocomplete="off" placeholder="رقم جديد"><button class="btn" data-adpinset="${s.id}">تغيير</button></div></div>`}
+async function adPinSet(id){const el=document.getElementById('adpin_'+id);const v=((el&&el.value)||'').replace(/\D/g,'');if(!PINRE.test(v)){toast('الرقم السري 4 أرقام فقط');return}
+ try{await fb.collection('studentSecrets').doc(id).set({pin:v,at:Date.now(),by:'admin'});ADPIN[id]={v};toast('تم تغيير الرقم السري');render()}catch(e){toast(authErr(e))}}
+// رابط النقل القديم: يستخدم الرقم المحفوظ إن وُجد (الروابط والأجهزة المرتبطة سابقاً تبقى تعمل)
+async function makeTransfer(sid){let pin=await readPin(sid);if(!pin){if(!isAdm())throw new Error('اختر رقمك السري أولاً، ثم أنشئ الرابط.');pin=rndCode(8);await fb.collection('studentSecrets').doc(sid).set({pin,at:Date.now(),by:'admin'})}return BASE()+'?j='+sid+'.'+pin}
 // بريد لمدير النظام عند كل طلب انضمام جديد (عبر FormSubmit، يحتاج تفعيلاً لمرة واحدة من رسالة تصل للبريد)
 function notifyAdminMail(d){if(!FB||location.protocol==='file:')return;try{const par=d.role==='parent';
  fetch('https://formsubmit.co/ajax/'+ADMIN_EMAIL,{method:'POST',keepalive:true,headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({
@@ -987,10 +1040,11 @@ function vLoading(){return startTop()+`<div class="sec"><div class="card" style=
 const ORDN=['الأول','الثاني','الثالث','الرابع','الخامس','السادس'];
 function gradeSeg(attr,val,extra){return `<div class="gsel">${[['p','ابتدائي',1,6],['m','متوسط',7,9],['s','ثانوي',10,12]].map(([k,l,a,b])=>`<div class="gsrow"><span class="gl">${l}</span><div class="seg">${Array.from({length:b-a+1},(_,i)=>a+i).map(v=>`<button type="button" class="${val===v?'on':''}" ${attr}="grade" data-v="${v}" ${extra||''} aria-label="${GRADES[v]}">${v-a+1}</button>`).join('')}</div></div>`).join('')}</div>`}
 function vStart(){const r=view.reg||(view.reg={name:'',gender:'m',grade:0,term:1,role:'s'});const par=r.role==='p';const sg=(k,o)=>`<div class="seg">${o.map(([v,l])=>`<button type="button" class="${r[k]===v?'on':''}" data-regset="${k}" data-v="${v}">${l}</button>`).join('')}</div>`;
- return startTop()+band('أهلاً بك في مِران','تدرّب على الإنجليزي والقدرات والتحصيلي بأسئلة تناسب صفّك.')+`<div class="sec">${introCard(true)}${installCard()}</div>
+ return startTop()+band('أهلاً بك في مِران','تدرّب على الإنجليزي والقدرات والتحصيلي بأسئلة تناسب صفّك.')+`<div class="sec">${introCard(true)}${installCard()}${loginBox()}</div>
  <form class="sec" id="regform"><div class="f stack"><b style="font-size:14px">الدخول بصفة</b>${sg('role',[['s','🎓 طالب أو طالبة'],['p','👨‍👩‍👧 ولي أمر']])}</div>
  ${par?'<p class="note" style="margin:0">حساب ولي الأمر للاطلاع فقط: تشاهد ترتيب جميع المتنافسين لتعرف موقع أبنائك وتحفّزهم، ولا تدخل المنافسة ولا يظهر اسمك في الترتيب.</p><p class="note" style="margin:0">🎁 التكريم في مِران مقتصر على الشهادات والتحفيز، والمكافأة العينية أو المادية متروكة للأسرة: من أتمّ مرحلة تكرّمه أسرته بما تراه مناسباً.</p>':''}
  <label class="f" for="regn">اسمك<input type="text" id="regn" maxlength="20" value="${esc(r.name)}" placeholder="اكتب اسمك" autocomplete="given-name"></label>
+ <label class="f" for="regpin">رقمك السري (اختياري، 4 أرقام)<input type="text" id="regpin" class="pinin" inputmode="numeric" pattern="[0-9]*" maxlength="4" dir="ltr" autocomplete="off" value="${esc(r.pin||'')}" placeholder="••••"><span class="note">تدخل به إلى حسابك من أي جهاز. احفظه جيداً.</span></label>
  <div class="f stack"><b style="font-size:14px">أنا</b>${par?sg('gender',[['m','أب'],['f','أم']]):sg('gender',[['m','طالب'],['f','طالبة']])}</div>
  ${par?'':`<div class="f stack"><b style="font-size:14px">صفّي</b>${gradeSeg('data-regset',r.grade)}${r.grade?`<span class="note">${GRADES[r.grade]}</span>`:''}</div>
  <div class="f stack"><b style="font-size:14px">الفصل الدراسي</b>${sg('term',[[1,'الأول'],[2,'الثاني']])}</div>`}
@@ -1004,9 +1058,10 @@ function vPlogin(){return startTop()+band('دخول مدير النظام','هذ
  <p class="warn" id="lerr" hidden></p><button class="btn wide" type="submit" id="lbtn">دخول</button>
  <button type="button" class="x" data-act="reset" style="align-self:center">نسيت كلمة المرور؟</button><button type="button" class="btn plain wide" data-act="toStart">رجوع</button></form>`}
 let WC=false;
-function vWait(){const p=cur();return startTop()+band('طلبك قيد المراجعة',p&&p.role==='parent'?'يُفعّل حسابك فور موافقة مدير النظام.':'سيبدأ التدريب فور موافقة مدير النظام.')+`<div class="sec">
+function vWait(){const p=cur();loadMyPin();return startTop()+band('طلبك قيد المراجعة',p&&p.role==='parent'?'يُفعّل حسابك فور موافقة مدير النظام.':'سيبدأ التدريب فور موافقة مدير النظام.')+`<div class="sec">
  <div class="card stack" style="align-items:center;text-align:center"><div style="font-size:46px">⏳</div><h3 style="margin:0">${p?esc(p.name):''}</h3><span class="note">${p?(p.role==='parent'?(p.gender==='f'?'أم':'أب')+' · ولي أمر':GRADES[p.grade]+' · '+TERMS[p.term]):''}</span>
  <p style="margin:0">${g('وصل طلبك','وصل طلبكِ')} إلى مدير النظام. أبقِ هذه الصفحة مفتوحة أو ${g('عد','عودي')} إليها لاحقاً، وستنتقل ${p&&p.role==='parent'?'لصفحة المتابعة':'للتدريب'} تلقائياً بعد الموافقة.</p></div>
+ ${pinCard()}
  ${introCard(false)}
  ${WC?`<div class="warn stack">إلغاء الطلب يحذفه نهائياً، ويمكنك التسجيل من جديد.<div class="row"><button class="btn danger" data-act="wCancelOk">نعم، ألغِ الطلب</button><button class="btn plain" data-act="wCancelNo">رجوع</button></div></div>`:`<button type="button" class="btn plain wide" data-act="wCancel">إلغاء الطلب والرجوع للتسجيل</button>`}
  <button type="button" class="x" data-act="wAdmin" style="align-self:center;margin-top:10px">دخول مدير النظام</button></div>`}
@@ -1077,11 +1132,11 @@ function myCertsCard(p){const ks=Object.keys(p.certs||{}).filter(k=>k[0]==='s').
  return `<div class="card hof"><div class="row between"><b>🎖️ شهاداتي (${ks.length})</b><span class="note">اضغط على الشهادة لعرضها</span></div><div class="certgrid">${ks.map(K=>{const c=p.certs[K],th=CTHEME[(+K.slice(1)*5-5)%12];return `<button type="button" class="certth" data-cert="${K}|me" style="--c1:${th[0]};--c2:${th[1]}"><span>${md[c.r-1]||'🎖️'}</span><b>${stageLabel(K)}</b><small>المركز ${rankWord(c.r,false)}</small></button>`}).join('')}</div></div>`}
 function newCertBanner(p){const K=p.newCert;if(!K||K[0]!=='s')return '';const c=(p.certs||{})[K];
  return `<div class="hero celeb pop"><h2>🎖️ ${g('شهادتك','شهادتكِ')} في ${stageLabel(K)} جاهزة!</h2><p class="sub" style="margin:0">${c?`المركز ${rankWord(c.r,false)} في الوصول. `:''}${g('شهادتك','شهادتكِ')} وسام فخر ${g('لك','لكِ')}، ${g('شاركها','شاركيها')} مع ${g('أهلك','أهلكِ')} و${g('احتفظ','احتفظي')} بها.</p><div class="row">${c?`<button class="btn" style="background:#fff;color:var(--acc)" data-cert="${K}|me">🏆 عرض شهادتي</button>`:'<span class="note" style="color:#fff">جارٍ تحديد ترتيبك…</span>'}<button class="btn plain" data-act="certSeen">لاحقاً</button></div></div>`}
-function vStudentWho(){const p=cur();if(!p)return vLoading();const v=view;
+function vStudentWho(){const p=cur();if(!p)return vLoading();const v=view;loadMyPin();
  return header()+band('حسابي',esc(p.name)+' · '+(isPar()?'ولي أمر':GRADES[p.grade]+' · '+TERMS[p.term]))+`<div class="sec">${isPar()?'':myCertsCard(p)+progressCard(p,true)}
- <div class="card stack"><h3>استخدام حسابك على جهاز آخر</h3><p class="note" style="margin:0">أنشئ رابط النقل وافتحه على الجهاز الآخر، فيظهر حسابك بكل نقاطك. احتفظ به أيضاً لو تغيّر جوالك.</p>
+ ${pinCard()}<div class="card stack"><h3>استخدام حسابك على جهاز آخر</h3><p class="note" style="margin:0">على الجهاز الآخر افتح مِران واضغط «مسجّل من قبل؟ ادخل إلى حسابك»، ثم اختر اسمك واكتب رقمك السري${PINRE.test(C.myPin||'')?`: <b dir="ltr">${C.myPin}</b>`:''}. أو أنشئ رابط النقل وافتحه هناك.</p>
  ${v.tlink?`<div class="tklink" dir="ltr">${esc(v.tlink)}</div><div class="row"><button class="btn plain grow" data-copy="${esc(v.tlink)}">نسخ الرابط</button><a class="btn grow" href="${esc(wa('رابط حسابي في مِران:\n'+v.tlink))}" target="_blank" rel="noopener">واتساب</a></div>`:`<button class="btn plain" data-act="mkLink">إنشاء رابط النقل</button>`}</div>
- ${C.asAdmin?`<button class="btn plain wide" data-act="adBack">رجوع لإدارة النظام</button>`:v.lo?`<div class="warn stack">إذا خرجت من هذا الجهاز لن تستطيع العودة لحسابك إلا برابط النقل. تأكّد أنك أنشأته وحفظته أولاً.<div class="row"><button class="btn danger" data-act="logoutOk">خروج</button><button class="btn plain" data-act="loNo">إلغاء</button></div></div>`:`<button class="x" style="align-self:flex-start;color:var(--bad)" data-act="loAsk">الخروج من هذا الجهاز</button>`}
+ ${C.asAdmin?`<button class="btn plain wide" data-act="adBack">رجوع لإدارة النظام</button>`:v.lo?'':`<button class="x" style="align-self:flex-start;color:var(--bad)" data-act="loAsk">الخروج من هذا الجهاز</button>`}
  <button class="btn wide" data-go="home">${isPar()?'متابعة الترتيب':'متابعة التدريب'}</button></div>`}
 
 /* ============ إدارة النظام (للمدير فقط) ============ */
@@ -1092,6 +1147,10 @@ const A={loading:false,list:null,err:null,edit:null,form:null,del:null,links:{},
 function adCertBtns(s){const done=Math.floor((s.score||0)/STG);if(!done)return '';let b='';
  for(let n=1;n<=done;n++){stLoad(n);const L=STL[n];const i=L?L.findIndex(r=>r.sid===s.id):-1;b+=`<button class="x certbtn" data-cert="s${n}|${s.id}">🎖️ شهادة المرحلة ${ORDST(n)}${i>=0?' · المركز '+rankWord(i+1,false):L==null?'':' · جارٍ التحديث…'}</button>`}
  return `<div class="row" style="flex-wrap:wrap;gap:6px">${b}</div>`}
+async function adNamesSync(docs){try{const ex=await fb.collection('names').get();const have={};ex.docs.forEach(d=>have[d.id]=d.data());const ids=new Set();
+ for(const d of docs){const x=d.data()||{};if((x.status||'approved')==='pending')continue;ids.add(d.id);const n=String(x.name||'').slice(0,20),r=x.role==='parent'?'p':'s',g0=x.role==='parent'?0:(x.grade||0);const h=have[d.id];
+  if(!h||h.n!==n||h.r!==r||h.g!==g0)await fb.collection('names').doc(d.id).set({n,r,g:g0,at:Date.now()}).catch(()=>{})}
+ for(const id of Object.keys(have))if(!ids.has(id))await fb.collection('names').doc(id).delete().catch(()=>{})}catch(e){}}
 async function adStageSync(PS){let ch=false;for(const p of PS){if(lifetime(p)<STG)continue;const m=calcMarks(p);
   try{const ref=fb.collection('players').doc(p.id);const d=await ref.get();if(!d.exists)continue;const cur0=(d.data()||{}).stg||{};
    if(Object.keys(m).some(k=>cur0[k]!==m[k])){await ref.update({stg:Object.assign({},cur0,m)});ch=true}}catch(e){}}
@@ -1099,7 +1158,7 @@ async function adStageSync(PS){let ch=false;for(const p of PS){if(lifetime(p)<ST
 async function adminLoad(){A.loading=true;render();
  try{const sn=await fb.collection('students').get();
   const PS=[];A.list=sn.docs.map(d=>{const p=normP(Object.assign({},d.data(),{id:d.id}));if(p.role!=='parent'&&(p.status||'approved')!=='pending')PS.push(p);return{id:d.id,status:p.status||'approved',role:p.role||'student',name:p.name,gender:p.gender,grade:p.grade,term:p.term,score:lifetime(p),last:Object.keys(p.log).sort().pop()||'',created:p.created||0,answers:sumSt(p.stats.en).t+sumSt(p.stats.qd).t+sumSt(p.stats.th).t}}).sort((a,b)=>b.score-a.score);
-  adStageSync(PS);
+  adStageSync(PS);adNamesSync(sn.docs);
   try{const o=await fb.collection('families').get();let n=0;for(const f of o.docs){const k=await fb.collection('families').doc(f.id).collection('kids').get();n+=k.docs.length}A.old=n||(o.docs.length?-1:0)}catch(e){A.old=0}
   A.err=null}catch(e){A.err=authErr(e)}
  A.loading=false;render()}
@@ -1109,7 +1168,7 @@ async function adminSave(id,v){if(!id){const ref=fb.collection('students').doc()
 async function adminReset(id){const ref=stuRef(id);const sn=await ref.get();const d=sn.data()||{};
  Object.assign(d,{log:{},points:0,streak:0,lastDay:null,days:{},daySecs:{},secs:0,exams:0,speedBest:0,plan:{},resetAt:Date.now()});await ref.set(d);
  const pl=fb.collection('players').doc(id);const ps=await pl.get();if(ps.exists)await pl.set(Object.assign(ps.data(),{total:0,days:0,acc:0,answers:0,updated:Date.now()}))}
-async function adminDel(id){await stuRef(id).delete();await fb.collection('studentSecrets').doc(id).delete().catch(()=>{});await fb.collection('players').doc(id).delete().catch(()=>{});
+async function adminDel(id){await stuRef(id).delete();await fb.collection('names').doc(id).delete().catch(()=>{});await fb.collection('studentSecrets').doc(id).delete().catch(()=>{});await fb.collection('players').doc(id).delete().catch(()=>{});
  const dv=await fb.collection('devices').where('sid','==',id).get();for(const d of dv.docs)await fb.collection('devices').doc(d.id).delete().catch(()=>{})}
 async function adminMigrate(){const fams=await fb.collection('families').get();let n=0;
  for(const f of fams.docs){const r=fb.collection('families').doc(f.id);
@@ -1135,10 +1194,10 @@ function adRow(s){if(A.edit===s.id)return adForm(s.id);const l=A.links[s.id];
  return `<div class="card stack"><div class="row"><span class="av ${s.gender}">${esc((s.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(s.name)}</b><br><span class="note">${GRADES[s.grade]} · ${TERMS[s.term]||''} · ${s.score} نقطة · ${s.answers} سؤال${s.last?' · آخر تدريب '+s.last:''}</span></span></div>${adCertBtns(s)}
  ${l?`<div class="tklink" dir="ltr">${esc(l)}</div><div class="row"><button class="btn plain grow" data-copy="${esc(l)}">نسخ الرابط</button><a class="btn grow" href="${esc(wa('رابط دخولك إلى مِران يا '+s.name+':\n'+l))}" target="_blank" rel="noopener">واتساب</a></div>`:''}
  ${A.rst===s.id?`<div class="warn stack">تصفير رصيد ${esc(s.name)} يجعل نقاطه صفراً ويبدأ المنافسة من جديد، ويبقى اسمه وحسابه.<div class="row"><button class="btn danger" data-adrstok="${s.id}">نعم، صفّر الرصيد</button><button class="btn plain" data-act="adCancel">إلغاء</button></div></div>`:A.del===s.id?`<div class="warn stack">حذف ${esc(s.name)} يمسح حسابه وكل تقدّمه نهائياً.<div class="row"><button class="btn danger" data-addelok="${s.id}">نعم، احذف</button><button class="btn plain" data-act="adCancel">إلغاء</button></div></div>`
- :`<div class="row" style="flex-wrap:wrap"><button class="x" style="font-weight:700" data-adas="${s.id}">دخول حسابه</button><button class="x" data-adedit="${s.id}">تعديل</button><button class="x" data-adlink="${s.id}">رابط دخول</button><button class="x" style="color:var(--cp)" data-adrst="${s.id}">تصفير الرصيد</button><button class="x" style="color:var(--bad)" data-addel="${s.id}">حذف</button></div>`}</div>`}
+ :`<div class="row" style="flex-wrap:wrap"><button class="x" style="font-weight:700" data-adas="${s.id}">دخول حسابه</button><button class="x" data-adedit="${s.id}">تعديل</button><button class="x" data-adpin="${s.id}">🔐 الرقم السري</button><button class="x" data-adlink="${s.id}">رابط دخول</button><button class="x" style="color:var(--cp)" data-adrst="${s.id}">تصفير الرصيد</button><button class="x" style="color:var(--bad)" data-addel="${s.id}">حذف</button></div>`}${adPinBox(s)}</div>`}
 async function adminApprove(id){await stuRef(id).update({status:'approved',approvedAt:Date.now()})}
 function adPendRow(s){return `<div class="card stack" style="border:2px solid #FFCB5C"><div class="row"><span class="av ${s.gender}">${esc((s.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(s.name)}</b><br><span class="note">${s.role==='parent'?`👨‍👩‍👧 ولي أمر (${s.gender==='f'?'أم':'أب'}) · للاطلاع فقط`:`${s.gender==='f'?'طالبة':'طالب'} · ${GRADES[s.grade]} · ${TERMS[s.term]||''}`}${s.created?' · '+new Date(s.created).toLocaleDateString('ar-SA'):''}</span></span></div>
- <div class="row"><button class="btn grow" data-adok="${s.id}">✓ قبول</button><button class="btn plain grow" style="color:var(--bad)" data-adno="${s.id}">رفض</button></div>${adLinkBox(s)}</div>`}
+ ${adPinBox(s)}<div class="row" style="flex-wrap:wrap"><button class="x" data-adpin="${s.id}">🔐 الرقم السري</button></div><div class="row"><button class="btn grow" data-adok="${s.id}">✓ قبول</button><button class="btn plain grow" style="color:var(--bad)" data-adno="${s.id}">رفض</button></div>${adLinkBox(s)}</div>`}
 const anorm=t=>QNORM(t||'').replace(/^(ال)/,'');
 function adSimilar(s,o){const a=anorm(s.name).split(' ')[0],b=anorm(o.name).split(' ')[0];return (o.grade===s.grade?2:0)+(a&&b&&(a===b||a.includes(b)||b.includes(a))?3:0)+(o.gender===s.gender?1:0)}
 function adLinkBox(s){const others=(A.list||[]).filter(o=>o.status!=='pending'&&o.role===s.role);if(!others.length)return '';
@@ -1153,7 +1212,7 @@ function adLkCands(s){const q=anorm(A.lkQ||'');return (A.list||[]).filter(o=>o.s
 function adLkList(list,s){return list.map(([o,sc])=>`<button class="tile" data-adlkto="${o.id}" style="padding:10px 12px"><span class="av ${o.gender}">${esc((o.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(o.name)}</b>${sc>=5?' <span class="note" style="color:#9a5b00">⚠️ مشابه</span>':''}<br><span class="note">${s.role==='parent'?'ولي أمر':GRADES[o.grade]+' · '+o.score+' نقطة'}${o.last?' · آخر تدريب '+o.last:''}</span></span></button>`).join('')||'<p class="note" style="margin:0">لا يوجد حساب بهذا الاسم.</p>'}
 async function adminLinkReq(reqId,targetId){await fb.collection('devices').doc(reqId).set({sid:targetId,at:Date.now(),byAdmin:true});await stuRef(reqId).delete();await fb.collection('studentSecrets').doc(reqId).delete().catch(()=>{})}
 function adParRow(s){return `<div class="card stack" style="box-shadow:none"><div class="row"><span class="av ${s.gender}">${esc((s.name||'؟').trim()[0])}</span><span class="grow"><b>${esc(s.name)}</b><br><span class="note">${s.gender==='f'?'أم':'أب'} · ولي أمر${s.created?' · '+new Date(s.created).toLocaleDateString('ar-SA'):''}</span></span></div>
- ${A.del===s.id?`<div class="warn stack">حذف حساب ولي الأمر ${esc(s.name)} نهائياً؟<div class="row"><button class="btn danger" data-addelok="${s.id}">نعم، احذف</button><button class="btn plain" data-act="adCancel">إلغاء</button></div></div>`:`<div class="row" style="flex-wrap:wrap"><button class="x" style="font-weight:700" data-adas="${s.id}">دخول حسابه</button><button class="x" data-adlink="${s.id}">رابط دخول لجهاز آخر</button><button class="x" style="color:var(--bad)" data-addel="${s.id}">حذف</button></div>`}${A.links[s.id]?`<div class="tklink" dir="ltr">${esc(A.links[s.id])}</div><div class="row"><button class="btn plain grow" data-copy="${esc(A.links[s.id])}">نسخ الرابط</button><a class="btn grow" href="${esc(wa('رابط دخولك إلى مِران (ولي أمر):\n'+A.links[s.id]))}" target="_blank" rel="noopener">واتساب</a></div><p class="note" style="margin:0">يفتحه ولي الأمر على الجوال أو المتصفح الجديد فيدخل حسابه مباشرة.</p>`:''}</div>`}
+ ${A.del===s.id?`<div class="warn stack">حذف حساب ولي الأمر ${esc(s.name)} نهائياً؟<div class="row"><button class="btn danger" data-addelok="${s.id}">نعم، احذف</button><button class="btn plain" data-act="adCancel">إلغاء</button></div></div>`:`<div class="row" style="flex-wrap:wrap"><button class="x" style="font-weight:700" data-adas="${s.id}">دخول حسابه</button><button class="x" data-adpin="${s.id}">🔐 الرقم السري</button><button class="x" data-adlink="${s.id}">رابط دخول لجهاز آخر</button><button class="x" style="color:var(--bad)" data-addel="${s.id}">حذف</button></div>`}${A.links[s.id]?`<div class="tklink" dir="ltr">${esc(A.links[s.id])}</div><div class="row"><button class="btn plain grow" data-copy="${esc(A.links[s.id])}">نسخ الرابط</button><a class="btn grow" href="${esc(wa('رابط دخولك إلى مِران (ولي أمر):\n'+A.links[s.id]))}" target="_blank" rel="noopener">واتساب</a></div><p class="note" style="margin:0">يفتحه ولي الأمر على الجوال أو المتصفح الجديد فيدخل حسابه مباشرة.</p>`:''}${adPinBox(s)}</div>`}
 function adAlertCard(){const on=window.Notification&&Notification.permission==='granted';
  return `<div class="card stack" style="box-shadow:none"><div class="row between"><b>🔔 تنبيهات طلبات الانضمام</b>${on?'<span class="note" style="color:var(--th)">مفعّلة ✓</span>':''}</div>
  <p class="note" style="margin:0">عند وصول طلب جديد تسمع نغمة ويصلك إشعار ما دامت مِران مفتوحة عندك كمدير، ويصلك أيضاً بريد على ${esc(ADMIN_EMAIL)}.</p>
@@ -1189,7 +1248,7 @@ function pbList(){const q=PB.q.trim();const all=(PB.rows||[]).filter(r=>(r.total
  return rows.length?`<div class="list">${rows.map(r=>`<div class="brd${q?' me':''}"><span class="n p${r.rk}">${r.rk}</span><span>${esc(r.nick)}${winBadge(r.sid,r.cn)}<br><span class="note">${GRADES[r.grade]||''}</span>${rkTitle(r.rk,r.total,r.gender)?`<br><span class="rkl">${rkTitle(r.rk,r.total,r.gender)}</span>`:''}</span>${tierBadge(r.life!=null?r.life:r.total)}<span class="sc">${(r.total||0).toLocaleString('en')}</span></div>`).join('')}</div>`:`<div class="card">${q?'لا يوجد متنافس بهذا الاسم في هذه القائمة.':'لا يوجد متنافسون بعد.'}</div>`}
 const parentRewardNote=()=>`<div class="card" style="border:2px dashed #E9C46A;background:#FFFBEF"><p style="margin:0;line-height:1.9">🎁 التكريم في مِران مقتصر على <b>الشهادات والتحفيز</b>. أما المكافأة العينية أو المادية فمتروكة للأسرة: من أتمّ مرحلة تكرّمه أسرته وتشجّعه بما تراه مناسباً.</p></div>`;
 function vPBoard(){const p=cur();if(PB.rows==null&&fb&&Date.now()-PB.at>3000)setTimeout(pbLoad,0);const sg=(k,l)=>`<button type="button" class="${PB.st===k?'on':''}" data-pbst="${k}">${l}</button>`;
- return header()+band(`أهلاً يا ${esc(p.name)}`,'تابع ترتيب جميع المتنافسين لتعرف موقع أبنائك وتحفّزهم.')+`<div class="sec">
+ loadMyPin();return header()+band(`أهلاً يا ${esc(p.name)}`,'تابع ترتيب جميع المتنافسين لتعرف موقع أبنائك وتحفّزهم.')+`<div class="sec">${pinCard()}
  <div class="card"><p style="margin:0;line-height:1.9">👀 حساب ولي الأمر للاطلاع فقط، ولا يظهر اسمك في الترتيب. ابحث باسم ابنك أو ابنتك لتعرف مركزه، ثم ${p.gender==='f'?'شجّعيه':'شجّعه'} على التدريب اليومي: كل تدريب يرفع نقاطه.</p></div>
  <label class="f" for="pbq">ابحث باسم ابنك أو ابنتك<input type="text" id="pbq" value="${esc(PB.q)}" placeholder="اكتب الاسم…"></label>
  <div class="seg">${sg('all','الجميع')}${sg('p','ابتدائي')}${sg('m','متوسط')}${sg('s','ثانوي')}</div>
@@ -1215,12 +1274,15 @@ function cloudAct(a){if(a==='intro'){openIntro();return true}if(a==='install'){d
  case 'toStart':go('start');return true;
  case 'reset':{const em=($('#lem')||{}).value||'';if(!em){const el=$('#lerr');el.textContent='اكتب بريدك أولاً ثم اضغط «نسيت كلمة المرور».';el.hidden=false;return true}firebase.auth().sendPasswordResetEmail(em.trim()).then(()=>toast('أرسلنا رابط إعادة التعيين إلى بريدك.')).catch(er=>toast(authErr(er)));return true}
  case 'logoutOk':logout();return true;
- case 'loAsk':view.lo=true;render();return true;
+ case 'loAsk':LO=true;loadMyPin();render();window.scrollTo(0,0);return true;
  case 'loNo':view.lo=false;render();return true;
  case 'mkLink':{const p=cur();makeTransfer(p.id).then(l=>{view.tlink=l;render()}).catch(er=>toast(authErr(er)));return true}
  case 'adBoard':go('adBoard');adBoardLoad();return true;
  case 'adHome':go('admin');return true;
  case 'pbReload':pbLoad();return true;
+ case 'loTop':LO=!LO;loadMyPin();render();window.scrollTo(0,0);return true;
+ case 'loNo2':LO=false;render();return true;
+ case 'loDo':loDo();return true;
  case 'certSeen':{const p=cur();p.newCert=null;save();render();return true}
  case 'adNotif':adNotifPerm();return true;
  case 'adTestPush':notifyAdminPush({role:'student'});toast('أُرسل إشعار تجربة إلى قناة ntfy');return true;
@@ -1238,7 +1300,7 @@ function cloudAct(a){if(a==='intro'){openIntro();return true}if(a==='install'){d
  case 'switch':go('who');return true;
  }return false}
 function cloudClick(d){if(!CLOUD)return false;
- if(d.regset){const n=$('#regn');if(n&&view.reg)view.reg.name=n.value;view.reg[d.regset]=(d.regset==='gender'||d.regset==='role')?d.v:+d.v;render();return true}
+ if(d.regset){const n=$('#regn');if(n&&view.reg)view.reg.name=n.value;const rp=$('#regpin');if(rp&&view.reg)view.reg.pin=rp.value;view.reg[d.regset]=(d.regset==='gender'||d.regset==='role')?d.v:+d.v;render();return true}
  if(d.adst){A.st=d.adst;render();return true}
  if(d.abst){AB.st=d.abst;render();return true}
  if(d.pbst){PB.st=d.pbst;render();return true}
@@ -1251,6 +1313,8 @@ function cloudClick(d){if(!CLOUD)return false;
  if(d.adlk){A.lk=d.adlk;A.lkTo=null;A.lkQ='';render();return true}
  if(d.adlkto){A.lkTo=d.adlkto;render();return true}
  if(d.adlkok){const id=d.adlkok,to=A.lkTo;const t=(A.list||[]).find(x=>x.id===to);adBusy(()=>adminLinkReq(id,to),'تم الدمج: يدخل '+(t?t.name:'المتنافس')+' بحسابه القديم من جواله الجديد مباشرة').then(()=>{A.lk=null;A.lkTo=null;render()});return true}
+ if(d.adpin){adPinToggle(d.adpin);return true}
+ if(d.adpinset){adPinSet(d.adpinset);return true}
  if(d.adok){const id=d.adok;const it=(A.list||[]).find(x=>x.id===id);adBusy(()=>adminApprove(id),it&&it.role==='parent'?'تمت الموافقة، ويدخل ولي الأمر مباشرة دون رابط':'تمت الموافقة، ويدخل مباشرة من جهازه');return true}
  if(d.adno){const id=d.adno;adBusy(()=>adminDel(id),'رُفض الطلب');return true}
  if(d.adrst){A.rst=d.adrst;A.del=null;A.edit=null;render();return true}
@@ -1260,10 +1324,17 @@ function cloudClick(d){if(!CLOUD)return false;
  if(d.edit){const q=cur();go('form',{f:{name:q.name,gender:q.gender,grade:q.grade,term:q.term},editId:q.id,back:'who'});return true}
  return false}
 function bindAuthForms(){
+ const pf=$('#pinform');if(pf)pf.addEventListener('submit',async e=>{e.preventDefault();const v=(($('#spin')||{}).value||'').replace(/\D/g,'');const er=$('#pinerr');
+  if(!PINRE.test(v)){er.textContent='الرقم السري 4 أرقام بالضبط.';er.hidden=false;return}
+  try{await savePin(v);C.myPin=v;toast('تم حفظ رقمك السري: '+v);render()}catch(x){er.textContent='تعذّر الحفظ. ربما لديك رقم سري من قبل، فاطلبه من مدير النظام.';er.hidden=false}});
+ const lb=$('#lgbox');if(lb)lb.addEventListener('toggle',()=>{LG.open=lb.open;if(lb.open){lgLoad()}});
+ const lgf=$('#lgform');if(lgf)lgf.addEventListener('submit',e=>{e.preventDefault();const sid=($('#lgname')||{}).value,pin=(($('#lgpin')||{}).value||'').replace(/\D/g,'');
+  if(!sid){LG.err='اختر اسمك من القائمة.';render();return}if(!PINRE.test(pin)){LG.err='اكتب رقمك السري (4 أرقام).';render();return}
+  LG.err='';const b=$('#lgbtn');if(b){b.disabled=true;b.textContent='جارٍ الدخول…'}lgLogin(sid,pin)});
  const lf=$('#lform');if(lf)lf.addEventListener('submit',e=>{e.preventDefault();const em=$('#lem').value.trim(),pw=$('#lpw').value;const b=$('#lbtn'),er=$('#lerr');b.disabled=true;er.hidden=true;
   firebase.auth().signInWithEmailAndPassword(em,pw).catch(x=>{b.disabled=false;er.textContent=authErr(x);er.hidden=false})});
- const rf=$('#regform');if(rf)rf.addEventListener('submit',e=>{e.preventDefault();const r=view.reg;r.name=$('#regn').value.trim();const er=$('#regerr');
-  if(!r.name){er.textContent='اكتب اسمك.';er.hidden=false;return}if(r.role!=='p'&&!r.grade){er.textContent='اختر صفّك.';er.hidden=false;return}
+ const rf=$('#regform');if(rf)rf.addEventListener('submit',e=>{e.preventDefault();const r=view.reg;r.name=$('#regn').value.trim();r.pin=(($('#regpin')||{}).value||'').trim();const er=$('#regerr');
+  if(!r.name){er.textContent='اكتب اسمك.';er.hidden=false;return}if(r.pin&&!PINRE.test(r.pin)){er.textContent='الرقم السري 4 أرقام فقط، أو اتركه فارغاً.';er.hidden=false;return}if(r.role!=='p'&&!r.grade){er.textContent='اختر صفّك.';er.hidden=false;return}
   const b=$('#regbtn'),bt=b.textContent;b.disabled=true;b.textContent='جارٍ التسجيل…';register(r).catch(x=>{b.disabled=false;b.textContent=bt;er.textContent=authErr(x);er.hidden=false})})}
 
 /* ============ المحادثة الصوتية ============ */
@@ -2133,7 +2204,7 @@ function qTrainItems(p){const out=[];const cs=qcats(p.grade);for(let i=0;i<(p.gr
 function tTrainItems(p){const out=[];for(let i=0;i<3;i++)out.push(genTM(p.grade));out.push(...uniq(()=>sciItems(p,[wpick(['phy','chem','bio','earth'],p.stats.th)],1)[0],7));return shuf(out)}
 function weakOf(p,keys,sec){let w=null;keys.forEach(k=>{const x=p.stats[sec][k];if(x&&x.t>=3){const a=x.c/x.t;if(!w||a<w[1])w=[k,a]}});return w}
 
-function header(){const p=cur();const hb=p&&view.name!=='home'&&view.name!=='pboard'?`<button class="x homebtn" data-go="home">‹ الرئيسية</button>`:'';return (C.asAdmin&&p?`<div class="asadm"><span>أنت في حساب <b>${esc(p.name)}</b> كمدير</span><button class="btn plain" data-act="adBack">رجوع للإدارة</button></div>`:'')+`<div class="top"><div class="row" style="gap:10px"><div class="brand">مِران</div>${instTop()}${hb}</div>${p?`<button class="who" data-act="switch" aria-label="تبديل المستخدم"><span>${esc(p.name)}</span><span class="av ${p.gender}">${esc(p.name.trim()[0]||'؟')}</span></button>`:''}</div>${instHelp()}`}
+function header(){const p=cur();const hb=p&&view.name!=='home'&&view.name!=='pboard'?`<button class="x homebtn" data-go="home">‹ الرئيسية</button>`:'';return (C.asAdmin&&p?`<div class="asadm"><span>أنت في حساب <b>${esc(p.name)}</b> كمدير</span><button class="btn plain" data-act="adBack">رجوع للإدارة</button></div>`:'')+`<div class="top"><div class="row" style="gap:10px"><div class="brand">مِران</div>${instTop()}${hb}</div>${p?`<div class="row" style="gap:6px">${CLOUD&&C.mode==='student'&&!C.asAdmin?`<button class="x lobtn" data-act="loTop" aria-label="خروج">🚪 خروج</button>`:''}<button class="who" data-act="switch" aria-label="تبديل المستخدم"><span>${esc(p.name)}</span><span class="av ${p.gender}">${esc(p.name.trim()[0]||'؟')}</span></button></div>`:''}</div>${instHelp()}${loPanel()}`}
 
 function vWho(){if(CLOUD&&C.mode==='student')return vStudentWho();return header()+`<h1>من سيتدرّب الآن؟</h1><p class="sub">اختر اسمك لتبدأ. لكل مستخدم تقدّمه ونقاطه الخاصة.</p>
  <div class="sec">${S.profiles.map(p=>`<button class="tile" data-pick="${p.id}"><span class="av lg ${p.gender}">${esc(p.name.trim()[0]||'؟')}</span><span class="grow"><h3>${esc(p.name)}</h3><span class="meta">${GRADES[p.grade]} · ${TERMS[p.term]} · ${p.points} نقطة</span></span></button>`).join('')}
@@ -2265,7 +2336,7 @@ function celebrate(p){const tot=lifetime(p),t=tierOf(tot);if(p.tierSeen==null||p
  if(t.i<p.tierSeen)p.tierSeen=t.i;return ''}
 function vHome(){const p=cur();const pl=planOf(p);const st=planStep(p);const done=PLAN.filter(x=>pl[x.k]).length;const bs=view.bs||'all';
  const card=x=>{const d=x.items.filter(k=>pl[k]).length,all=d===x.items.length;return `<button class="seccard" ${x.go==='en'?'data-go="en"':`data-act="${x.go}"`} style="--c:var(--${x.c});--c2:var(--${x.c2})"><span class="sci">${x.i}</span><span class="grow"><b>${x.t}</b><span>${x.m}</span>${d?`<span class="scst">✓ ${g('تدرّبت','تدرّبتِ')} اليوم</span>`:''}</span><span class="go">‹</span></button>`};
- return header()+`<h1>أهلاً يا ${esc(p.name)}</h1>
+ loadMyPin();return header()+`<h1>أهلاً يا ${esc(p.name)}</h1>${pinCard()}
  ${introCard(false)}<div class="homegrid"><div class="sec">${qHomeCards(p)}${SECS.map(card).join('')}</div>
  <div><p class="motto">${g('كلما تدرّبت أكثر زادت نقاطك','كلما تدرّبتِ أكثر زادت نقاطكِ')}</p>${newCertBanner(p)}${celebrate(p)}${heroPath(p)}${myCertsCard(p)}${CLOUD?`${hofCard()}<div class="sec"><div class="row between"><h2>🏆 الترتيب</h2><button class="x" data-go="comp">عرض الكل</button></div><div class="card"><div class="seg">${['all','st','gr'].map(k=>`<button type="button" class="${bs===k?'on':''}" data-bs="${k}">${k==='all'?'الجميع':k==='st'?STAGES[stageOf(p.grade)]:'صفّي'}</button>`).join('')}</div><div id="board" style="margin-top:10px"></div>${stageNote()}</div></div>`:`<div class="sec"><button class="btn plain wide" data-go="comp">🏆 الترتيب</button><button class="btn plain wide" data-go="parent">لوحة ولي الأمر</button></div>`}</div></div>`}
 
