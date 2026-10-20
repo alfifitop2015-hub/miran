@@ -50,8 +50,20 @@ service cloud.firestore {
     }
 
     // منافسة «ني هاو» (الصينية): التسجيل بالاسم، والانضمام بموافقة المدير
+    // «ني هاو»: الدخول من جهاز آخر برابط ورمز سري
+    function zhDev() { return /databases/$(database)/documents/zhDevices/$(request.auth.uid); }
+    function isZh(sid) { return signed() && (request.auth.uid == sid || (exists(zhDev()) && get(zhDev()).data.sid == sid)); }
+    match /zhSecrets/{sid} {
+      allow read, write: if isZh(sid);
+    }
+    match /zhDevices/{uid} {
+      allow read, delete: if signed() && request.auth.uid == uid;
+      allow create, update: if signed() && request.auth.uid == uid
+        && request.resource.data.pin is string
+        && request.resource.data.pin == get(/databases/$(database)/documents/zhSecrets/$(request.resource.data.sid)).data.pin;
+    }
     match /zhPlayers/{uid} {
-      allow read: if signed() && (request.auth.uid == uid || resource.data.status == 'approved');
+      allow read: if signed() && (isZh(uid) || resource.data.status == 'approved');
       allow create: if signed() && request.auth.uid == uid
         && request.resource.data.status == 'pending'
         && request.resource.data.total == 0
@@ -59,7 +71,7 @@ service cloud.firestore {
         && request.resource.data.name.size() > 0
         && request.resource.data.name.size() <= 20
         && request.resource.data.gender in ['m', 'f'];
-      allow update: if signed() && request.auth.uid == uid
+      allow update: if isZh(uid)
         && request.resource.data.status == resource.data.status
         && request.resource.data.name == resource.data.name
         && request.resource.data.gender == resource.data.gender
