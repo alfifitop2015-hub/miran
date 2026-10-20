@@ -198,6 +198,10 @@ html[lang="en"] body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-
 .langs button.on{background:var(--acc);color:var(--onacc)}
 .kindsel{font:inherit;font-size:12.5px;font-weight:600;color:var(--acc);background:var(--accsoft);border:1.5px solid color-mix(in srgb,var(--acc) 35%,transparent);border-radius:999px;padding:2px 8px;margin-inline-start:4px;max-width:100%}
 .tklink{font-size:12.5px;word-break:break-all;background:var(--paper);border:1px dashed var(--line);border-radius:10px;padding:8px;text-align:left}
+.pinbox{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--accsoft);border-radius:14px;padding:10px 16px}
+.pinbox span{font-weight:600;color:var(--muted)}.pinbox b{font-family:var(--fd);font-size:30px;letter-spacing:4px;color:var(--acc)}
+.lsel{font:inherit;padding:12px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);width:100%}
+#lpin{font-size:22px;letter-spacing:4px;text-align:center}
 .toast{position:fixed;inset-inline:16px;bottom:calc(20px + env(safe-area-inset-bottom,0px));margin-inline:auto;max-width:420px;background:var(--ink);color:var(--paper);padding:12px 16px;border-radius:12px;font-size:14px;text-align:center;z-index:20;direction:var(--dir)}
 @media (min-width:720px){.wrap{max-width:680px;padding-inline:28px}h1{font-size:30px}}
 </style>
@@ -324,6 +328,16 @@ const D = {
  'الدخول من جهاز آخر':['Log in on another device','在其他设备登录'],
  'افتح هذا الرابط على الجهاز الآخر، فيدخل إلى الحساب نفسه بنقاطه وترتيبه. لا ترسله إلا لصاحب الحساب.':['Open this link on the other device to enter the same account with its points and rank. Only send it to the account owner.','在另一台设备上打开此链接，即可进入同一账号，积分和排名不变。只发给账号本人。'],
  'رابط دخول':['Login link','登录链接'],
+ 'الرقم السري':['Secret PIN','密码'],
+ 'نسخ الرقم':['Copy PIN','复制密码'], 'تم نسخ الرقم':['PIN copied','密码已复制'],
+ 'على الجهاز الآخر: يفتح التطبيق، ويضغط «مسجّل من قبل؟ ادخل إلى حسابك»، ثم يختار اسمه ويكتب هذا الرقم السري. لا ترسله إلا لصاحب الحساب.':['On the other device: open the app, tap “Already registered? Log in to your account”, choose the name and type this PIN. Only share it with the account owner.','在另一台设备上：打开应用，点「已经注册？登录你的账号」，选择名字并输入此密码。只发给账号本人。'],
+ 'اسمك':['Your name','你的名字'], 'اختر اسمك':['Choose your name','选择你的名字'],
+ 'لا توجد حسابات مقبولة بعد':['No approved accounts yet','还没有已批准的账号'],
+ 'أو الصق رابط الدخول':['or paste the login link','或粘贴登录链接'],
+ 'اختر اسمك واكتب رقمك السري.':['Choose your name and type your PIN.','请选择名字并输入密码。'],
+ 'الرقم السري غير صحيح. اطلبه من المشرف.':['Wrong PIN. Ask the supervisor for it.','密码不正确，请向管理员索取。'],
+ 'اختر اسمك واكتب رقمك السري. تجده في جهازك الأول من زر «الدخول من جهاز آخر»، أو اطلبه من المشرف.':['Choose your name and type your PIN. You can find it on your first device under “Log in on another device”, or ask the supervisor.','选择你的名字并输入密码。可在第一台设备的「在其他设备登录」中找到，或向管理员索取。'],
+ 'على الجهاز الآخر: يضغط «مسجّل من قبل؟»، ويختار اسمه، ويكتب الرقم السري. أو يفتح الرابط مباشرة. لا ترسلهما إلا لصاحب الحساب.':['On the other device: tap “Already registered?”, choose the name and type the PIN — or simply open the link. Only share them with the account owner.','在另一台设备上：点「已经注册？」，选择名字并输入密码，或直接打开链接。只发给账号本人。'],
  'تعذّر إنشاء الرابط. تحقق من الإنترنت ومن نشر قواعد قاعدة البيانات.':['Could not create the link. Check the internet and that the database rules are published.','无法生成链接，请检查网络以及数据库规则是否已发布。'],
  'معاينة صفحة التسجيل':['Registration page preview','注册页面预览'],
  'هذه الصفحة كما يراها المسجّل الجديد عند فتح التطبيق أول مرة. الإرسال هنا معطّل، لأنها معاينة فقط.':['This is the page a new user sees when opening the app for the first time. Sending is disabled because this is only a preview.','这是新用户第一次打开应用时看到的页面。这里只是预览，无法提交。'],
@@ -671,35 +685,50 @@ async function linkDevice(u){
   }
   try{ const d = await fsP.collection('zhDevices').doc(u.uid).get(); return d.exists ? d.data().sid : null; }catch(e){ return null; }
 }
-async function enterWithCode(){
-  const v = ($('#lcode') && $('#lcode').value) || '';
-  if (!readLoginCode(v)){ X.err2 = 'الصق رابط الدخول أو الرمز كما وصلك.'; return render(); }
-  X.busy = true; X.err2 = ''; render();
+/* الدخول من جهاز آخر: يختار المسجّل اسمه من القائمة ويكتب رقمه السري (أو يلصق رابط الدخول) */
+async function loadNames(){
+  if (X.names || X.namesLoading) return; X.namesLoading = true;
   try{
-    const sid = await useLoginCode(v); X.uid = sid; X.meLoaded = false;
-    if (unsubMe) unsubMe();
-    unsubMe = fsP.collection(COL).doc(sid).onSnapshot(d => { X.meLoaded = true; X.me = d.exists ? d.data() : null; subBoard(); soft(); }, () => { X.meLoaded = true; X.me = null; subBoard(); soft(); });
-    toast('تم الدخول إلى حسابك');
-  }catch(e){ X.err2 = 'الرابط غير صالح أو قديم. اطلب رابطاً جديداً.'; }
+    if (!authP.currentUser) await authP.signInAnonymously();
+    const sn = await fsP.collection(COL).where('status', '==', 'approved').get();
+    X.names = sn.docs.map(d => Object.assign({id:d.id}, d.data())).sort((a, b) => String(a.name).localeCompare(String(b.name), 'ar'));
+  }catch(e){ X.names = []; }
+  X.namesLoading = false; render();
+}
+const roleWord = r => isParent(r) ? parentWord(r) : r.gender === 'f' ? 'طالبة' : 'طالب';
+function attach(sid){
+  X.uid = sid; X.meLoaded = false;
+  if (unsubMe) unsubMe();
+  unsubMe = fsP.collection(COL).doc(sid).onSnapshot(d => { X.meLoaded = true; X.me = d.exists ? d.data() : null; subBoard(); soft(); }, () => { X.meLoaded = true; X.me = null; subBoard(); soft(); });
+}
+async function enterWithCode(){
+  const who = ($('#lwho') && $('#lwho').value) || '', pin = (($('#lpin') && $('#lpin').value) || '').replace(/\s/g, ''), v = ($('#lcode') && $('#lcode').value) || '';
+  let code = null;
+  if (v.trim()) code = v;
+  else if (who && pin) code = who + '.' + pin;
+  if (!code || !readLoginCode(code)){ X.err2 = 'اختر اسمك واكتب رقمك السري.'; return render(); }
+  X.busy = true; X.err2 = ''; render();
+  try{ attach(await useLoginCode(code)); toast('تم الدخول إلى حسابك'); }
+  catch(e){ X.err2 = v.trim() ? 'الرابط غير صالح أو قديم. اطلب رابطاً جديداً.' : 'الرقم السري غير صحيح. اطلبه من المشرف.'; }
   X.busy = false; soft();
 }
 async function makePin(db, sid){
   const ref = db.collection('zhSecrets').doc(sid);
   const d = await ref.get(); if (d.exists && d.data().pin) return d.data().pin;
-  const pin = Array.from(crypto.getRandomValues(new Uint8Array(8)), b => (b % 36).toString(36)).join('');
+  const pin = String(100000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 900000));   // رقم سري من 6 أرقام
   await ref.set({pin, at:Date.now()}); return pin;
 }
-function linkSheet(name, url){
+function linkSheet(name, url, pin){
   closeIntro();
-  const msg = (name ? 'رابط دخول ' + name + ' إلى «ني هاو» من جهاز آخر:\n' : 'رابط دخولي إلى «ني هاو» من جهاز آخر:\n') + url;
+  const msg = 'الدخول إلى «ني هاو» من جهاز آخر:\n1) افتح التطبيق: ' + APPURL + '\n2) اضغط «مسجّل من قبل؟ ادخل إلى حسابك»\n3) اختر اسمك' + (name ? ': ' + name : '') + '\n4) اكتب الرقم السري: ' + pin;
   const el = document.createElement('div');
   el.id = 'intro'; el.className = 'iv-ov'; el.dir = document.documentElement.dir; el.setAttribute('role', 'dialog');
-  el.innerHTML = `<div class="iv-box"><div class="card stack"><h2>الدخول من جهاز آخر</h2><p class="sub" style="margin:0">افتح هذا الرابط على الجهاز الآخر، فيدخل إلى الحساب نفسه بنقاطه وترتيبه. لا ترسله إلا لصاحب الحساب.</p><div class="tklink" dir="ltr">${esc(url)}</div><div class="row"><button type="button" class="btn plain grow" id="cplink2">نسخ الرابط</button><a class="btn grow" href="https://wa.me/?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener" style="text-decoration:none">واتساب</a></div><button type="button" class="btn plain wide" id="ivclose">إغلاق</button></div></div>`;
-  el.addEventListener('click', e => { if (e.target === el || e.target.id === 'ivclose') closeIntro(); if (e.target.id === 'cplink2'){ try{ navigator.clipboard.writeText(url).then(() => toast('تم نسخ الرابط'), () => toast(url)); }catch(x){ toast(url); } } });
+  el.innerHTML = `<div class="iv-box"><div class="card stack"><h2>الدخول من جهاز آخر</h2>${name ? `<p style="margin:0;font-weight:700">${esc(name)}</p>` : ''}<p class="sub" style="margin:0">على الجهاز الآخر: يفتح التطبيق، ويضغط «مسجّل من قبل؟ ادخل إلى حسابك»، ثم يختار اسمه ويكتب هذا الرقم السري. لا ترسله إلا لصاحب الحساب.</p><div class="pinbox"><span>الرقم السري</span><b dir="ltr">${esc(pin)}</b></div><div class="row"><button type="button" class="btn plain grow" id="cplink2">نسخ الرقم</button><a class="btn grow" href="https://wa.me/?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener" style="text-decoration:none">واتساب</a></div><button type="button" class="btn plain wide" id="ivclose">إغلاق</button></div></div>`;
+  el.addEventListener('click', e => { if (e.target === el || e.target.id === 'ivclose') closeIntro(); if (e.target.id === 'cplink2'){ try{ navigator.clipboard.writeText(pin).then(() => toast('تم نسخ الرقم'), () => toast(pin)); }catch(x){ toast(pin); } } });
   document.body.appendChild(el); document.body.style.overflow = 'hidden';
 }
-async function myLink(){ try{ const pin = await makePin(fsP, X.uid); linkSheet('', loginLink(X.uid, pin)); }catch(e){ toast('تعذّر إنشاء الرابط. تحقق من الإنترنت ومن نشر قواعد قاعدة البيانات.'); } }
-async function adminLink(id){ try{ const pin = await makePin(fsA, id); const r = (X.rows || []).find(x => x.id === id); linkSheet(r ? r.name : '', loginLink(id, pin)); }catch(e){ toast('تعذّر إنشاء الرابط. تحقق من الإنترنت ومن نشر قواعد قاعدة البيانات.'); } }
+async function myLink(){ try{ const pin = await makePin(fsP, X.uid); linkSheet('', loginLink(X.uid, pin), pin); }catch(e){ toast('تعذّر إنشاء الرابط. تحقق من الإنترنت ومن نشر قواعد قاعدة البيانات.'); } }
+async function adminLink(id){ try{ const pin = await makePin(fsA, id); const r = (X.rows || []).find(x => x.id === id); linkSheet(r ? r.name : '', loginLink(id, pin), pin); }catch(e){ toast('تعذّر إنشاء الرابط. تحقق من الإنترنت ومن نشر قواعد قاعدة البيانات.'); } }
 
 async function join(){
   const name = JF.name.trim().slice(0, 20);
@@ -755,11 +784,12 @@ function joinForm(){ return `<form id="joinform" class="card stack"><div><h2>ا�
     <div class="seg">${[['m','student','طالب'],['f','student','طالبة'],['m','parent','ولي أمر'],['f','parent','ولية أمر'],['m','teacher','معلم'],['f','teacher','معلمة']].map(([gn, rl, lb]) => { const on = JF.gender === gn && (JF.role || 'student') === rl; return `<button type="button" class="${on ? 'on' : ''}" data-gen="${gn}" data-role="${rl}" aria-pressed="${on}" style="flex:1 1 40%">${lb}</button>`; }).join('')}</div>
     ${X.err ? `<div class="warn">${esc(X.err)}</div>` : ''}
     <button class="btn wide" type="submit" ${X.busy ? 'disabled' : ''}>${X.busy ? 'جارٍ الإرسال…' : 'أرسل طلب الانضمام'}</button></form>
-    <details class="card" ${X.err2 ? 'open' : ''}><summary style="cursor:pointer;font-weight:700">مسجّل من قبل؟ ادخل إلى حسابك</summary>
-      <form id="loginform" class="stack" style="margin-top:10px"><p class="sub" style="margin:0">افتح رابط الدخول الذي وصلك من جهازك الأول أو من المشرف، أو الصقه هنا.</p>
-      <input type="text" id="lcode" dir="ltr" autocomplete="off" placeholder="الصق رابط الدخول هنا">
+    <details class="card" id="logindet" ${X.err2 || X.names ? 'open' : ''}><summary style="cursor:pointer;font-weight:700">مسجّل من قبل؟ ادخل إلى حسابك</summary>
+      <form id="loginform" class="stack" style="margin-top:10px"><p class="sub" style="margin:0">اختر اسمك واكتب رقمك السري. تجده في جهازك الأول من زر «الدخول من جهاز آخر»، أو اطلبه من المشرف.</p>
+      <label class="f">اسمك<select id="lwho" class="lsel">${!X.names ? '<option value="">جارٍ التحميل…</option>' : !X.names.length ? '<option value="">لا توجد حسابات مقبولة بعد</option>' : '<option value="">اختر اسمك</option>' + X.names.map(r => `<option value="${esc(r.id)}">${esc(r.name)} · ${roleWord(r)}</option>`).join('')}</select></label>
+      <label class="f">الرقم السري<input type="text" id="lpin" inputmode="numeric" dir="ltr" autocomplete="off" maxlength="12" placeholder="••••••"></label>
       ${X.err2 ? `<div class="warn">${esc(X.err2)}</div>` : ''}
-      <button class="btn wide" type="submit" ${X.busy ? 'disabled' : ''}>دخول إلى حسابي</button></form></details>`;
+      <button class="btn wide" type="submit" ${X.busy ? 'disabled' : ''}>${X.busy ? 'جارٍ الدخول…' : 'دخول إلى حسابي'}</button></form></details>`;
 }
 /* معاينة المشرف لصفحة التسجيل كما يراها المسجّل الجديد */
 function vPreview(){
@@ -810,7 +840,7 @@ function vAdmin(){
   const kind = r => (['parent', 'teacher'].includes(r.role) ? r.role : 'student') + ':' + (r.gender === 'f' ? 'f' : 'm');
   const KINDS = [['student:m','طالب'],['student:f','طالبة'],['parent:m','ولي أمر'],['parent:f','ولية أمر'],['teacher:m','معلم'],['teacher:f','معلمة']];
   const who = r => `<span class="grow"><b>${esc(r.name || '')}</b> <select class="kindsel" data-kind="${esc(r.id)}" aria-label="تغيير الصفة" title="تغيير الصفة">${KINDS.map(([v, n]) => `<option value="${v}" ${kind(r) === v ? 'selected' : ''}>${n}</option>`).join('')}</select></span>`;
-  const lk = r => `<button class="x" data-alink="${esc(r.id)}">رابط دخول</button>`;
+  const lk = r => `<button class="x" data-alink="${esc(r.id)}">الرقم السري</button>`;
   const btn = (w, r, label, cls) => `<button class="x ${cls || ''}" data-adm="${w}" data-id="${esc(r.id)}">${X.confirm === w + r.id ? 'تأكيد: ' + label : label}</button>`;
   return header() + `<div class="qhead"><h2>لوحة المشرف</h2><button class="x" data-act="adminOut">خروج المشرف</button></div><div class="sec">
     <button class="tile" data-act="preview"><span class="grow"><h3>صفحة التسجيل للجدد</h3><span class="meta">شاهد ما يراه المسجّل الجديد عند فتح التطبيق أول مرة</span></span><span class="go">‹</span></button>
@@ -1240,6 +1270,7 @@ app.addEventListener('click', e => {
   else if (act === 'tkNext'){ tkNext(); const i = $('#tkin'); if (i) i.focus(); }
   else if (act === 'tkQuit' || act === 'tkList') quit();
 });
+document.addEventListener('toggle', e => { if (e.target && e.target.id === 'logindet' && e.target.open && view !== 'preview') loadNames(); }, true);
 app.addEventListener('input', e => { if (e.target.id === 'jname') JF.name = e.target.value; });
 /* المشرف يصحّح صفة المسجّل إذا أخطأ في التسجيل (طالب، ولي أمر، معلم…) */
 app.addEventListener('change', e => {
