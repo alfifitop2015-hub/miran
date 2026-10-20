@@ -202,6 +202,11 @@ html[lang="en"] body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-
 .pinbox span{font-weight:600;color:var(--muted)}.pinbox b{font-family:var(--fd);font-size:30px;letter-spacing:4px;color:var(--acc)}
 .lsel{font:inherit;padding:12px;border-radius:10px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);width:100%}
 #lpin{font-size:22px;letter-spacing:4px;text-align:center}
+.outbtn{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--line);background:var(--card);color:var(--bad);display:grid;place-items:center;padding:0;flex:none}
+.outbtn svg{width:19px;height:19px}
+[dir="ltr"] .outbtn svg{transform:scaleX(-1)}
+.top .brand{white-space:nowrap;font-size:24px}
+@media (max-width:420px){.instbtn span{display:none}.instbtn{padding:7px 9px}}
 .toast{position:fixed;inset-inline:16px;bottom:calc(20px + env(safe-area-inset-bottom,0px));margin-inline:auto;max-width:420px;background:var(--ink);color:var(--paper);padding:12px 16px;border-radius:12px;font-size:14px;text-align:center;z-index:20;direction:var(--dir)}
 @media (min-width:720px){.wrap{max-width:680px;padding-inline:28px}h1{font-size:30px}}
 </style>
@@ -329,7 +334,11 @@ const D = {
  'افتح هذا الرابط على الجهاز الآخر، فيدخل إلى الحساب نفسه بنقاطه وترتيبه. لا ترسله إلا لصاحب الحساب.':['Open this link on the other device to enter the same account with its points and rank. Only send it to the account owner.','在另一台设备上打开此链接，即可进入同一账号，积分和排名不变。只发给账号本人。'],
  'رابط دخول':['Login link','登录链接'],
  'الرقم السري':['Secret PIN','密码'],
- 'نسخ الرقم':['Copy PIN','复制密码'], 'تم نسخ الرقم':['PIN copied','密码已复制'],
+ 'نسخ الرقم':['Copy PIN','复制密码'],
+ 'خروج':['Log out','退出'], 'إلغاء':['Cancel','取消'], 'الخروج من حسابك':['Log out of your account','退出你的账号'],
+ 'تم الخروج من حسابك':['You have logged out','已退出账号'],
+ 'للعودة لاحقاً: اضغط «مسجّل من قبل؟ ادخل إلى حسابك»، واختر اسمك، واكتب رقمك السري. احفظه قبل الخروج.':['To come back later: tap “Already registered? Log in to your account”, choose your name and type your PIN. Save it before logging out.','以后回来：点「已经注册？登录你的账号」，选择名字并输入密码。退出前请记好密码。'],
+ 'تعذّر عرض رقمك السري الآن. اطلبه من المشرف عند العودة.':['Could not show your PIN now. Ask the supervisor for it when you come back.','暂时无法显示密码，回来时请向管理员索取。'], 'تم نسخ الرقم':['PIN copied','密码已复制'],
  'على الجهاز الآخر: يفتح التطبيق، ويضغط «مسجّل من قبل؟ ادخل إلى حسابك»، ثم يختار اسمه ويكتب هذا الرقم السري. لا ترسله إلا لصاحب الحساب.':['On the other device: open the app, tap “Already registered? Log in to your account”, choose the name and type this PIN. Only share it with the account owner.','在另一台设备上：打开应用，点「已经注册？登录你的账号」，选择名字并输入此密码。只发给账号本人。'],
  'اسمك':['Your name','你的名字'], 'اختر اسمك':['Choose your name','选择你的名字'],
  'لا توجد حسابات مقبولة بعد':['No approved accounts yet','还没有已批准的账号'],
@@ -726,6 +735,28 @@ function linkSheet(name, url, pin){
   el.innerHTML = `<div class="iv-box"><div class="card stack"><h2>الدخول من جهاز آخر</h2>${name ? `<p style="margin:0;font-weight:700">${esc(name)}</p>` : ''}<p class="sub" style="margin:0">على الجهاز الآخر: يفتح التطبيق، ويضغط «مسجّل من قبل؟ ادخل إلى حسابك»، ثم يختار اسمه ويكتب هذا الرقم السري. لا ترسله إلا لصاحب الحساب.</p><div class="pinbox"><span>الرقم السري</span><b dir="ltr">${esc(pin)}</b></div><div class="row"><button type="button" class="btn plain grow" id="cplink2">نسخ الرقم</button><a class="btn grow" href="https://wa.me/?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener" style="text-decoration:none">واتساب</a></div><button type="button" class="btn plain wide" id="ivclose">إغلاق</button></div></div>`;
   el.addEventListener('click', e => { if (e.target === el || e.target.id === 'ivclose') closeIntro(); if (e.target.id === 'cplink2'){ try{ navigator.clipboard.writeText(pin).then(() => toast('تم نسخ الرقم'), () => toast(pin)); }catch(x){ toast(pin); } } });
   document.body.appendChild(el); document.body.style.overflow = 'hidden';
+}
+/* خروج الطالب من حسابه على هذا الجهاز: يُعرض رقمه السري أولاً حتى يستطيع الدخول لاحقاً */
+async function askLogout(){
+  let pin = '';
+  try{ pin = await makePin(fsP, X.uid); }catch(e){}
+  closeIntro();
+  const el = document.createElement('div');
+  el.id = 'intro'; el.className = 'iv-ov'; el.dir = document.documentElement.dir; el.setAttribute('role', 'dialog');
+  el.innerHTML = `<div class="iv-box"><div class="card stack"><h2>الخروج من حسابك</h2><p class="sub" style="margin:0">للعودة لاحقاً: اضغط «مسجّل من قبل؟ ادخل إلى حسابك»، واختر اسمك، واكتب رقمك السري. احفظه قبل الخروج.</p>${pin ? `<div class="pinbox"><span>الرقم السري</span><b dir="ltr">${esc(pin)}</b></div>` : '<div class="warn">تعذّر عرض رقمك السري الآن. اطلبه من المشرف عند العودة.</div>'}<div class="row"><button type="button" class="btn plain grow" id="ivclose">إلغاء</button><button type="button" class="btn grow" id="dologout" style="background:var(--bad)">خروج</button></div></div></div>`;
+  el.addEventListener('click', e => { if (e.target === el || e.target.id === 'ivclose') closeIntro(); if (e.target.id === 'dologout'){ closeIntro(); doLogout(); } });
+  document.body.appendChild(el); document.body.style.overflow = 'hidden';
+}
+async function doLogout(){
+  try{ speechSynthesis.cancel(); }catch(e){}
+  if (TK){ tkStopRec(); TK = null; }
+  const u = authP && authP.currentUser;
+  if (u && u.uid !== X.uid){ try{ await fsP.collection('zhDevices').doc(u.uid).delete(); }catch(e){} }
+  if (unsubMe){ unsubMe(); unsubMe = null; }
+  X.me = null; X.uid = null; X.names = null; X.linked = true; JF.name = ''; JF.gender = ''; JF.role = '';
+  subBoard();
+  try{ await authP.signOut(); }catch(e){}
+  view = 'list'; render(); window.scrollTo(0, 0); toast('تم الخروج من حسابك');
 }
 async function myLink(){ try{ const pin = await makePin(fsP, X.uid); linkSheet('', loginLink(X.uid, pin), pin); }catch(e){ toast('تعذّر إنشاء الرابط. تحقق من الإنترنت ومن نشر قواعد قاعدة البيانات.'); } }
 async function adminLink(id){ try{ const pin = await makePin(fsA, id); const r = (X.rows || []).find(x => x.id === id); linkSheet(r ? r.name : '', loginLink(id, pin), pin); }catch(e){ toast('تعذّر إنشاء الرابط. تحقق من الإنترنت ومن نشر قواعد قاعدة البيانات.'); } }
@@ -1157,7 +1188,7 @@ function tkShow(){
 
 /* ============ الصفحات ============ */
 const standalone = () => { try{ return matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; }catch(e){ return false; } };
-const header = () => `<div class="top"><div class="brand">ني هاو</div><div class="topr">${langPick()}${`<button type="button" class="instbtn" data-act="install" aria-label="ثبّت التطبيق على جوالك"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3" fill="none"/><path d="M12 7v7M9 11l3 3 3-3M10 18h4" fill="none"/></svg><span>ثبّت التطبيق</span></button>`}</div></div>`;
+const header = () => `<div class="top"><div class="brand">ني هاو</div><div class="topr">${X.me && X.uid ? `<button type="button" class="outbtn" data-act="logout" aria-label="خروج" title="خروج"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" fill="none"/><path d="M10 17l-5-5 5-5M5 12h11" fill="none"/></svg></button>` : ''}${langPick()}${`<button type="button" class="instbtn" data-act="install" aria-label="ثبّت التطبيق على جوالك"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3" fill="none"/><path d="M12 7v7M9 11l3 3 3-3M10 18h4" fill="none"/></svg><span>ثبّت التطبيق</span></button>`}</div></div>`;
 function installHelp(){
   closeIntro();
   const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -1255,6 +1286,7 @@ app.addEventListener('click', e => {
   if (b.dataset.gen){ JF.gender = b.dataset.gen; JF.role = b.dataset.role || 'student'; X.err = ''; render(); return; }
   if (b.dataset.alink){ adminLink(b.dataset.alink); return; }
   if (b.dataset.act === 'mylink'){ myLink(); return; }
+  if (b.dataset.act === 'logout'){ askLogout(); return; }
   if (b.dataset.adm){ adminDo(b.dataset.adm, b.dataset.id); return; }
   if (b.dataset.act === 'preview'){ X.err = ''; go('preview'); return; }
   if (b.dataset.act === 'admin'){ X.err = ''; go('admin'); return; }
