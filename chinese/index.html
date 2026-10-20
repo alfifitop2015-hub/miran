@@ -711,7 +711,7 @@ function attach(sid){
   unsubMe = fsP.collection(COL).doc(sid).onSnapshot(d => { X.meLoaded = true; X.me = d.exists ? d.data() : null; subBoard(); soft(); }, () => { X.meLoaded = true; X.me = null; subBoard(); soft(); });
 }
 async function enterWithCode(){
-  const who = ($('#lwho') && $('#lwho').value) || '', pin = (($('#lpin') && $('#lpin').value) || '').replace(/\s/g, ''), v = ($('#lcode') && $('#lcode').value) || '';
+  const who = ($('#lwho') && $('#lwho').value) || '', pin = (($('#lpin') && $('#lpin').value) || '').replace(/\D/g, ''), v = ($('#lcode') && $('#lcode').value) || '';
   let code = null;
   if (v.trim()) code = v;
   else if (who && pin) code = who + '.' + pin;
@@ -723,8 +723,8 @@ async function enterWithCode(){
 }
 async function makePin(db, sid){
   const ref = db.collection('zhSecrets').doc(sid);
-  const d = await ref.get(); if (d.exists && d.data().pin) return d.data().pin;
-  const pin = String(100000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 900000));   // رقم سري من 6 أرقام
+  const d = await ref.get(); if (d.exists && /^\d{4}$/.test(d.data().pin || '')) return d.data().pin;
+  const pin = String(1000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 9000));   // رقم سري من 4 أرقام
   await ref.set({pin, at:Date.now()}); return pin;
 }
 function linkSheet(name, url, pin){
@@ -818,7 +818,7 @@ function joinForm(){ return `<form id="joinform" class="card stack"><div><h2>ا�
     <details class="card" id="logindet" ${X.err2 || X.names ? 'open' : ''}><summary style="cursor:pointer;font-weight:700">مسجّل من قبل؟ ادخل إلى حسابك</summary>
       <form id="loginform" class="stack" style="margin-top:10px"><p class="sub" style="margin:0">اختر اسمك واكتب رقمك السري. تجده في جهازك الأول من زر «الدخول من جهاز آخر»، أو اطلبه من المشرف.</p>
       <label class="f">اسمك<select id="lwho" class="lsel">${!X.names ? '<option value="">جارٍ التحميل…</option>' : !X.names.length ? '<option value="">لا توجد حسابات مقبولة بعد</option>' : '<option value="">اختر اسمك</option>' + X.names.map(r => `<option value="${esc(r.id)}">${esc(r.name)} · ${roleWord(r)}</option>`).join('')}</select></label>
-      <label class="f">الرقم السري<input type="text" id="lpin" inputmode="numeric" dir="ltr" autocomplete="off" maxlength="12" placeholder="••••••"></label>
+      <label class="f">الرقم السري<input type="text" id="lpin" inputmode="numeric" dir="ltr" autocomplete="off" maxlength="4" pattern="[0-9]*" placeholder="••••"></label>
       ${X.err2 ? `<div class="warn">${esc(X.err2)}</div>` : ''}
       <button class="btn wide" type="submit" ${X.busy ? 'disabled' : ''}>${X.busy ? 'جارٍ الدخول…' : 'دخول إلى حسابي'}</button></form></details>`;
 }
@@ -919,7 +919,10 @@ function speak(t){
     u.onend = () => { if (AVS === 'talk') avSet(''); };
     u.onerror = e => { if (AVS === 'talk') avSet(''); if (id === sayId && !started && e.error !== 'interrupted' && e.error !== 'canceled') toast(soundHelp()); };
     speechSynthesis.resume(); speechSynthesis.speak(u);
-    setTimeout(() => { if (id === sayId && !started && !speechSynthesis.speaking) toast(soundHelp()); }, 2500);
+    // محرك النطق في Chrome يعلق أحياناً: إن لم يبدأ نعيد تشغيله مرة واحدة
+    setTimeout(() => { if (id !== sayId || started || speechSynthesis.speaking) return;
+      try{ speechSynthesis.cancel(); const u2 = new SpeechSynthesisUtterance(t); u2.voice = u.voice; u2.lang = u.lang; u2.rate = u.rate; u2.onstart = u.onstart; u2.onend = u.onend; u2.onerror = u.onerror; speechSynthesis.resume(); speechSynthesis.speak(u2); }catch(e){} }, 1200);
+    setTimeout(() => { if (id === sayId && !started && !speechSynthesis.speaking) toast(soundHelp()); }, 3200);
   }catch(e){ toast(soundHelp()); }
 }
 
@@ -1188,6 +1191,8 @@ function tkShow(){
 
 /* ============ الصفحات ============ */
 const standalone = () => { try{ return matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; }catch(e){ return false; } };
+const INAPP = /WhatsApp|FBAN|FBAV|Instagram|Line\/|Snapchat|TikTok|; wv\)/i.test(navigator.userAgent);
+const inappNote = () => INAPP ? `<div class="warn" style="margin-bottom:10px"><b>افتح التطبيق في Chrome أو Safari.</b> أنت تفتحه من داخل تطبيق آخر (مثل واتساب)، وهذا يمنع المايكروفون ونطق المعلمة. اضغط القائمة (⋮) واختر «فتح في المتصفح».</div>` : '';
 const header = () => `<div class="top"><div class="brand">ني هاو</div><div class="topr">${X.me && X.uid ? `<button type="button" class="outbtn" data-act="logout" aria-label="خروج" title="خروج"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" fill="none"/><path d="M10 17l-5-5 5-5M5 12h11" fill="none"/></svg></button>` : ''}${langPick()}${`<button type="button" class="instbtn" data-act="install" aria-label="ثبّت التطبيق على جوالك"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3" fill="none"/><path d="M12 7v7M9 11l3 3 3-3M10 18h4" fill="none"/></svg><span>ثبّت التطبيق</span></button>`}</div></div>`;
 function installHelp(){
   closeIntro();
@@ -1214,7 +1219,7 @@ function vList(){
   const lv = SAVE.level || 0;
   const tile = s => { const b = SAVE.best[s.id]; return `<button class="tile" data-talk="${s.id}"><span class="grow"><h3>${s.t}</h3><span class="meta">${LANG === 'zh' ? '' : `<span class="zh" lang="zh">${s.z}</span> · `}${s.turns.length} جمل${b != null ? ' · أفضل نتيجة ' + b + '%' : ''}</span></span><span class="go">‹</span></button>`; };
   const groups = [1, 2, 3].filter(l => !lv || l === lv).map(l => `<h2>محادثات المستوى ال${LV[l]}</h2>${TALKS.filter(x => x.l === l).map(tile).join('')}`).join('');
-  return header() + `<div class="band"><span class="tcmic">${MICSVG}</span><div class="grow"><h1>المحادثة الصوتية</h1><p class="sub">تحدّث بالصينية، والتطبيق يسمعك ويصحّح لك.</p></div></div>
+  return header() + inappNote() + `<div class="band"><span class="tcmic">${MICSVG}</span><div class="grow"><h1>المحادثة الصوتية</h1><p class="sub">تحدّث بالصينية، والتطبيق يسمعك ويصحّح لك.</p></div></div>
   <div class="sec">
    ${X.admin && X.rows ? `<button class="tile" data-act="admin"><span class="grow"><h3>لوحة المشرف</h3><span class="meta">طلبات انضمام بانتظارك: ${X.rows.filter(r => r.status === 'pending').length}</span></span><span class="go">‹</span></button>` : ''}
    <button type="button" class="ivcard" data-act="intro"><span class="ivplay"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z" fill="currentColor"/></svg></span><b>تعرّف على ني هاو</b><span class="ivfilm" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3" fill="none"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4" fill="none"/></svg></span></button>
@@ -1252,7 +1257,7 @@ function vRun(){
     ? `<form id="tkform" class="row" style="width:100%"><input type="text" id="tkin" lang="zh" dir="ltr" autocomplete="off" placeholder="${TK.mode === 'me' ? 'اكتب جملتك بالصينية…' : 'اكتب إجابتك بالصينية…'}" class="grow" aria-label="إجابتك"><button class="btn" type="submit">إرسال</button></form><p class="note">للإجابة بصوتك: اضغط زر المايكروفون في لوحة المفاتيح الصينية.</p>${SR ? '<button class="x" data-act="tkMicMode">العودة للتحدث بالصوت</button>' : ''}`
     : `<button class="mic ${TK.listening ? 'on' : ''}" data-act="tkMic" aria-label="${TK.listening ? 'إيقاف' : 'تكلّم'}">${MICSVG}</button><div class="tklive" id="tklive" lang="zh">${TK.listening ? '…' : ''}</div><p class="note">${TK.listening ? 'أستمع إليك… تكلّم الآن، ثم اضغط للإيقاف' : 'اضغط وتكلّم بالصينية'}</p><button class="x" data-act="tkType">اكتب بدلاً من ذلك</button>`}
     ${TK.attempts < 2 ? `<button class="x" data-act="tkShow">${TK.mode === 'me' ? 'لا أعرف، أظهر الجملة' : 'لا أعرف، اقترح رداً'}</button>` : ''}</div>`;
-  return header() + `<div class="qhead"><h2>${s.t}${LANG === 'zh' ? '' : ` <span class="zh" lang="zh" style="font-size:16px;color:var(--muted)">${s.z}</span>`}</h2><button class="x" data-act="tkQuit">إنهاء</button></div>
+  return header() + inappNote() + `<div class="qhead"><h2>${s.t}${LANG === 'zh' ? '' : ` <span class="zh" lang="zh" style="font-size:16px;color:var(--muted)">${s.z}</span>`}</h2><button class="x" data-act="tkQuit">إنهاء</button></div>
   <div class="sec"><p class="prog">الجملة ${Math.min(TK.i + 1, n)} من ${n} · المستوى ال${LV[s.l]} · ${TK.mode === 'me' ? 'أنت تبدأ' : 'التطبيق يبدأ'}${AIOK ? ' · تصحيح بالذكاء الاصطناعي' : ''}${isParent(X.me) ? ' · وضع الاطلاع (بلا نقاط)' : ''}</p><div class="bar"><i style="width:${100 * (TK.done ? n : TK.i) / n}%"></i></div>
   ${tutorCard()}<div class="chat" aria-live="polite">${log}</div>${ctl}</div>${CREDIT}`;
 }
