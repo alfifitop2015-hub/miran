@@ -1,5 +1,5 @@
 {
-"version": "2026-10-15",
+"version": "2026-10-22",
 "vocab": {
 "1": {
 "1": [
@@ -12,7 +12,9 @@
 "eye|عين|I see with my eyes.",
 "ear|أذن|I hear with my ears.",
 "cup|كوب|This is my cup.",
-"door|باب|Open the door."
+"door|باب|Open the door.",
+"bag|حقيبة|My bag is blue.",
+"pen|قلم حبر|I write with a pen."
 ],
 "2": [
 "hand|يد|Raise your hand.",
@@ -24,7 +26,9 @@
 "star|نجمة|I see a star.",
 "moon|قمر|The moon is white.",
 "rose|وردة|The rose is red.",
-"egg|بيضة|I eat an egg."
+"egg|بيضة|I eat an egg.",
+"sun|شمس|The sun is hot.",
+"fish|سمكة|The fish can swim."
 ]
 },
 "2": {
@@ -38,7 +42,9 @@
 "kitchen|مطبخ|Mom is in the kitchen.",
 "bathroom|حمام|Wash your hands in the bathroom.",
 "cheese|جبن|I like cheese.",
-"plate|طبق|Put the plate on the table."
+"plate|طبق|Put the plate on the table.",
+"apple|تفاحة|I eat an apple every day.",
+"milk|حليب|I drink milk in the morning."
 ],
 "2": [
 "hat|قبعة|I wear a hat.",
@@ -50,7 +56,9 @@
 "write|يكتب|Write your name.",
 "draw|يرسم|I draw a sun.",
 "jacket|سترة|Wear your jacket.",
-"climb|يتسلّق|The cat can climb the tree."
+"climb|يتسلّق|The cat can climb the tree.",
+"sofa|أريكة|Dad sits on the sofa.",
+"window|نافذة|Open the window, please."
 ]
 },
 "3": {
@@ -64,7 +72,9 @@
 "lunch|غداء|Lunch is ready.",
 "dinner|عشاء|We have dinner at eight.",
 "Thursday|الخميس|We have science on Thursday.",
-"evening|مساء|We read in the evening."
+"evening|مساء|We read in the evening.",
+"Sunday|الأحد|We go to school on Sunday.",
+"month|شهر|There are twelve months in a year."
 ],
 "2": [
 "horse|حصان|The horse runs fast.",
@@ -76,7 +86,9 @@
 "rabbit|أرنب|The rabbit has long ears.",
 "farm|مزرعة|My uncle has a farm.",
 "cow|بقرة|The cow gives us milk.",
-"donkey|حمار|The donkey carries bags."
+"donkey|حمار|The donkey carries bags.",
+"lion|أسد|The lion is very strong.",
+"bird|طائر|The bird sings in the tree."
 ]
 },
 "4": {
@@ -90,7 +102,9 @@
 "ruler|مسطرة|Use a ruler.",
 "eraser|ممحاة|I need an eraser.",
 "pencil|قلم رصاص|I write with a pencil.",
-"backpack|حقيبة ظهر|My backpack is heavy."
+"backpack|حقيبة ظهر|My backpack is heavy.",
+"desk|طاولة الدراسة|My desk is next to the window.",
+"homework|واجب منزلي|I do my homework after lunch."
 ],
 "2": [
 "cook|يطبخ|My mother cooks rice.",
@@ -102,7 +116,9 @@
 "sell|يبيع|He sells dates.",
 "carry|يحمل|Carry your bag.",
 "sweep|يكنس|I sweep the floor.",
-"tidy|يرتّب|Tidy your room."
+"tidy|يرتّب|Tidy your room.",
+"cut|يقطع|Mom cuts the bread with a knife.",
+"fold|يطوي|Please fold your clothes."
 ]
 },
 "5": {
@@ -116,7 +132,9 @@
 "mountain|جبل|Abha has high mountains.",
 "river|نهر|The Nile is a long river.",
 "windy|عاصف|It is windy today.",
-"rain|مطر|The rain is heavy today."
+"rain|مطر|The rain is heavy today.",
+"cloud|سحابة|A big cloud is in the sky.",
+"valley|وادٍ|The valley is green after the rain."
 ],
 "2": [
 "festival|مهرجان|We went to a festival.",
@@ -128,7 +146,9 @@
 "beach|شاطئ|We swam at the beach.",
 "souvenir|تذكار|I bought a souvenir.",
 "passport|جواز سفر|Show your passport at the airport.",
-"airport|مطار|We arrived at the airport early."
+"airport|مطار|We arrived at the airport early.",
+"suitcase|حقيبة سفر|I put my clothes in the suitcase.",
+"tourist|سائح|Many tourists visit AlUla every year."
 ]
 },
 "6": {
@@ -142,7 +162,9 @@
 "sleep|نوم|Children need ten hours of sleep.",
 "energy|طاقة|Food gives us energy.",
 "salad|سلطة|I eat salad with lunch.",
-"snack|وجبة خفيفة|An apple is a good snack."
+"snack|وجبة خفيفة|An apple is a good snack.",
+"vegetable|خضار|A carrot is a healthy vegetable.",
+"exercise|يتمرّن|I exercise every morning."
 ],
 "2": [
 "invent|يخترع|Who invented the phone?",
@@ -154,7 +176,9 @@
 "battery|بطارية|The battery is low.",
 "charge|يشحن|Charge your tablet.",
 "keyboard|لوحة المفاتيح|Type on the keyboard.",
-"printer|طابعة|The printer is out of paper."
+"printer|طابعة|The printer is out of paper.",
+"mouse|فأرة الحاسوب|Click the mouse to open the file.",
+"tablet|جهاز لوحي|My brother reads stories on his tablet."
 ]
 },
 "7": {
@@ -168,7 +192,9 @@
 "proud|فخور|I am proud of you.",
 "honest|صادق|An honest person tells the truth.",
 "generous|كريم|Our neighbor is very generous.",
-"respect|يحترم|We respect our parents."
+"respect|يحترم|We respect our parents.",
+"kind|لطيف|Be kind to your classmates.",
+"patient|صبور|A good teacher is patient."
 ],
 "2": [
 "journey|رحلة|The journey was long.",
@@ -180,7 +206,9 @@
 "map|خريطة|Check the map.",
 "guide|مرشد|The guide showed us the city.",
 "reservation|حجز|I made a hotel reservation.",
-"abroad|في الخارج|My cousin studies abroad."
+"abroad|في الخارج|My cousin studies abroad.",
+"flight|رحلة جوية|Our flight to Jeddah is at nine.",
+"tourism|السياحة|Tourism is growing in Saudi Arabia."
 ]
 },
 "8": {
@@ -194,7 +222,9 @@
 "recover|يتعافى|She recovered quickly.",
 "prevent|يمنع|Washing hands prevents illness.",
 "vitamin|فيتامين|Oranges are rich in vitamin C.",
-"skip|يتخطّى|Never skip breakfast."
+"skip|يتخطّى|Never skip breakfast.",
+"fever|حُمّى|He stayed at home because he had a fever.",
+"nutrition|التغذية|Good nutrition helps children grow."
 ],
 "2": [
 "volcano|بركان|The volcano erupted.",
@@ -206,7 +236,9 @@
 "temperature|درجة حرارة|The temperature is 45 degrees.",
 "forecast|توقعات الطقس|Check the weather forecast.",
 "drought|جفاف|The drought killed many plants.",
-"humid|رطب|Jeddah is hot and humid."
+"humid|رطب|Jeddah is hot and humid.",
+"erosion|التعرية|Wind erosion shapes the rocks in the desert.",
+"hurricane|إعصار|The hurricane caused heavy damage."
 ]
 },
 "9": {
@@ -220,7 +252,9 @@
 "solar|شمسي|Solar energy is clean.",
 "waste|نفايات|Reduce your waste.",
 "conservation|صون وحماية|Wildlife conservation is important.",
-"toxic|سام|Some chemicals are toxic."
+"toxic|سام|Some chemicals are toxic.",
+"plastic|بلاستيك|Plastic bags harm sea animals.",
+"litter|يرمي النفايات|Do not litter in the park."
 ],
 "2": [
 "career|مهنة|She chose a career in law.",
@@ -232,7 +266,9 @@
 "goal|هدف|Set a clear goal.",
 "succeed|ينجح|Work hard to succeed.",
 "interview|مقابلة|I have a job interview tomorrow.",
-"apply|يتقدّم بطلب|I will apply for a summer job."
+"apply|يتقدّم بطلب|I will apply for a summer job.",
+"volunteer|يتطوّع|She volunteers at the hospital every summer.",
+"resume|سيرة ذاتية|He sent his resume to the company."
 ]
 },
 "10": {
@@ -246,7 +282,9 @@
 "awareness|وعي|Raise awareness about recycling.",
 "campaign|حملة|We started a clean-up campaign.",
 "biodiversity|التنوع الحيوي|Forests are rich in biodiversity.",
-"deforestation|إزالة الغابات|Deforestation harms the planet."
+"deforestation|إزالة الغابات|Deforestation harms the planet.",
+"sustainable|مستدام|We need sustainable sources of energy.",
+"carbon|الكربون|Trees absorb carbon dioxide."
 ],
 "2": [
 "communicate|يتواصل|We communicate online.",
@@ -258,7 +296,9 @@
 "update|يحدّث|Update the app.",
 "security|أمان|Online security is important.",
 "cyberbullying|التنمّر الإلكتروني|Report cyberbullying to an adult.",
-"download|يُنزِّل|Download the app from a safe store."
+"download|يُنزِّل|Download the app from a safe store.",
+"browser|متصفح الإنترنت|Open the browser and search for the website.",
+"software|برمجيات|The company develops educational software."
 ]
 },
 "11": {
@@ -272,7 +312,9 @@
 "budget|ميزانية|Plan your budget.",
 "negotiate|يتفاوض|We negotiated a better price.",
 "revenue|إيرادات|The company's revenue increased.",
-"competitor|منافس|Our competitor lowered its prices."
+"competitor|منافس|Our competitor lowered its prices.",
+"loan|قرض|He took a loan to start his business.",
+"brand|علامة تجارية|This brand is popular among young people."
 ],
 "2": [
 "ancient|قديم|Hegra is an ancient city.",
@@ -284,7 +326,9 @@
 "preserve|يحافظ على|We must preserve our heritage.",
 "document|وثيقة|This document is old.",
 "artifact|قطعة أثرية|The museum has an ancient artifact.",
-"manuscript|مخطوطة|The library has an old manuscript."
+"manuscript|مخطوطة|The library has an old manuscript.",
+"heritage|تراث|Diriyah is part of our national heritage.",
+"dynasty|سلالة حاكمة|The dynasty ruled for two centuries."
 ]
 },
 "12": {
@@ -298,7 +342,9 @@
 "method|طريقة|Use a scientific method.",
 "accurate|دقيق|The measurement was accurate.",
 "observation|ملاحظة|Careful observation is the first step in science.",
-"conclusion|استنتاج|Write a conclusion for your report."
+"conclusion|استنتاج|Write a conclusion for your report.",
+"analyze|يحلّل|Scientists analyze the data carefully.",
+"evidence|دليل|There is strong evidence for the theory."
 ],
 "2": [
 "leadership|قيادة|She showed great leadership.",
@@ -310,7 +356,9 @@
 "feedback|تغذية راجعة|Thank you for your feedback.",
 "initiative|مبادرة|He took the initiative.",
 "collaborate|يتعاون|We collaborate on school projects.",
-"resilient|صامد ومرن|A resilient team never gives up."
+"resilient|صامد ومرن|A resilient team never gives up.",
+"delegate|يفوّض|A good leader knows how to delegate tasks.",
+"adapt|يتكيّف|Successful people adapt to change quickly."
 ]
 }
 },
@@ -1178,6 +1226,294 @@
 ],
 "a": 0,
 "ex": "بعد It is essential that يُستخدم الفعل المجرد (صيغة الشرط الالتزامي) حتى مع المفرد."
+},
+{
+"g": 1,
+"q": "I ___ six years old.",
+"c": [
+"am",
+"is",
+"are",
+"be"
+],
+"a": 0,
+"ex": "مع الضمير I نستخدم am."
+},
+{
+"g": 1,
+"q": "The cat ___ under the chair.",
+"c": [
+"is",
+"are",
+"am",
+"be"
+],
+"a": 0,
+"ex": "القطة مفرد غائب فنستخدم is."
+},
+{
+"g": 2,
+"q": "We ___ in the classroom now.",
+"c": [
+"are",
+"is",
+"am",
+"be"
+],
+"a": 0,
+"ex": "مع الضمير We نستخدم are."
+},
+{
+"g": 2,
+"q": "This is my sister. ___ name is Huda.",
+"c": [
+"Her",
+"His",
+"She",
+"Their"
+],
+"a": 0,
+"ex": "صفة الملكية للمؤنث المفرد هي Her."
+},
+{
+"g": 3,
+"q": "I ___ ride a bike, but I can't swim.",
+"c": [
+"can",
+"can't",
+"am",
+"does"
+],
+"a": 0,
+"ex": "كلمة but تدل على التضاد: أستطيع ركوب الدراجة لكن لا أستطيع السباحة."
+},
+{
+"g": 3,
+"q": "There are seven days ___ a week.",
+"c": [
+"in",
+"on",
+"at",
+"under"
+],
+"a": 0,
+"ex": "نقول in a week أي في الأسبوع."
+},
+{
+"g": 4,
+"q": "My father ___ coffee every morning.",
+"c": [
+"drinks",
+"drink",
+"drinking",
+"is drink"
+],
+"a": 0,
+"ex": "المضارع البسيط مع المفرد الغائب يُضاف له s، وevery morning تدل على العادة."
+},
+{
+"g": 4,
+"q": "___ you like dates? Yes, I do.",
+"c": [
+"Do",
+"Does",
+"Are",
+"Is"
+],
+"a": 0,
+"ex": "السؤال مع you في المضارع البسيط يبدأ بـ Do، والإجابة Yes, I do."
+},
+{
+"g": 5,
+"q": "Last summer we ___ to Taif.",
+"c": [
+"went",
+"go",
+"goes",
+"going"
+],
+"a": 0,
+"ex": "Last summer تدل على الماضي، وماضي go هو went."
+},
+{
+"g": 5,
+"q": "Mona is ___ than her sister.",
+"c": [
+"taller",
+"tall",
+"tallest",
+"more tall"
+],
+"a": 0,
+"ex": "مع than نستخدم صيغة المقارنة، والصفة القصيرة يضاف لها er."
+},
+{
+"g": 6,
+"q": "Look at those dark clouds! It ___ rain.",
+"c": [
+"is going to",
+"went to",
+"goes to",
+"was going"
+],
+"a": 0,
+"ex": "نستخدم is going to للتنبؤ بشيء يوجد دليل عليه الآن (الغيوم الداكنة)."
+},
+{
+"g": 6,
+"q": "How ___ apples did you buy?",
+"c": [
+"many",
+"much",
+"any",
+"some"
+],
+"a": 0,
+"ex": "apples اسم معدود جمع، فنستخدم How many."
+},
+{
+"g": 7,
+"q": "I have known him ___ we were children.",
+"c": [
+"since",
+"for",
+"ago",
+"during"
+],
+"a": 0,
+"ex": "نستخدم since مع نقطة بداية في الزمن مع المضارع التام."
+},
+{
+"g": 7,
+"q": "This is the ___ interesting book I have ever read.",
+"c": [
+"most",
+"more",
+"much",
+"very"
+],
+"a": 0,
+"ex": "صيغة التفضيل للصفة الطويلة: the most + الصفة."
+},
+{
+"g": 8,
+"q": "The letter ___ by my brother yesterday.",
+"c": [
+"was written",
+"wrote",
+"is writing",
+"has write"
+],
+"a": 0,
+"ex": "المبني للمجهول في الماضي: was + التصريف الثالث، وyesterday تدل على الماضي."
+},
+{
+"g": 8,
+"q": "She enjoys ___ stories.",
+"c": [
+"reading",
+"to read",
+"read",
+"reads"
+],
+"a": 0,
+"ex": "الفعل enjoy يأتي بعده الفعل بصيغة ing."
+},
+{
+"g": 9,
+"q": "If I ___ a bird, I would fly over the mountains.",
+"c": [
+"were",
+"am",
+"will be",
+"have been"
+],
+"a": 0,
+"ex": "الشرط الثاني (غير الواقعي) يستخدم الماضي، ويُفضّل were مع جميع الضمائر."
+},
+{
+"g": 9,
+"q": "He told me that he ___ tired.",
+"c": [
+"was",
+"be",
+"were",
+"is being"
+],
+"a": 0,
+"ex": "في الكلام المنقول يتحول الزمن خطوة إلى الماضي: is ← was."
+},
+{
+"g": 10,
+"q": "By next year, they ___ the new hospital.",
+"c": [
+"will have built",
+"have built",
+"built",
+"are building"
+],
+"a": 0,
+"ex": "By next year تدل على اكتمال الحدث قبل وقت في المستقبل، فنستخدم المستقبل التام."
+},
+{
+"g": 10,
+"q": "The man ___ car was stolen called the police.",
+"c": [
+"whose",
+"who",
+"which",
+"whom"
+],
+"a": 0,
+"ex": "whose ضمير وصل يدل على الملكية (سيارة الرجل)."
+},
+{
+"g": 11,
+"q": "She is used to ___ long hours.",
+"c": [
+"working",
+"work",
+"worked",
+"works"
+],
+"a": 0,
+"ex": "بعد be used to (معتاد على) يأتي الفعل بصيغة ing لأن to هنا حرف جر."
+},
+{
+"g": 11,
+"q": "Not only ___ the exam, but he also got the highest mark.",
+"c": [
+"did he pass",
+"he passed",
+"he did pass",
+"passed he"
+],
+"a": 0,
+"ex": "عند بدء الجملة بـ Not only نقلب ترتيب الفاعل والفعل المساعد: did he pass."
+},
+{
+"g": 12,
+"q": "___ he arrived earlier, he would have caught the train.",
+"c": [
+"Had",
+"Has",
+"Have",
+"Having"
+],
+"a": 0,
+"ex": "الشرط الثالث بالقلب: Had + الفاعل + التصريف الثالث بدلاً من If he had arrived."
+},
+{
+"g": 12,
+"q": "Scarcely had we left the house ___ it started to rain.",
+"c": [
+"when",
+"than",
+"then",
+"that"
+],
+"a": 0,
+"ex": "التركيب الصحيح: Scarcely/Hardly ... when، أما No sooner فتأتي معها than."
 }
 ],
 "reading": [
@@ -1519,6 +1855,80 @@
 "tomorrow",
 "next month",
 "today"
+],
+0
+]
+]
+},
+{
+"g": 6,
+"t": "The Falcon",
+"p": "Falconry is an old tradition in Saudi Arabia. People train falcons to hunt in the desert. A falcon has sharp eyes, so it can see small animals from far away. It can also fly very fast. Training a falcon needs time and patience. Today, many people visit falcon festivals to watch these beautiful birds and learn about our heritage.",
+"qs": [
+[
+"Where do people use falcons to hunt?",
+[
+"in the desert",
+"in the sea",
+"in the city",
+"in the forest"
+],
+0
+],
+[
+"Why can a falcon see small animals from far away?",
+[
+"It has sharp eyes.",
+"It flies slowly.",
+"It is very big.",
+"It lives in the city."
+],
+0
+],
+[
+"What does training a falcon need?",
+[
+"time and patience",
+"a lot of money",
+"a big car",
+"a computer"
+],
+0
+]
+]
+},
+{
+"g": 11,
+"t": "The Hejaz Railway",
+"p": "In the early twentieth century, a railway was built to connect Damascus with Madinah. It was called the Hejaz Railway, and its main purpose was to help pilgrims travel to the holy cities more easily. Before the railway, the journey across the desert took more than a month by camel caravan; the train reduced it to only a few days. However, parts of the line were badly damaged during the First World War, and the service soon stopped. Today, the old railway station in Madinah has been restored and turned into a museum, where visitors can see the engines and learn about this important chapter of regional history.",
+"qs": [
+[
+"What was the main purpose of the Hejaz Railway?",
+[
+"to help pilgrims travel more easily",
+"to carry oil to the coast",
+"to connect Riyadh with Jeddah",
+"to transport soldiers only"
+],
+0
+],
+[
+"How did the railway change the journey?",
+[
+"It shortened it from over a month to a few days.",
+"It made it longer but safer.",
+"It made camel caravans faster.",
+"It did not change the travel time."
+],
+0
+],
+[
+"What happened to the old station in Madinah?",
+[
+"It became a museum.",
+"It was destroyed completely.",
+"It is still used for trains.",
+"It became a hotel."
 ],
 0
 ]
@@ -2617,6 +3027,318 @@
 ],
 0,
 "10 أيام = عمرا نصف: 80 ← 40 ← 20 جراماً."
+],
+[
+1,
+"bio",
+"أي هذه الحيوانات يعيش في الماء؟",
+[
+"السمكة",
+"الجمل",
+"القطة",
+"الحصان"
+],
+0,
+"السمكة تعيش في الماء وتتنفس بالخياشيم."
+],
+[
+1,
+"earth",
+"نرى الشمس في السماء في وقت:",
+[
+"النهار",
+"الليل",
+"منتصف الليل",
+"بعد العشاء"
+],
+0,
+"الشمس تظهر في النهار وتغيب في الليل."
+],
+[
+2,
+"bio",
+"ما الذي يحتاجه النبات لينمو؟",
+[
+"الماء والضوء",
+"الظلام فقط",
+"الملح فقط",
+"الحلوى"
+],
+0,
+"يحتاج النبات إلى الماء والضوء والهواء لينمو."
+],
+[
+2,
+"phy",
+"المغناطيس يجذب:",
+[
+"المسمار الحديدي",
+"قطعة الخشب",
+"الورقة",
+"الممحاة"
+],
+0,
+"المغناطيس يجذب الأشياء المصنوعة من الحديد."
+],
+[
+3,
+"earth",
+"المصدر الرئيس للضوء والحرارة على الأرض:",
+[
+"الشمس",
+"القمر",
+"السحب",
+"الجبال"
+],
+0,
+"الشمس نجم يمدّ الأرض بالضوء والحرارة."
+],
+[
+3,
+"chem",
+"عند تسخين الماء حتى يغلي يتحوّل إلى:",
+[
+"بخار",
+"ثلج",
+"رمل",
+"ملح"
+],
+0,
+"الماء عند الغليان يتحول من سائل إلى غاز (بخار الماء)."
+],
+[
+4,
+"phy",
+"ينتج الصوت عن:",
+[
+"اهتزاز الأجسام",
+"سكون الأجسام",
+"الظلال",
+"انعكاس الضوء"
+],
+0,
+"الصوت ينتج عندما تهتز الأجسام فتنتقل الاهتزازات عبر الوسط."
+],
+[
+4,
+"bio",
+"المجموعة الغذائية التي تساعد على بناء الجسم وتقوية العضلات:",
+[
+"البروتينات",
+"السكريات",
+"الدهون",
+"الماء"
+],
+0,
+"البروتينات الموجودة في اللحوم والبيض والبقوليات تبني الجسم وتقوّي العضلات."
+],
+[
+5,
+"chem",
+"يمكن فصل الملح عن الماء في محلول الماء المالح بواسطة:",
+[
+"التبخير",
+"المغناطيس",
+"الغربال",
+"ورق الترشيح"
+],
+0,
+"الملح ذائب في الماء فلا يُفصل بالترشيح، وعند تبخير الماء يبقى الملح."
+],
+[
+5,
+"earth",
+"يبدو القمر مضيئاً في الليل لأنه:",
+[
+"يعكس ضوء الشمس",
+"ينتج الضوء بنفسه",
+"نجم ملتهب",
+"يحترق باستمرار"
+],
+0,
+"القمر جسم معتم لا يضيء بذاته، بل يعكس ضوء الشمس الساقط عليه."
+],
+[
+6,
+"bio",
+"الوعاء الدموي الذي ينقل الدم من القلب إلى أجزاء الجسم:",
+[
+"الشريان",
+"الوريد",
+"القصبة الهوائية",
+"المريء"
+],
+0,
+"الشرايين تنقل الدم من القلب، والأوردة تعيده إلى القلب."
+],
+[
+6,
+"chem",
+"من الأمثلة على التغيّر الفيزيائي:",
+[
+"تقطيع الورق",
+"احتراق الخشب",
+"صدأ الحديد",
+"تعفّن الطعام"
+],
+0,
+"تقطيع الورق يغيّر الشكل فقط دون تكوين مادة جديدة، أما البقية فتغيرات كيميائية."
+],
+[
+7,
+"phy",
+"الطاقة التي يمتلكها الجسم بسبب حركته تُسمّى:",
+[
+"الطاقة الحركية",
+"طاقة الوضع",
+"الطاقة الكيميائية",
+"الطاقة النووية"
+],
+0,
+"الطاقة الحركية تعتمد على كتلة الجسم وسرعته."
+],
+[
+7,
+"earth",
+"أي الموارد التالية مورد غير متجدد؟",
+[
+"النفط",
+"الرياح",
+"أشعة الشمس",
+"أمواج البحر"
+],
+0,
+"النفط يحتاج ملايين السنين ليتكوّن، فهو مورد غير متجدد."
+],
+[
+8,
+"chem",
+"عند إذابة السكر في الماء يُسمّى السكر:",
+[
+"المذاب",
+"المذيب",
+"الراسب",
+"المعلّق"
+],
+0,
+"المادة التي تذوب هي المذاب، والماء هو المذيب، والناتج محلول."
+],
+[
+8,
+"phy",
+"العدسة التي تجمع الأشعة الضوئية المتوازية في نقطة واحدة:",
+[
+"العدسة المحدبة",
+"العدسة المقعرة",
+"المرآة المستوية",
+"اللوح الزجاجي المستوي"
+],
+0,
+"العدسة المحدبة (اللامّة) تجمع الأشعة في البؤرة."
+],
+[
+9,
+"bio",
+"الطراز الجيني Tt يُوصف بأنه:",
+[
+"غير متماثل الجينات (هجين)",
+"متماثل الجينات سائد",
+"متماثل الجينات متنحٍّ",
+"طفرة وراثية"
+],
+0,
+"يحتوي على جينين مختلفين للصفة نفسها، لذا فهو غير متماثل (هجين)."
+],
+[
+9,
+"phy",
+"الشغل المبذول عند دفع صندوق بقوة 20 نيوتن مسافة 3 أمتار في اتجاه القوة:",
+[
+"60 جول",
+"23 جول",
+"17 جول",
+"6.7 جول"
+],
+0,
+"الشغل = القوة × المسافة = 20 × 3 = 60 جول."
+],
+[
+10,
+"phy",
+"جسم يتحرك بسرعة ثابتة في خط مستقيم يكون تسارعه:",
+[
+"صفراً",
+"موجباً ثابتاً",
+"متزايداً",
+"سالباً"
+],
+0,
+"التسارع هو التغير في السرعة، والسرعة الثابتة لا تتغير فالتسارع صفر."
+],
+[
+10,
+"chem",
+"عدد مولات 36 جراماً من الماء H₂O (الكتلة المولية 18 جم/مول):",
+[
+"2 مول",
+"0.5 مول",
+"18 مول",
+"36 مول"
+],
+0,
+"عدد المولات = الكتلة ÷ الكتلة المولية = 36 ÷ 18 = 2 مول."
+],
+[
+11,
+"chem",
+"الغاز الناتج عن تفاعل فلز الخارصين مع حمض الهيدروكلوريك:",
+[
+"الهيدروجين",
+"الأكسجين",
+"الكلور",
+"ثاني أكسيد الكربون"
+],
+0,
+"Zn + 2HCl ← ZnCl₂ + H₂، فالفلزات النشطة تُطلق الهيدروجين مع الأحماض."
+],
+[
+11,
+"bio",
+"الإنزيمات عبارة عن:",
+[
+"بروتينات تسرّع التفاعلات الحيوية",
+"دهون تخزّن الطاقة",
+"سكريات تبني الجدار الخلوي",
+"أملاح معدنية تنظّم الماء"
+],
+0,
+"الإنزيمات عوامل محفزة حيوية بروتينية تسرّع التفاعلات دون أن تُستهلك."
+],
+[
+12,
+"phy",
+"المقاومة المكافئة لمقاومتين 6 أوم و3 أوم موصّلتين على التوازي:",
+[
+"2 أوم",
+"9 أوم",
+"4.5 أوم",
+"18 أوم"
+],
+0,
+"على التوازي: م = (6 × 3) ÷ (6 + 3) = 18 ÷ 9 = 2 أوم."
+],
+[
+12,
+"chem",
+"المركّب CH₃COOH (حمض الخل) ينتمي إلى:",
+[
+"الأحماض الكربوكسيلية",
+"الكحولات",
+"الألدهيدات",
+"الإسترات"
+],
+0,
+"يحتوي على المجموعة الوظيفية COOH وهي مجموعة الكربوكسيل."
 ]
 ],
 "talks": [
@@ -3221,6 +3943,99 @@
 "study|work|help|volunteer|by"
 ]
 ]
+},
+{
+"id": "w20261022a",
+"g": 2,
+"t": "حيواني الأليف",
+"e": "My pet",
+"turns": [
+[
+"Hello! Do you have a pet?",
+"مرحباً! هل لديك حيوان أليف؟",
+"Yes, I do / No, I don't",
+"Yes, I do.",
+"yes|no|i do|i have"
+],
+[
+"What is your pet?",
+"ما حيوانك الأليف؟",
+"It is a ...",
+"It is a cat.",
+"cat|bird|fish|rabbit|parrot|dog|turtle|it is"
+],
+[
+"What color is it?",
+"ما لونه؟",
+"It is ...",
+"It is white.",
+"white|black|brown|grey|gray|yellow|orange|green|blue|red|color"
+],
+[
+"What does it eat?",
+"ماذا يأكل؟",
+"It eats ...",
+"It eats fish.",
+"eat|food|fish|seeds|carrot|grass"
+],
+[
+"Do you take care of it?",
+"هل تعتني به؟",
+"Yes, I give it food and water",
+"Yes, I give it food and water.",
+"yes|give|feed|care|water|clean"
+]
+]
+},
+{
+"id": "w20261022b",
+"g": 11,
+"t": "العمل التطوعي",
+"e": "Volunteering",
+"turns": [
+[
+"Have you ever done any volunteer work?",
+"هل سبق أن شاركت في عمل تطوعي؟",
+"Yes, I have / No, not yet",
+"Yes, I have volunteered before.",
+"yes|no|have|volunteer|not yet"
+],
+[
+"What kind of volunteering interests you most?",
+"ما نوع التطوع الذي يهمك أكثر؟",
+"I am interested in ...",
+"I am interested in helping elderly people.",
+"interest|help|teach|clean|environment|elderly|charity|hospital|plant|donate"
+],
+[
+"Why do you think volunteering is important?",
+"لماذا تعتقد أن التطوع مهم؟",
+"Because it ...",
+"Because it helps the community and builds skills.",
+"because|help|community|society|skill|people|experience"
+],
+[
+"How many hours could you volunteer each week?",
+"كم ساعة يمكنك أن تتطوع أسبوعياً؟",
+"I could volunteer ... hours",
+"I could volunteer three hours a week.",
+"hour|could|can|one|two|three|four|five|week"
+],
+[
+"What skill would you like to gain from volunteering?",
+"ما المهارة التي تحب أن تكتسبها من التطوع؟",
+"I would like to improve my ...",
+"I would like to improve my teamwork and communication.",
+"teamwork|communication|leadership|patience|responsibility|skill|improve|organiz|plan"
+],
+[
+"That's wonderful. Thank you for sharing!",
+"هذا رائع. شكراً لمشاركتك!",
+"You're welcome!",
+"You are welcome!",
+"welcome|thank|thanks|pleasure"
+]
+]
 }
 ],
 "verbal": {
@@ -3320,6 +4135,30 @@
 ],
 0,
 "المبضع أداة الجرّاح، والفرشاة أداة الرسّام (أداة ومستخدمها)."
+],
+[
+1,
+"سمكة : زعانف",
+[
+"طائر : أجنحة",
+"حصان : إسطبل",
+"أسد : غابة",
+"بقرة : حليب"
+],
+0,
+"السمكة تسبح بالزعانف، والطائر يطير بالأجنحة (كائن وعضو حركته)."
+],
+[
+3,
+"مقدّمة : خاتمة",
+[
+"بداية : نهاية",
+"كتاب : فصل",
+"طريق : سفر",
+"سؤال : استفسار"
+],
+0,
+"علاقة تضاد: المقدمة عكس الخاتمة، والبداية عكس النهاية."
 ]
 ],
 "comp": [
@@ -3418,6 +4257,30 @@
 ],
 0,
 "القول المأثور: خير الأمور أوسطها، أي الاعتدال وعدم الإفراط أو التفريط."
+],
+[
+2,
+"من ...... الآخرين احترموه.",
+[
+"احترم",
+"أهمل",
+"أزعج",
+"تجاهل"
+],
+0,
+"الجزاء من جنس العمل: من احترم الآخرين احترموه."
+],
+[
+3,
+"لا تكفي المعرفة وحدها، بل ينبغي أن ...... في حياتك العملية.",
+[
+"تطبّقها",
+"تنساها",
+"تخفيها",
+"تهملها"
+],
+0,
+"قيمة المعرفة في العمل بها وتطبيقها."
 ]
 ],
 "err": [
@@ -3516,6 +4379,30 @@
 ],
 3,
 "الصواب: نقص أو نضوب، فالإسراف يؤدي إلى نقص المياه لا وفرتها."
+],
+[
+1,
+"نحمل المظلة عندما يكون الجو جافاً لنحتمي من المطر.",
+[
+"نحمل",
+"المظلة",
+"جافاً",
+"المطر"
+],
+2,
+"الصواب: ممطراً، فالمظلة تحمي من المطر."
+],
+[
+2,
+"اعتذر أحمد لصديقه لأنه أوفى بوعده.",
+[
+"اعتذر",
+"لصديقه",
+"أوفى",
+"بوعده"
+],
+2,
+"الصواب: أخلف، فالاعتذار يكون عن إخلاف الوعد لا عن الوفاء به."
 ]
 ],
 "odd": [
@@ -3614,6 +4501,30 @@
 ],
 3,
 "الأردن دولة، والبقية عواصم."
+],
+[
+2,
+"",
+[
+"كيلوجرام",
+"جرام",
+"طن",
+"متر"
+],
+3,
+"المتر وحدة لقياس الطول، والبقية وحدات لقياس الكتلة."
+],
+[
+3,
+"",
+[
+"الفاعل",
+"المبتدأ",
+"الخبر",
+"المفعول به"
+],
+3,
+"المفعول به منصوب، والبقية مرفوعة."
 ]
 ]
 },
@@ -3724,6 +4635,43 @@
 "المشروعات البيئية",
 "الكائنات البحرية",
 "هياكل الكلس"
+],
+0
+]
+]
+},
+{
+"d": 1,
+"t": "حسن الجوار",
+"p": "انتقلت أسرة جديدة إلى البيت المجاور لبيت سلمان. فاقترح سلمان على والده أن يزوروا جيرانهم الجدد ليرحّبوا بهم. حملت الأسرة طبقاً من التمر وإبريقاً من القهوة، وطرقوا الباب بهدوء. فرح الجيران بالزيارة وشكروهم على لطفهم. وقال والد سلمان: «الجار له حقوق علينا، ومن أهمها الإحسان إليه ومساعدته عند الحاجة». ومنذ ذلك اليوم صار ابن الجيران صديقاً لسلمان، يذهبان معاً إلى المسجد ويلعبان معاً في الحي.",
+"qs": [
+[
+"لماذا زارت أسرة سلمان الجيران الجدد؟",
+[
+"للترحيب بهم",
+"لطلب المساعدة",
+"لشراء بيتهم",
+"للشكوى منهم"
+],
+0
+],
+[
+"ماذا حملت الأسرة معها في الزيارة؟",
+[
+"التمر والقهوة",
+"الكعك والعصير",
+"الهدايا والألعاب",
+"الزهور والكتب"
+],
+0
+],
+[
+"من أهم حقوق الجار كما قال والد سلمان:",
+[
+"الإحسان إليه ومساعدته",
+"تجاهله",
+"زيارته مرة في السنة",
+"إزعاجه بالأصوات"
 ],
 0
 ]
