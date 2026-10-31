@@ -129,6 +129,7 @@ label.f{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:14p
 .medal{font-size:30px;line-height:1}
 .lesson summary{cursor:pointer;font-weight:700}.ltxt{display:flex;flex-direction:column;gap:6px;margin-top:10px}
 .lline{display:flex;align-items:center;gap:6px;font-family:var(--fz);font-size:17px;line-height:1.5}.lline span{flex:1}.lline b{color:var(--acc);white-space:nowrap}.lline .x{padding:4px 8px;flex:none}
+.obsbox{border-top:2px dashed var(--line);padding-top:12px;margin-top:4px}
 .semh{font-size:17px;color:var(--acc);border-bottom:2px solid var(--line);padding-bottom:4px;margin-top:6px}
 .certimg img{width:100%;height:auto;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.15);display:block}
 .okbox{background:var(--okbg);color:var(--ok);font-weight:700;border-radius:12px;padding:10px 12px}
@@ -1071,13 +1072,13 @@ const P = [
 BOOK.forEach(b => { D[b.t] = [b.en, b.z]; b.turns.forEach(t => { if (!D[t[2]]) D[t[2]] = [t[7], t[0]]; }); });
 Object.assign(D, {
  'أول متوسط':['Grade 7 (1st intermediate)','初一'], 'ثاني متوسط':['Grade 8 (2nd intermediate)','初二'], 'ثالث متوسط':['Grade 9 (3rd intermediate)','初三'],
- 'الصف الدراسي':['School grade','年级'], 'اختر صفك الدراسي':['Choose your school grade','选择你的年级'],
+ 'الصف الدراسي':['School grade','年级'], '🎓 للطلاب والطالبات (المنافسة)':['🎓 Students (competition)','🎓 学生（参加比赛）'], '👁️ لأولياء الأمور والمعلمين':['👁️ Parents and teachers','👁️ 家长和老师'], '(للاطلاع والمتابعة فقط، بلا منافسة)':['(view and follow only, no competition)','（仅查看和关注，不参加比赛）'], 'اختر صفك الدراسي':['Choose your school grade','选择你的年级'],
  'تظهر لك محادثات كتاب صفك، وتتنافس مع زميلاتك وزملائك في الصف نفسه.':['You get the conversations from your grade’s textbook and compete with classmates in the same grade.','你会看到本年级课本的对话，并与同年级同学比赛。'],
  'محادثات عامة':['General conversations','综合对话'], 'الفصل الأول':['Semester 1','第一学期'], '📖 نص الدرس':['📖 Lesson text','📖 课文'], 'محادثات عامة للتدريب الحر':['General conversations for free practice','自由练习对话'],
  'للتدريب فقط، ولا تُحتسب فيها نقاط المنافسة.':['Practice only — no competition points.','仅供练习，不计比赛积分。'], 'تدريب حر بلا نقاط':['Free practice, no points','自由练习，不计分'],
  'النقاط من محادثات كتاب صفك فقط: الفهم من أول محاولة 10 × الصف، وبعد الإعادة 5 × الصف، وإكمال المحادثة 10. تحدي الأسبوع: النقاط مضاعفة ×2.':['Points come only from your grade’s textbook conversations: understood first time 10 × grade, after a retry 5 × grade, finishing a conversation 10. Weekly challenge: double points ×2.','只有本年级课本对话计分：第一次听懂 10×年级，重试后 5×年级，完成对话 10 分。每周挑战：积分翻倍×2。'],
  'يختار التطبيق كل أحد درساً من كتاب كل صف وفصل، ونقاطه مضاعفة ×2. تحديات هذا الأسبوع:':['Every Sunday the app picks a lesson from each grade and semester book, with double points ×2. This week’s challenges:','每周日为每个年级和学期选一课作为挑战，积分翻倍×2。本周挑战：'], 'الفصل الثاني':['Semester 2','第二学期'],
- 'الفصل الدراسي':['Semester','学期'], 'الصف الدراسي':['School grade','年级'], '(للطلاب والطالبات)':['(students)','（学生填写）'], 'الأول':['First','第一'], 'الثاني':['Second','第二'], 'اختر صفك وفصلك الدراسي':['Choose your grade and semester','选择你的年级和学期'],
+ 'الفصل الدراسي':['Semester','学期'], 'الصف الدراسي':['School grade','年级'], '🎓 للطلاب والطالبات (المنافسة)':['🎓 Students (competition)','🎓 学生（参加比赛）'], '👁️ لأولياء الأمور والمعلمين':['👁️ Parents and teachers','👁️ 家长和老师'], '(للاطلاع والمتابعة فقط، بلا منافسة)':['(view and follow only, no competition)','（仅查看和关注，不参加比赛）'], '(للطلاب والطالبات)':['(students)','（学生填写）'], 'الأول':['First','第一'], 'الثاني':['Second','第二'], 'اختر صفك وفصلك الدراسي':['Choose your grade and semester','选择你的年级和学期'],
  'تظهر لك محادثات كتاب صفك للفصل الذي تدرسه، وتتنافس مع زميلاتك وزملائك في الصف نفسه.':['You get your grade’s textbook conversations for your current semester, and compete with classmates in the same grade.','你会看到本年级本学期的课本对话，并与同年级同学比赛。'], 'الفصل الدراسي الأول':['First semester','第一学期'], 'الفصل الدراسي الثاني':['Second semester','第二学期'],
  'مبنية على موضوعات دروس كتاب اللغة الصينية المقرر.':['Based on the lesson topics of the official Chinese textbook.','根据中文课本各课主题编写。'],
  'اختر صفك الدراسي.':['Choose your school grade.','请选择你的年级。'],
@@ -1536,11 +1537,14 @@ function vParent(m){
     <div><h2>تقدّم المتنافسين · الموسم ${SEASON()}</h2><div>${!A ? '<p class="sub" style="margin:0">جارٍ التحميل…</p>' : !A.length ? '<p class="sub" style="margin:0">لا يوجد متنافسون بعد.</p>' : A.map(row).join('')}</div></div>
     <p class="sub" style="margin:0">${isTeacher(m) ? 'تستطيع أيضاً تجربة المحادثات بالأسفل لتعرف ما يتدرّب عليه طلابك، دون أن تُحسب نقاط.' : 'تستطيع أيضاً تجربة المحادثات بالأسفل لتعرف ما يتدرّب عليه ابنك أو ابنتك، دون أن تُحسب نقاط.'}</p></div>`;
 }
-function joinForm(){ return `<form id="joinform" class="card stack"><div><h2>انضم إلى «ني هاو»</h2><p class="sub">سجّل اسمك وصفتك وصفّك الدراسي، ويُفتح لك التطبيق بعد موافقة المشرف. ولي الأمر والمعلم يدخلان للاطلاع والمتابعة فقط، ولا يدخلان المنافسة.</p></div>
+function joinForm(){
+  const rb = L => L.map(([gn, rl, lb]) => { const on = JF.gender === gn && (JF.role || 'student') === rl; return `<button type="button" class="${on ? 'on' : ''}" data-gen="${gn}" data-role="${rl}" aria-pressed="${on}" style="flex:1 1 40%">${lb}</button>`; }).join('');
+  return `<form id="joinform" class="card stack"><div><h2>انضم إلى «ني هاو»</h2><p class="sub">سجّل اسمك وصفتك وصفّك الدراسي، ويُفتح لك التطبيق بعد موافقة المشرف. ولي الأمر والمعلم يدخلان للاطلاع والمتابعة فقط، ولا يدخلان المنافسة.</p></div>
     <label class="f">الاسم<input type="text" class="ar" id="jname" maxlength="20" autocomplete="off" value="${esc(JF.name)}" placeholder="اكتب اسمك"></label>
-    <div class="seg">${[['m','student','طالب'],['f','student','طالبة'],['m','parent','ولي أمر'],['f','parent','ولية أمر'],['m','teacher','معلم'],['f','teacher','معلمة']].map(([gn, rl, lb]) => { const on = JF.gender === gn && (JF.role || 'student') === rl; return `<button type="button" class="${on ? 'on' : ''}" data-gen="${gn}" data-role="${rl}" aria-pressed="${on}" style="flex:1 1 40%">${lb}</button>`; }).join('')}</div>
-    ${(JF.role || 'student') === 'student' ? `<div class="stack" style="gap:6px"><span class="lbl">الصف الدراسي <small>(للطلاب والطالبات)</small></span><div class="seg">${[1, 2, 3].map(k => `<button type="button" class="${JF.grade === k ? 'on' : ''}" data-jgrade="${k}" aria-pressed="${JF.grade === k}">${GRADES[k]}</button>`).join('')}</div></div>
+    <div class="stack" style="gap:6px"><span class="lbl">🎓 للطلاب والطالبات (المنافسة)</span><div class="seg">${rb([['m','student','طالب'],['f','student','طالبة']])}</div></div>
+    ${(JF.role || 'student') === 'student' ? `<div class="stack" style="gap:6px"><span class="lbl">الصف الدراسي</span><div class="seg">${[1, 2, 3].map(k => `<button type="button" class="${JF.grade === k ? 'on' : ''}" data-jgrade="${k}" aria-pressed="${JF.grade === k}">${GRADES[k]}</button>`).join('')}</div></div>
     <div class="stack" style="gap:6px"><span class="lbl">الفصل الدراسي</span><div class="seg">${[[1, 'الأول'], [2, 'الثاني']].map(([k, n]) => `<button type="button" class="${JF.term === k ? 'on' : ''}" data-jterm="${k}" aria-pressed="${JF.term === k}">${n}</button>`).join('')}</div></div>` : ''}
+    <div class="obsbox stack" style="gap:6px"><span class="lbl">👁️ لأولياء الأمور والمعلمين <small>(للاطلاع والمتابعة فقط، بلا منافسة)</small></span><div class="seg">${rb([['m','parent','ولي أمر'],['f','parent','ولية أمر'],['m','teacher','معلم'],['f','teacher','معلمة']])}</div></div>
     <label class="f">رقمك السري (اختياري، 4 أرقام)<input type="text" id="jpin" inputmode="numeric" dir="ltr" autocomplete="off" maxlength="4" pattern="[0-9]*" value="${esc(JF.pin)}" placeholder="••••"></label>
     <p class="sub" style="margin:-4px 0 0">تدخل به إلى حسابك من أي جهاز. تستطيع اختياره الآن أو لاحقاً.</p>
     ${X.err ? `<div class="warn">${esc(X.err)}</div>` : ''}
