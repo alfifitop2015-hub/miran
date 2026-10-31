@@ -117,6 +117,15 @@ label.f{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:14p
 .chal .meta{color:#7A4A30;font-size:13px}.chal h3{margin:2px 0}
 .x2{display:inline-block;font-size:12px;font-weight:800;padding:1px 8px;border-radius:999px;background:#D3202A;color:#fff;vertical-align:middle}
 .chtile{border-color:#F2B8A0}
+/* تدرّج لون واحد حسب الصعوبة: فاتح ← متوسط ← غامق */
+:root{--lv1:#E6F0FE;--lv1b:#C7DCFC;--lv1t:#1B5FBF;--lv2:#9CC2F7;--lv2b:#78AAF2;--lv2t:#0E3F86;--lv3:#1550A8;--lv3b:#0F3F88;--lv3t:#FFFFFF}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--lv1:#1C2A48;--lv1b:#2A3E66;--lv1t:#9CC2F7;--lv2:#24508F;--lv2b:#3366AE;--lv2t:#E6F0FE;--lv3:#3A7BE0;--lv3b:#5A93EA;--lv3t:#FFFFFF}}
+:root[data-theme="dark"]{--lv1:#1C2A48;--lv1b:#2A3E66;--lv1t:#9CC2F7;--lv2:#24508F;--lv2b:#3366AE;--lv2t:#E6F0FE;--lv3:#3A7BE0;--lv3b:#5A93EA;--lv3t:#FFFFFF}
+.tile.lv1{background:var(--lv1);border-color:var(--lv1b)}.tile.lv2{background:var(--lv2);border-color:var(--lv2b)}.tile.lv3{background:var(--lv3);border-color:var(--lv3b)}
+.tile.lv1 h3,.tile.lv1 .go{color:var(--lv1t)}.tile.lv2 h3,.tile.lv2 .go{color:var(--lv2t)}.tile.lv3 h3,.tile.lv3 .go,.tile.lv3 .meta{color:var(--lv3t)}
+.tile.lv2 .meta{color:var(--lv2t);opacity:.85}.tile.lv3 .meta{opacity:.85}
+.lvh{display:flex;align-items:center;gap:8px}.lvh i{width:14px;height:14px;border-radius:4px;flex:none}
+.lvh1 i{background:var(--lv1b)}.lvh2 i{background:var(--lv2b)}.lvh3 i{background:var(--lv3)}
 .medal{font-size:30px;line-height:1}
 .certimg img{width:100%;height:auto;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.15);display:block}
 .okbox{background:var(--okbg);color:var(--ok);font-weight:700;border-radius:12px;padding:10px 12px}
@@ -1529,8 +1538,8 @@ function installHelp(){
 const CREDIT = '<p class="credit">© الحقوق محفوظة · فكرة وتنفيذ <b dir="ltr">alfifitop2015</b> · بواسطة <b>Claude</b></p>';
 function vList(){
   const lv = SAVE.level || 0, chId = challenge(), chT = TALKS.find(x => x.id === chId);
-  const tile = s => { const b = SAVE.best[s.id]; return `<button class="tile ${s.id === chId ? 'chtile' : ''}" data-talk="${s.id}"><span class="grow"><h3>${s.t}${s.id === chId ? ' <span class="x2">×2</span>' : ''}</h3><span class="meta">${LANG === 'zh' ? '' : `<span class="zh" lang="zh">${s.z}</span> · `}${s.turns.length} جمل${b != null ? ' · أفضل نتيجة ' + b + '%' : ''}</span></span><span class="go">‹</span></button>`; };
-  const groups = [1, 2, 3].filter(l => !lv || l === lv).map(l => `<h2>محادثات المستوى ال${LV[l]}</h2>${TALKS.filter(x => x.l === l).map(tile).join('')}`).join('');
+  const tile = s => { const b = SAVE.best[s.id]; return `<button class="tile lv${s.l} ${s.id === chId ? 'chtile' : ''}" data-talk="${s.id}"><span class="grow"><h3>${s.t}${s.id === chId ? ' <span class="x2">×2</span>' : ''}</h3><span class="meta">${LANG === 'zh' ? '' : `<span class="zh" lang="zh">${s.z}</span> · `}${s.turns.length} جمل${b != null ? ' · أفضل نتيجة ' + b + '%' : ''}</span></span><span class="go">‹</span></button>`; };
+  const groups = [1, 2, 3].filter(l => !lv || l === lv).map(l => `<h2 class="lvh lvh${l}"><i aria-hidden="true"></i>محادثات المستوى ال${LV[l]}</h2>${TALKS.filter(x => x.l === l).map(tile).join('')}`).join('');
   return header() + inappNote() + `<div class="band"><span class="tcmic">${MICSVG}</span><div class="grow"><h1>المحادثة الصوتية</h1><p class="sub">تحدّث بالصينية، والتطبيق يسمعك ويصحّح لك.</p></div></div>
   <div class="sec">
    ${X.admin && X.rows ? `<button class="tile" data-act="admin"><span class="grow"><h3>لوحة المشرف</h3><span class="meta">طلبات انضمام بانتظارك: ${X.rows.filter(r => r.status === 'pending').length}</span></span><span class="go">‹</span></button>` : ''}
