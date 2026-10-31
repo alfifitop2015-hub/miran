@@ -97,6 +97,11 @@ service cloud.firestore {
         && (resource.data.status == 'approved' || request.resource.data.total == resource.data.total);
     }
 
+    // «ني هاو»: المواسم والشهادات (الكتابة للمشرف فقط عبر القاعدة العامة بالأسفل)
+    match /zhConfig/{d} { allow read: if signed(); }
+    match /zhSeasons/{d} { allow read: if signed(); }
+    match /zhCerts/{d} { allow read: if true; }   // للتحقق من الشهادة بمسح رمزها
+
     // مدير النظام: صلاحية كاملة على كل البيانات
     match /{document=**} {
       allow read, write: if isAdmin();

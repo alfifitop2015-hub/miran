@@ -110,7 +110,17 @@ label.f{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:14p
 .warn{background:var(--badbg);border-radius:12px;padding:12px;font-size:14px}
 .chip{display:inline-block;font-size:12px;padding:2px 10px;border-radius:999px;background:var(--accsoft);color:var(--acc);font-weight:600}
 .bub.sys .chip{background:var(--card);color:var(--ok);margin-inline-start:6px}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}.stats.three{grid-template-columns:1fr 1fr 1fr}.stats.three .stat{padding:10px 8px}.stats.three .stat span{font-size:12.5px}
+.stgbox{display:flex;flex-direction:column;gap:8px;background:var(--accsoft);border-radius:14px;padding:12px}
+.stg{font-weight:700;font-size:15px}.stgbox .bar{height:8px;background:color-mix(in srgb,var(--acc) 15%,var(--card))}
+.chal{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:16px;background:linear-gradient(135deg,#FFF3D6,#FFE1E3);border:1.5px solid #F2B8A0;color:#3A1D10}
+.chal .meta{color:#7A4A30;font-size:13px}.chal h3{margin:2px 0}
+.x2{display:inline-block;font-size:12px;font-weight:800;padding:1px 8px;border-radius:999px;background:#D3202A;color:#fff;vertical-align:middle}
+.chtile{border-color:#F2B8A0}
+.medal{font-size:30px;line-height:1}
+.certimg img{width:100%;height:auto;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.15);display:block}
+.okbox{background:var(--okbg);color:var(--ok);font-weight:700;border-radius:12px;padding:10px 12px}
+.btn.danger{background:var(--bad)}
 .stat{background:var(--accsoft);border-radius:14px;padding:10px 12px}
 .stat b{display:block;font-family:var(--fd);font-size:24px;line-height:1.2;color:var(--acc);font-variant-numeric:tabular-nums}
 .stat span{font-size:12px;color:var(--muted)}
@@ -381,6 +391,66 @@ const D = {
  'عرض الترتيب كاملاً':['Show full leaderboard','查看完整排行榜'],
  'عرض أقل':['Show less','收起'],
  'الفهم من أول محاولة: 10 نقاط × المستوى. بعد الإعادة: 5 × المستوى. إكمال المحادثة: 10 نقاط.':['Understood on the first try: 10 points × level. After a retry: 5 × level. Finishing a conversation: 10 points.','第一次就被听懂：10分×级别。重试后听懂：5分×级别。完成一段对话：10分。'],
+ 'الفهم من أول محاولة: 10 نقاط × المستوى. بعد الإعادة: 5 × المستوى. إكمال المحادثة: 10 نقاط. تحدي الأسبوع: النقاط مضاعفة ×2.':['Understood on the first try: 10 points × level. After a retry: 5 × level. Finishing a conversation: 10 points. Weekly challenge: double points ×2.','第一次就被听懂：10分×级别。重试后听懂：5分×级别。完成一段对话：10分。每周挑战：积分翻倍×2。'],
+ // المواسم والمراحل والشهادات
+ 'نقاط الموسم':['Season points','本季积分'],
+ 'أيام متتالية':['Day streak','连续天数'],
+ 'النقاط الكلية:':['Total points:','总积分：'],
+ 'باقي على مرحلة':['Points left to','距离下一阶段'],
+ 'نقطة':['points','分'],
+ 'وصلت إلى أعلى مرحلة!':['You reached the top stage!','你已到达最高阶段！'],
+ 'مبتدئ':['Beginner','初学'],'متقدم':['Progressing','进步'],'متمكن':['Skilled','熟练'],'متميز':['Excellent','优秀'],'سفير الصينية':['Chinese Ambassador','中文大使'],
+ 'تدرّب اليوم لتحافظ على سلسلتك 🔥':['Practise today to keep your streak 🔥','今天练习，保持连续记录 🔥'],
+ 'تدرّبي اليوم لتحافظ على سلسلتك 🔥':['Practise today to keep your streak 🔥','今天练习，保持连续记录 🔥'],
+ 'اكسب نقاطاً كل يوم لتبني سلسلة أيام متتالية 🔥':['Earn points every day to build a streak 🔥','每天得分，建立连续记录 🔥'],
+ 'اكسبي نقاطاً كل يوم لتبني سلسلة أيام متتالية 🔥':['Earn points every day to build a streak 🔥','每天得分，建立连续记录 🔥'],
+ '🏅 شهاداتي':['🏅 My certificates','🏅 我的证书'],
+ '🏅 الشهادات':['🏅 Certificates','🏅 证书'],
+ '🏆 لوحة الشرف':['🏆 Hall of fame','🏆 荣誉榜'],
+ 'عرض':['View','查看'],
+ 'ابدأ':['Start','开始'],
+ 'تم الدخول إلى حسابك':['Signed in to your account','已登录你的账户'],
+ 'جارٍ الآن':['in progress','进行中'],
+ '🏆 تحدي الأسبوع':['🏆 Weekly challenge','🏆 每周挑战'],
+ '🔥 تحدي الأسبوع':['🔥 Weekly challenge','🔥 每周挑战'],
+ 'نقاط مضاعفة ×2 حتى نهاية الأسبوع':['Double points ×2 until the end of the week','本周内积分翻倍×2'],
+ 'تحدي الأسبوع ×2':['Weekly challenge ×2','每周挑战×2'],
+ 'شهاداتي':['My certificates','我的证书'],
+ 'شهادات المتنافسين':['Competitors’ certificates','选手证书'],
+ 'شهادة اجتياز مرحلة':['Stage certificate','阶段证书'],
+ 'شهادة بطل الموسم':['Season champion certificate','赛季冠军证书'],
+ 'شهادة تميّز':['Certificate of excellence','优秀证书'],
+ 'لا توجد شهادات بعد. تُمنح الشهادات عند اجتياز المراحل، ولأصحاب المراكز الأولى في كل موسم، ويعتمدها المشرف.':['No certificates yet. Certificates are given for reaching new stages and for the top places each season, after the supervisor approves them.','还没有证书。达到新阶段或在赛季中名列前茅即可获得证书，由管理员审核颁发。'],
+ 'لا نقاط في هذا الموسم بعد.':['No points this season yet.','本季还没有积分。'],
+ 'لم يشارك أحد في هذا الموسم.':['Nobody took part in this season.','本季无人参加。'],
+ 'تظهر هنا أسماء أبطال كل موسم بعد انتهائه.':['Each season’s champions appear here once it ends.','每个赛季结束后，冠军名单会显示在这里。'],
+ '✅ شهادة صحيحة صادرة من «ني هاو»':['✅ A valid certificate issued by Nǐ hǎo','✅ 由「你好」颁发的有效证书'],
+ 'جارٍ تجهيز الشهادة…':['Preparing the certificate…','正在生成证书…'],
+ 'تحميل الصورة':['Download image','下载图片'],
+ 'مشاركة':['Share','分享'],
+ 'تعذّر تجهيز الشهادة.':['Could not prepare the certificate.','无法生成证书。'],
+ 'التميّز':['excellence','优秀表现'],
+ '🏅 حصلت على شهادة جديدة! تجدها في «شهاداتي».':['🏅 You got a new certificate! Find it in “My certificates”.','🏅 你获得了新证书！请在「我的证书」中查看。'],
+ 'لم يُعثر على هذه الشهادة في «ني هاو».':['This certificate was not found in Nǐ hǎo.','在「你好」中未找到此证书。'],
+ 'تعذّر التحقق من الشهادة الآن. تحقق من الإنترنت.':['Could not verify the certificate now. Check your internet.','暂时无法验证证书，请检查网络。'],
+ '🏆 المواسم والشهادات':['🏆 Seasons and certificates','🏆 赛季与证书'],
+ 'الموسم الحالي:':['Current season:','当前赛季：'],
+ 'إنهاء الموسم وبدء موسم جديد':['End the season and start a new one','结束本季并开始新赛季'],
+ 'إنهاء الموسم':['End the season','结束本季'],
+ 'يُحفظ أصحاب المراكز الثلاثة الأولى في لوحة الشرف، وتبدأ نقاط الموسم من الصفر للجميع. النقاط الكلية والمراحل لا تتأثر.':['The top three are saved in the hall of fame, and season points restart from zero for everyone. Total points and stages are not affected.','前三名将记入荣誉榜，所有人的赛季积分从零开始。总积分和阶段不受影响。'],
+ 'عرض لوحة الشرف':['View the hall of fame','查看荣誉榜'],
+ 'اعتماد':['Approve','批准'],'معاينة':['Preview','预览'],'تخطي':['Skip','跳过'],'إلغاء':['Cancel','取消'],
+ 'لا توجد شهادات بانتظار الاعتماد.':['No certificates waiting for approval.','没有待审核的证书。'],
+ 'منح شهادة تميّز خاصة':['Give a special certificate of excellence','颁发特别优秀证书'],
+ 'الطالب':['Student','学生'],'سبب التميّز':['Reason for excellence','优秀原因'],'منح الشهادة':['Give certificate','颁发证书'],
+ 'لم تصدر شهادات بعد.':['No certificates issued yet.','尚未颁发证书。'],
+ 'الاسم على الشهادات (اختياري)':['Name on certificates (optional)','证书上的署名（可选）'],
+ 'حفظ الاسم':['Save name','保存署名'],
+ 'يظهر في خانة «المشرف» على كل الشهادات، القديمة والجديدة، وتستطيع تغييره متى شئت.':['It appears in the “Supervisor” field on all certificates, old and new, and you can change it any time.','显示在所有新旧证书的「管理员」一栏，可随时修改。'],
+ 'محادثة التحدي (نقاطها مضاعفة ×2)':['Challenge conversation (double points ×2)','挑战对话（积分翻倍×2）'],
+ 'يتغيّر التحدي تلقائياً كل أحد. إذا اخترت محادثة بنفسك تبقى لهذا الأسبوع فقط.':['The challenge changes automatically every Sunday. If you pick one yourself, it stays for this week only.','挑战每周日自动更换。若手动选择，仅在本周有效。'],
+ 'مثال: أفضل نطق':['e.g. Best pronunciation','例如：最佳发音'],
+ 'مثال: أ. محمد':['e.g. Mr. Mohammed','例如：穆罕默德老师'],
  'فارس المنافسة':['Champion','冠军'], 'فارسة المنافسة':['Champion','冠军'],
  'منافس شرس':['Fierce rival','强劲对手'], 'منافسة شرسة':['Fierce rival','强劲对手'],
  'منافس قوي':['Strong rival','实力选手'], 'منافسة قوية':['Strong rival','实力选手'],
@@ -568,6 +638,17 @@ const D = {
  'اشكره: 谢谢夸奖':['Thank them: 谢谢夸奖','道谢：谢谢夸奖']
 };
 const P = [
+ [/^(المركز الأول|المركز الثاني|المركز الثالث) في الموسم (\d+)$/, m => [`${({'المركز الأول':'1st place','المركز الثاني':'2nd place','المركز الثالث':'3rd place'})[m[1]]} in season ${m[2]}`, `第 ${m[2]} 季${({'المركز الأول':'第一名','المركز الثاني':'第二名','المركز الثالث':'第三名'})[m[1]]}`]],
+ [/^اجتياز مرحلة «(.+)»$/, m => [`Reaching the “${tx(m[1])}” stage`, `达到「${tx(m[1])}」阶段`]],
+ [/^(🌱|🌿|🏮|🐉|👑) (.+)$/, m => [`${m[1]} ${tx(m[2])}`, `${m[1]} ${tx(m[2])}`]],
+ [/^🔥 (\d+) أيام متتالية! استمر\.$/, m => [`🔥 ${m[1]}-day streak! Keep going.`, `🔥 连续 ${m[1]} 天！继续加油。`]],
+ [/^🎉 وصلت إلى مرحلة (\S+) (.+)!$/, m => [`🎉 You reached the ${m[1]} ${tx(m[2])} stage!`, `🎉 你达到了 ${m[1]} ${tx(m[2])} 阶段！`]],
+ [/^(شهادات مستحقة|الشهادات الصادرة) \((\d+)\)$/, m => [`${m[1] === 'شهادات مستحقة' ? 'Certificates due' : 'Issued certificates'} (${m[2]})`, `${m[1] === 'شهادات مستحقة' ? '待颁发证书' : '已颁发证书'}（${m[2]}）`]],
+ [/^(الموسم|الكلي): (\d+)$/, m => [`${m[1] === 'الموسم' ? 'Season' : 'Total'}: ${m[2]}`, `${m[1] === 'الموسم' ? '本季' : '总计'}：${m[2]}`]],
+ [/^ترتيب الموسم (\d+)$/, m => [`Season ${m[1]} ranking`, `第 ${m[1]} 季排名`]],
+ [/^الموسم (\d+)$/, m => [`Season ${m[1]}`, `第 ${m[1]} 季`]],
+ [/^تلقائي: (.+)$/, m => [`Automatic: ${tx(m[1])}`, `自动：${tx(m[1])}`]],
+ [/^انتهى الموسم (\d+)، وبدأ الموسم (\d+)\.$/, m => [`Season ${m[1]} ended and season ${m[2]} began.`, `第 ${m[1]} 季结束，第 ${m[2]} 季开始。`]],
  [/^أهلاً (.+?)\. وصل طلبك إلى المشرف\. (.+)$/, m => [`Hello ${m[1]}. Your request reached the supervisor. ${tx(m[2])}`, `${m[1]}，你好。你的申请已送达管理员。${tx(m[2])}`]],
  [/^أهلاً (.+?)\. هذه اللوحة للاطلاع والمتابعة فقط، ولا تدخل المنافسة ولا تُحتسب لك نقاط\.$/, m => [`Hello ${m[1]}. This board is for viewing and following progress only; you are not in the competition and earn no points.`, `${m[1]}，你好。此面板仅供查看和关注进度，你不参加比赛，也不计积分。`]],
  [/^لوحة (ولي أمر|ولية أمر)$/, m => ['Parent board', '家长面板']],
@@ -645,10 +726,9 @@ function subBoard(){
   const want = !!(X.me && X.me.status === 'approved');
   if (want && !unsubBoard){
     unsubBoard = fsP.collection(COL).where('status', '==', 'approved').onSnapshot(sn => {
-      X.boardAll = sn.docs.map(d => Object.assign({id:d.id}, d.data())).filter(r => !isParent(r)).sort((a, b) => (b.total || 0) - (a.total || 0) || (b.updated || 0) - (a.updated || 0));
-      X.board = X.boardAll.filter(r => r.total > 0); soft();
-    }, () => { X.board = []; soft(); });
-  } else if (!want && unsubBoard){ unsubBoard(); unsubBoard = null; X.board = null; }
+      X.boardAll = sn.docs.map(d => Object.assign({id:d.id}, d.data())).filter(r => !isParent(r)); soft();
+    }, () => { X.boardAll = []; soft(); });
+  } else if (!want && unsubBoard){ unsubBoard(); unsubBoard = null; X.boardAll = null; }
 }
 function fbStart(){
   const b = 'https://www.gstatic.com/firebasejs/10.12.2/';
@@ -656,12 +736,14 @@ function fbStart(){
     const aP = firebase.initializeApp(FB, 'nihao'), aA = firebase.initializeApp(FB, 'nihao-admin');
     authP = firebase.auth(aP); authA = firebase.auth(aA); fsP = firebase.firestore(aP); fsA = firebase.firestore(aA);
     INC = firebase.firestore.FieldValue.increment;
+    checkCertParam();
     authP.onAuthStateChanged(u => {
       X.ready = true; X.uid = u ? u.uid : null; X.me = null; X.meLoaded = !u;
       if (u && !X.linked){ linkDevice(u).then(sid => { X.linked = true; if (sid && sid !== X.uid){ X.uid = sid; if (unsubMe) unsubMe(); unsubMe = fsP.collection(COL).doc(sid).onSnapshot(d => { X.meLoaded = true; X.me = d.exists ? d.data() : null; subBoard(); soft(); }, () => { X.meLoaded = true; X.me = null; subBoard(); soft(); }); } }); }
       if (unsubMe){ unsubMe(); unsubMe = null; }
       if (u) unsubMe = fsP.collection(COL).doc(u.uid).onSnapshot(d => { X.meLoaded = true; X.me = d.exists ? d.data() : null; subBoard(); soft(); }, () => { X.meLoaded = true; X.me = null; subBoard(); soft(); });
       else subBoard();
+      if (!X.admin) subMeta(u ? fsP : null);
       soft();
     });
     authA.onAuthStateChanged(u => {
@@ -669,6 +751,7 @@ function fbStart(){
       if (u && !ok){ authA.signOut(); X.err = 'هذا الحساب ليس حساب المشرف.'; }
       X.admin = ok; X.rows = null;
       if (unsubAdmin){ unsubAdmin(); unsubAdmin = null; }
+      subMeta(ok ? fsA : authP.currentUser ? fsP : null);
       if (ok) unsubAdmin = fsA.collection(COL).onSnapshot(sn => { X.rows = sn.docs.map(d => Object.assign({id:d.id}, d.data())); soft(); }, () => { X.rows = []; soft(); });
       soft();
     });
@@ -795,8 +878,13 @@ async function join(){
 }
 function award(n, talk){
   if (!TK || !X.me || X.me.status !== 'approved' || isParent(X.me) || !fsP || !X.uid) return 0;
+  if (TK.sc.id === challenge()) n *= 2;   // تحدي الأسبوع: نقاط مضاعفة
   TK.pts += n;
-  const d = {total:INC(n), updated:Date.now()}; if (talk) d.talks = INC(1);
+  const m = X.me, today = dayKey(), before = stageOf(m.total);
+  const d = {total:INC(n), season:seasonPts(m) + n, sn:SEASON(), updated:Date.now()}; if (talk) d.talks = INC(1);
+  if (m.day !== today){ d.day = today; d.streak = m.day === dayKey(Date.now() - 864e5) ? (m.streak || 0) + 1 : 1; m.day = d.day; m.streak = d.streak; if (d.streak > 1) setTimeout(() => toast(`🔥 ${d.streak} أيام متتالية! استمر.`), 900); }
+  m.season = d.season; m.sn = d.sn;
+  if (stageOf((m.total || 0) + n) > before){ const st = STAGES[stageOf((m.total || 0) + n)]; setTimeout(() => toast(`🎉 وصلت إلى مرحلة ${st[1]} ${st[2]}!`), 1600); }
   fsP.collection(COL).doc(X.uid).update(d).catch(() => {});
   return n;
 }
@@ -814,18 +902,211 @@ function adminDo(what, id){
   else if (what === 'reset' || what === 'del'){
     if (X.confirm !== what + id){ X.confirm = what + id; return render(); }
     X.confirm = '';
-    (what === 'reset' ? ref.update({total:0, talks:0, updated:now}) : ref.delete()).catch(fail);
+    (what === 'reset' ? ref.update({total:0, talks:0, season:0, sn:SEASON(), streak:0, updated:now}) : ref.delete()).catch(fail);
     render();
   }
 }
 const TITLE = (i, f) => i === 0 ? '🥇 ' + (f ? 'فارسة المنافسة' : 'فارس المنافسة') : i === 1 ? '🥈 ' + (f ? 'منافسة شرسة' : 'منافس شرس') : i === 2 ? '🥉 ' + (f ? 'منافسة قوية' : 'منافس قوي') : i < 10 ? '🔥 ' + (f ? 'صاعدة بقوة' : 'صاعد بقوة') : '';
 const ago = t => { if (!t) return 'لم يبدأ بعد'; const m = Math.floor((Date.now() - t) / 60000); return m < 2 ? 'الآن' : m < 60 ? `قبل ${m} دقيقة` : m < 1440 ? `قبل ${Math.floor(m / 60)} ساعة` : `قبل ${Math.floor(m / 1440)} يوم`; };
+/* ============ المواسم والمراحل والشهادات والسلسلة اليومية وتحدي الأسبوع ============
+   - نقاط الموسم (season + sn) تُبنى عليها المنافسة، والمشرف يُنهي الموسم متى شاء فتبدأ من الصفر.
+   - النقاط الكلية (total) لا تُمسح، وتحدد المرحلة.
+   - الشهادات في zhCerts: يقترحها التطبيق، ويعتمدها المشرف. */
+const STAGES = [[0,'🌱','مبتدئ','初学'],[300,'🌿','متقدم','进步'],[1000,'🏮','متمكن','熟练'],[2500,'🐉','متميز','优秀'],[5000,'👑','سفير الصينية','大使']];
+const stageOf = t => STAGES.reduce((k, s, i) => (t || 0) >= s[0] ? i : k, 0);
+const stageTxt = t => { const s = STAGES[stageOf(t)]; return s[1] + ' ' + s[2]; };
+const SEASON = () => (X.cfg && X.cfg.season) || 1;
+const seasonPts = r => !r ? 0 : r.sn == null ? (SEASON() === 1 ? (r.total || 0) : 0) : r.sn === SEASON() ? (r.season || 0) : 0;
+const RIYADH = 3 * 3600e3;
+const dayKey = (t = Date.now()) => new Date(t + RIYADH).toISOString().slice(0, 10);
+const streakOf = r => !r || !r.day ? 0 : (r.day === dayKey() || r.day === dayKey(Date.now() - 864e5)) ? (r.streak || 0) : 0;
+const weekNo = () => Math.floor((Math.floor((Date.now() + RIYADH) / 864e5) + 4) / 7);   // الأسبوع يبدأ الأحد
+const autoTalk = () => TALKS[weekNo() % TALKS.length].id;
+const challenge = () => { const c = X.cfg && X.cfg.ch; return c && c.wk === weekNo() && TALKS.some(x => x.id === c.talk) ? c.talk : autoTalk(); };
+const bySeason = (a, b) => seasonPts(b) - seasonPts(a) || (b.updated || 0) - (a.updated || 0);
+function BOARD(){ const A = X.boardAll; return A ? A.filter(r => seasonPts(r) > 0).sort(bySeason) : null; }
+const RANKW = ['المركز الأول', 'المركز الثاني', 'المركز الثالث'], MEDAL = ['🥇', '🥈', '🥉'];
+const certHead = c => c.kind === 'stage' ? 'شهادة اجتياز مرحلة' : c.kind === 'season' ? 'شهادة بطل الموسم' : 'شهادة تميّز';
+const certTitle = c => c.kind === 'season' ? `${RANKW[c.rank - 1] || ''} في الموسم ${c.season}` : c.kind === 'stage' ? `اجتياز مرحلة «${STAGES[c.stage][2]}»` : (c.title || 'التميّز');
+const fmtDate = t => { try{ return new Date(t).toLocaleDateString(LANG === 'ar' ? 'ar-u-ca-gregory' : LANG === 'zh' ? 'zh-CN' : 'en-GB', {year:'numeric', month:'long', day:'numeric'}); }catch(e){ return new Date(t).toISOString().slice(0, 10); } };
+
+let unsubCfg = null, unsubCerts = null, unsubSeasons = null, metaDb = null;
+function subMeta(db){
+  if (db === metaDb) return; metaDb = db;
+  [unsubCfg, unsubCerts, unsubSeasons].forEach(f => { if (f) f(); }); unsubCfg = unsubCerts = unsubSeasons = null;
+  if (!db) return;
+  unsubCfg = db.collection('zhConfig').doc('main').onSnapshot(d => { X.cfg = d.exists ? d.data() : {}; soft(); }, () => { X.cfg = {}; });
+  unsubCerts = db.collection('zhCerts').onSnapshot(sn => {
+    const L = sn.docs.map(d => Object.assign({id:d.id}, d.data())).sort((a, b) => (b.at || 0) - (a.at || 0));
+    const mine = L.filter(c => c.status === 'ok' && c.uid === X.uid).length;
+    if (X.certs && X.uid && mine > X.myCertN) toast('🏅 حصلت على شهادة جديدة! تجدها في «شهاداتي».');
+    X.certs = L; X.myCertN = mine; soft();
+  }, () => { X.certs = []; });
+  unsubSeasons = db.collection('zhSeasons').onSnapshot(sn => { X.seasons = sn.docs.map(d => d.data()).sort((a, b) => b.n - a.n); soft(); }, () => { X.seasons = []; });
+}
+
+/* ---------- رسم الشهادة ---------- */
+let QRLIB = null;
+const qrLib = () => QRLIB || (QRLIB = loadScript('https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js').then(() => window.qrcode || null, () => null));
+const CERTURL = id => APPURL + '?cert=' + encodeURIComponent(id);
+async function drawCert(c){
+  const W = 1600, H = 1130, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const x = cv.getContext('2d');
+  try{ await Promise.race([Promise.all(['800 80px "Baloo Bhaijaan 2"', '700 40px "IBM Plex Sans Arabic"', '400 30px "IBM Plex Sans Arabic"', '700 40px "Noto Sans SC"'].map(f => document.fonts.load(f, 'شهادة 你好'))), new Promise(r => setTimeout(r, 2500))]); }catch(e){}
+  const AR = '"IBM Plex Sans Arabic","Noto Sans SC",sans-serif', DS = '"Baloo Bhaijaan 2",' + AR;
+  const red = '#B3141D', gold = '#C9A227', ink = '#2A1A12', soft2 = '#7A5A48';
+  const gr = x.createLinearGradient(0, 0, W, H); gr.addColorStop(0, '#FFFBF3'); gr.addColorStop(1, '#F9ECD6');
+  x.fillStyle = gr; x.fillRect(0, 0, W, H);
+  x.strokeStyle = red; x.lineWidth = 20; x.strokeRect(28, 28, W - 56, H - 56);
+  x.strokeStyle = gold; x.lineWidth = 4; x.strokeRect(62, 62, W - 124, H - 124);
+  [[62, 62, 1, 1], [W - 62, 62, -1, 1], [62, H - 62, 1, -1], [W - 62, H - 62, -1, -1]].forEach(([cx, cy, sx, sy]) => {
+    x.strokeStyle = red; x.lineWidth = 6; x.beginPath();
+    [22, 44, 66].forEach(o => { x.moveTo(cx + sx * o, cy + sy * (o + 60)); x.lineTo(cx + sx * o, cy + sy * o); x.lineTo(cx + sx * (o + 60), cy + sy * o); });
+    x.stroke();
+  });
+  // الختم الصيني
+  x.fillStyle = red; x.beginPath(); x.arc(W / 2, 150, 58, 0, Math.PI * 2); x.fill();
+  x.strokeStyle = gold; x.lineWidth = 4; x.beginPath(); x.arc(W / 2, 150, 48, 0, Math.PI * 2); x.stroke();
+  x.textAlign = 'center'; x.textBaseline = 'middle'; x.direction = 'rtl';
+  x.fillStyle = '#FFF'; x.font = '700 40px "Noto Sans SC",sans-serif'; x.fillText('你好', W / 2, 152);
+  const T = (s, y, font, col) => { x.font = font; x.fillStyle = col || ink; x.fillText(s, W / 2, y, W - 260); };
+  T('ني هاو · للمحادثة الصينية', 250, '600 30px ' + AR, soft2);
+  T(certHead(c), 340, '800 86px ' + DS, red);
+  T('تُمنح هذه الشهادة إلى', 440, '400 34px ' + AR, soft2);
+  T(c.name || '', 540, '800 92px ' + DS, ink);
+  x.strokeStyle = gold; x.lineWidth = 3; x.beginPath(); x.moveTo(W / 2 - 320, 600); x.lineTo(W / 2 + 320, 600); x.stroke();
+  T('تقديراً لـ', 655, '400 32px ' + AR, soft2);
+  const zhS = c.kind === 'stage' ? '  ' + STAGES[c.stage][3] : '';
+  T(certTitle(c) + zhS, 725, '700 50px ' + AR, red);
+  // التاريخ والتوقيع
+  x.font = '400 26px ' + AR; x.fillStyle = soft2; x.fillText('التاريخ', W - 330, 860); x.fillText('المشرف', 330, 860);
+  x.font = '700 32px ' + AR; x.fillStyle = ink; x.fillText(c.at ? new Date(c.at).toLocaleDateString('ar-u-ca-gregory', {year:'numeric', month:'long', day:'numeric'}) : '', W - 330, 910);
+  const sg = (X.cfg && X.cfg.signer) || '';
+  if (sg) x.fillText(sg, 330, 910);
+  x.strokeStyle = soft2; x.lineWidth = 2; x.beginPath(); x.moveTo(190, 945); x.lineTo(470, 945); x.moveTo(W - 470, 945); x.lineTo(W - 190, 945); x.stroke();
+  // رمز التحقق
+  const q = c.id ? await qrLib() : null;
+  if (q){ try{ const qr = q(0, 'M'); qr.addData(CERTURL(c.id)); qr.make(); const n = qr.getModuleCount(), s = 150 / n;
+    x.fillStyle = '#FFF'; x.fillRect(W / 2 - 86, 800, 172, 172); x.fillStyle = ink;
+    for (let r = 0; r < n; r++) for (let k = 0; k < n; k++) if (qr.isDark(r, k)) x.fillRect(W / 2 - 75 + k * s, 811 + r * s, Math.ceil(s), Math.ceil(s));
+    x.font = '400 22px ' + AR; x.fillStyle = soft2; x.fillText('امسح للتحقق من الشهادة', W / 2, 995);
+  }catch(e){} }
+  x.font = '400 20px ' + AR; x.fillStyle = '#9A8070'; x.fillText('© الحقوق محفوظة · فكرة وتنفيذ alfifitop2015 · بواسطة Claude', W / 2, 1050);
+  return cv;
+}
+async function openCert(c, verified){
+  closeIntro();
+  const el = document.createElement('div');
+  el.id = 'intro'; el.className = 'iv-ov'; el.dir = document.documentElement.dir; el.setAttribute('role', 'dialog');
+  el.innerHTML = `<div class="iv-box"><div class="card stack">${verified ? `<div class="okbox">✅ شهادة صحيحة صادرة من «ني هاو»</div>` : ''}<h2>${esc(certHead(c))}</h2><p class="sub" style="margin:0">${esc(c.name || '')} · ${esc(certTitle(c))}</p><div class="certimg"><p class="sub">جارٍ تجهيز الشهادة…</p></div><div class="row"><button type="button" class="btn grow" id="certdl" disabled>تحميل الصورة</button><button type="button" class="btn plain grow" id="certsh" disabled>مشاركة</button></div><button type="button" class="btn plain wide" id="ivclose">إغلاق</button></div></div>`;
+  let blob = null, url = '';
+  el.addEventListener('click', async e => {
+    if (e.target === el || e.target.id === 'ivclose') closeIntro();
+    const fname = 'شهادة-' + (c.name || 'ني-هاو') + '.png';
+    if (e.target.id === 'certdl' && url){ const a = document.createElement('a'); a.href = url; a.download = fname; document.body.appendChild(a); a.click(); a.remove(); }
+    if (e.target.id === 'certsh'){
+      const text = `${certHead(c)}: ${c.name} · ${certTitle(c)}` + (c.id ? '\nللتحقق: ' + CERTURL(c.id) : '');
+      try{ const f = blob && new File([blob], fname, {type:'image/png'});
+        if (f && navigator.canShare && navigator.canShare({files:[f]})){ await navigator.share({files:[f], text}); return; } }catch(x){ if (x && x.name === 'AbortError') return; }
+      window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener');
+    }
+  });
+  document.body.appendChild(el); document.body.style.overflow = 'hidden';
+  try{
+    const cv = await drawCert(c); blob = await new Promise(r => cv.toBlob(r, 'image/png')); url = URL.createObjectURL(blob);
+    const box = el.querySelector('.certimg'); if (!box) return;
+    box.innerHTML = `<img src="${url}" alt="${esc(certHead(c) + ': ' + (c.name || ''))}">`;
+    el.querySelector('#certdl').disabled = false; el.querySelector('#certsh').disabled = false;
+  }catch(e){ const box = el.querySelector('.certimg'); if (box) box.innerHTML = '<div class="warn">تعذّر تجهيز الشهادة.</div>'; }
+}
+async function checkCertParam(){
+  let id = ''; try{ id = new URLSearchParams(location.search).get('cert') || ''; }catch(e){}
+  if (!id || !fsP) return;
+  try{ const d = await fsP.collection('zhCerts').doc(id).get();
+    if (d.exists && d.data().status === 'ok') openCert(Object.assign({id}, d.data()), true);
+    else toast('لم يُعثر على هذه الشهادة في «ني هاو».');
+  }catch(e){ toast('تعذّر التحقق من الشهادة الآن. تحقق من الإنترنت.'); }
+}
+
+/* ---------- المشرف: المواسم والشهادات ---------- */
+function pendingCerts(){
+  const C = X.certs || [], has = (uid, k, v) => C.some(c => c.uid === uid && c.kind === k && (k === 'stage' ? c.stage === v : c.season === v));
+  const out = [];
+  (X.seasons || []).forEach(s => (s.top || []).forEach((t, i) => { if (!has(t.uid, 'season', s.n)) out.push({uid:t.uid, name:t.name, gender:t.gender || 'm', kind:'season', season:s.n, rank:i + 1}); }));
+  (X.rows || []).filter(r => r.status === 'approved' && !isParent(r)).forEach(r => { for (let k = 1; k <= stageOf(r.total); k++) if (!has(r.id, 'stage', k)) out.push({uid:r.id, name:r.name, gender:r.gender || 'm', kind:'stage', stage:k}); });
+  return out;
+}
+const afail = () => toast('لم يُنفَّذ الطلب. تحقق من الإنترنت ومن نشر قواعد قاعدة البيانات.');
+function endSeason(){
+  if (X.confirm !== 'season'){ X.confirm = 'season'; return render(); }
+  X.confirm = '';
+  const n = SEASON(), now = Date.now();
+  const top = (X.rows || []).filter(r => r.status === 'approved' && !isParent(r) && seasonPts(r) > 0).sort(bySeason).slice(0, 3).map(r => ({uid:r.id, name:r.name || '', gender:r.gender || 'm', pts:seasonPts(r)}));
+  const b = fsA.batch();
+  b.set(fsA.collection('zhSeasons').doc(String(n)), {n, start:(X.cfg && X.cfg.start) || null, end:now, top});
+  b.set(fsA.collection('zhConfig').doc('main'), {season:n + 1, start:now}, {merge:true});
+  b.commit().then(() => toast(`انتهى الموسم ${n}، وبدأ الموسم ${n + 1}.`), afail);
+  render();
+}
+function issueCert(p, status){ fsA.collection('zhCerts').add(Object.assign({}, p, {status, at:Date.now()})).then(() => toast(status === 'ok' ? 'تم اعتماد الشهادة' : 'تم التخطي'), afail); }
+function vSeasonAdmin(A){
+  const S = SEASON(), pend = pendingCerts(), lead = A.filter(r => seasonPts(r) > 0).sort(bySeason).slice(0, 3);
+  const issued = (X.certs || []).filter(c => c.status === 'ok'), ch = challenge(), auto = TALKS.find(x => x.id === autoTalk());
+  const sc = X.cfg && X.cfg.ch && X.cfg.ch.wk === weekNo() ? X.cfg.ch.talk : '';
+  X.pend = pend;
+  return `<div class="card stack"><h3>🏆 المواسم والشهادات</h3>
+    <div><p style="margin:0"><span>الموسم الحالي:</span> <b>${S}</b></p>
+      ${lead.length ? lead.map((r, i) => `<div class="brd"><span class="n">${MEDAL[i]}</span><span class="nm">${esc(r.name)}</span><span class="sc">${seasonPts(r)}</span></div>`).join('') : '<p class="sub" style="margin:0">لا نقاط في هذا الموسم بعد.</p>'}</div>
+    <button class="btn wide ${X.confirm === 'season' ? 'danger' : ''}" data-act="endSeason">${X.confirm === 'season' ? 'تأكيد: إنهاء الموسم' : 'إنهاء الموسم وبدء موسم جديد'}</button>
+    <p class="sub" style="margin:0">يُحفظ أصحاب المراكز الثلاثة الأولى في لوحة الشرف، وتبدأ نقاط الموسم من الصفر للجميع. النقاط الكلية والمراحل لا تتأثر.</p>
+    <button class="x" data-act="honor">عرض لوحة الشرف</button>
+  </div>
+  <div class="card stack"><h3>شهادات مستحقة (${pend.length})</h3>
+    ${pend.length ? pend.map((p, i) => `<div class="li"><span class="grow"><b>${esc(p.name)}</b> <span class="meta">${esc(certTitle(p))}</span></span><button class="x ok" data-pc="${i}" data-pv="ok">اعتماد</button><button class="x" data-pc="${i}" data-pv="view">معاينة</button><button class="x" data-pc="${i}" data-pv="skip">تخطي</button></div>`).join('') : '<p class="sub" style="margin:0">لا توجد شهادات بانتظار الاعتماد.</p>'}
+    <details><summary style="cursor:pointer;font-weight:700">منح شهادة تميّز خاصة</summary>
+      <form id="specform" class="stack" style="margin-top:10px">
+        <label class="f">الطالب<select id="scuid" class="lsel"><option value="">اختر</option>${A.map(r => `<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('')}</select></label>
+        <label class="f">سبب التميّز<input type="text" id="sctitle" class="ar" maxlength="40" placeholder="مثال: أفضل نطق"></label>
+        <button class="btn wide" type="submit">منح الشهادة</button></form></details>
+    <details><summary style="cursor:pointer;font-weight:700">الشهادات الصادرة (${issued.length})</summary>
+      ${issued.length ? issued.map(c => `<div class="li"><span class="grow"><b>${esc(c.name)}</b> <span class="meta">${esc(certTitle(c))}</span></span><button class="x" data-cert="${esc(c.id)}">عرض</button><button class="x bad" data-cdel="${esc(c.id)}">${X.confirm === 'cdel' + c.id ? 'تأكيد: إلغاء' : 'إلغاء'}</button></div>`).join('') : '<p class="sub" style="margin:0">لم تصدر شهادات بعد.</p>'}</details>
+    <label class="f">الاسم على الشهادات (اختياري)<input type="text" id="signer" class="ar" maxlength="40" value="${esc((X.cfg && X.cfg.signer) || '')}" placeholder="مثال: أ. محمد"></label>
+    <button class="x" data-act="saveSigner">حفظ الاسم</button>
+    <p class="sub" style="margin:0">يظهر في خانة «المشرف» على كل الشهادات، القديمة والجديدة، وتستطيع تغييره متى شئت.</p>
+  </div>
+  <div class="card stack"><h3>🔥 تحدي الأسبوع</h3>
+    <label class="f">محادثة التحدي (نقاطها مضاعفة ×2)<select id="chsel" class="lsel"><option value="">تلقائي: ${esc(auto.t)}</option>${TALKS.map(t => `<option value="${t.id}" ${sc === t.id ? 'selected' : ''}>${esc(t.t)}</option>`).join('')}</select></label>
+    <p class="sub" style="margin:0">يتغيّر التحدي تلقائياً كل أحد. إذا اخترت محادثة بنفسك تبقى لهذا الأسبوع فقط.</p>
+  </div>`;
+}
+
+/* ---------- الصفحات: شهاداتي ولوحة الشرف ---------- */
+function vCerts(){
+  const par = isParent(X.me), L = (X.certs || []).filter(c => c.status === 'ok' && (par || c.uid === X.uid));
+  return header() + `<div class="qhead"><h2>${par ? 'شهادات المتنافسين' : 'شهاداتي'}</h2><button class="x" data-act="home">رجوع</button></div><div class="sec">
+    ${L.length ? L.map(c => `<button class="tile" data-cert="${esc(c.id)}"><span class="medal" aria-hidden="true">${c.kind === 'season' ? MEDAL[c.rank - 1] || '🏅' : c.kind === 'stage' ? STAGES[c.stage][1] : '🏅'}</span><span class="grow"><h3>${esc(certHead(c))}</h3><span class="meta">${par ? esc(c.name) + ' · ' : ''}${esc(certTitle(c))}</span></span><span class="go">‹</span></button>`).join('')
+      : `<div class="card"><p class="sub" style="margin:0">لا توجد شهادات بعد. تُمنح الشهادات عند اجتياز المراحل، ولأصحاب المراكز الأولى في كل موسم، ويعتمدها المشرف.</p></div>`}
+    <button class="btn plain wide" data-act="home">رجوع</button></div>${CREDIT}`;
+}
+function vHonor(){
+  const src = X.boardAll || (X.rows || []).filter(r => r.status === 'approved' && !isParent(r));
+  const now = src.filter(r => seasonPts(r) > 0).sort(bySeason).slice(0, 3);
+  const row = (t, i, pts) => `<div class="brd"><span class="n">${MEDAL[i]}</span><span class="nm">${esc(t.name)}</span><span class="sc">${pts}</span></div>`;
+  const past = X.seasons || [];
+  return header() + `<div class="qhead"><h2>🏆 لوحة الشرف</h2><button class="x" data-act="goback">رجوع</button></div><div class="sec">
+    <div class="card stack"><h3>الموسم ${SEASON()} <span class="chip">جارٍ الآن</span></h3>${now.length ? now.map((r, i) => row(r, i, seasonPts(r))).join('') : '<p class="sub" style="margin:0">لا نقاط في هذا الموسم بعد.</p>'}</div>
+    ${past.map(s => `<div class="card stack"><h3>الموسم ${s.n}</h3>${(s.top || []).length ? s.top.map((t, i) => row(t, i, t.pts)).join('') : '<p class="sub" style="margin:0">لم يشارك أحد في هذا الموسم.</p>'}</div>`).join('')}
+    ${past.length ? '' : '<p class="sub">تظهر هنا أسماء أبطال كل موسم بعد انتهائه.</p>'}
+    <button class="btn plain wide" data-act="goback">رجوع</button></div>${CREDIT}`;
+}
+
 function vParent(m){
-  const A = X.boardAll, B = X.board || [];
-  const row = r => { const i = B.findIndex(x => x.id === r.id); const t = i >= 0 ? TITLE(i, r.gender === 'f') : '';
-    return `<div class="brd"><span class="n">${i >= 0 ? i + 1 : '–'}</span><span class="nm">${esc(r.name)} ${t ? `<span class="tier">${t}</span>` : ''}<span class="sub" style="display:block;margin:0;font-size:12.5px">محادثات مكتملة: ${r.talks || 0} · آخر نشاط: ${ago(r.total ? r.updated : 0)}</span></span><span class="sc">${r.total || 0}</span></div>`; };
+  const B = BOARD() || [], A = X.boardAll ? X.boardAll.slice().sort((a, b) => seasonPts(b) - seasonPts(a) || (b.total || 0) - (a.total || 0)) : null;
+  const row = r => { const i = B.findIndex(x => x.id === r.id); const t = i >= 0 ? TITLE(i, r.gender === 'f') : ''; const sk = streakOf(r);
+    return `<div class="brd"><span class="n">${i >= 0 ? i + 1 : '–'}</span><span class="nm">${esc(r.name)} ${t ? `<span class="tier">${t}</span>` : ''}<span class="sub" style="display:block;margin:0;font-size:12.5px">${stageTxt(r.total)} · محادثات مكتملة: ${r.talks || 0}${sk ? ' · 🔥 ' + sk : ''} · آخر نشاط: ${ago(r.total ? r.updated : 0)}</span></span><span class="sc">${seasonPts(r)}</span></div>`; };
   return `<div class="card stack"><div class="row"><span class="lock" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" fill="none"/><circle cx="12" cy="12" r="3" fill="none"/></svg></span><div class="grow"><h2>لوحة ${parentWord(m)}</h2><p class="sub" style="margin:0">أهلاً ${esc(m.name)}. هذه اللوحة للاطلاع والمتابعة فقط، ولا تدخل المنافسة ولا تُحتسب لك نقاط.</p></div></div>
-    <div><h2>تقدّم المتنافسين</h2><div>${!A ? '<p class="sub" style="margin:0">جارٍ التحميل…</p>' : !A.length ? '<p class="sub" style="margin:0">لا يوجد متنافسون بعد.</p>' : A.map(row).join('')}</div></div>
+    <div class="row"><button class="btn plain grow" data-act="certs">🏅 الشهادات</button><button class="btn plain grow" data-act="honor">🏆 لوحة الشرف</button></div>
+    <div><h2>تقدّم المتنافسين · الموسم ${SEASON()}</h2><div>${!A ? '<p class="sub" style="margin:0">جارٍ التحميل…</p>' : !A.length ? '<p class="sub" style="margin:0">لا يوجد متنافسون بعد.</p>' : A.map(row).join('')}</div></div>
     <p class="sub" style="margin:0">${isTeacher(m) ? 'تستطيع أيضاً تجربة المحادثات بالأسفل لتعرف ما يتدرّب عليه طلابك، دون أن تُحسب نقاط.' : 'تستطيع أيضاً تجربة المحادثات بالأسفل لتعرف ما يتدرّب عليه ابنك أو ابنتك، دون أن تُحسب نقاط.'}</p></div>`;
 }
 function joinForm(){ return `<form id="joinform" class="card stack"><div><h2>انضم إلى «ني هاو»</h2><p class="sub">سجّل اسمك وصفتك، ويُفتح لك التطبيق بعد موافقة المشرف. ولي الأمر والمعلم يدخلان للاطلاع والمتابعة فقط، ولا يدخلان المنافسة.</p></div>
@@ -858,16 +1139,24 @@ function vComp(){
   if (m.status === 'pending') return pc + `<div class="card"><h2>طلبك قيد المراجعة</h2><p class="sub">أهلاً ${esc(m.name)}. وصل طلبك إلى المشرف. ${isParent(m) ? 'تُفتح لك لوحة المتابعة هنا فور الموافقة.' : 'تُفتح لك المحادثات والمنافسة هنا فور الموافقة.'}</p></div>`;
   if (m.status === 'approved' && isParent(m)) return pc + vParent(m);
   if (m.status !== 'approved') return `<div class="card"><h2>لم يُقبل طلب الانضمام</h2><p class="sub">${g('تواصل', 'تواصلي')} مع المشرف إن كان ذلك خطأ.</p></div>`;
-  const B = X.board, my = B ? B.findIndex(r => r.id === X.uid) : -1;
-  const row = (r, i) => `<div class="brd ${r.id === X.uid ? 'me' : ''}"><span class="n">${i + 1}</span><span class="nm">${esc(r.name)} ${TITLE(i, r.gender === 'f') ? `<span class="tier">${TITLE(i, r.gender === 'f')}</span>` : ''}</span><span class="sc">${r.total}</span></div>`;
+  const B = BOARD(), my = B ? B.findIndex(r => r.id === X.uid) : -1;
+  const row = (r, i) => `<div class="brd ${r.id === X.uid ? 'me' : ''}"><span class="n">${i + 1}</span><span class="nm"><span aria-hidden="true">${STAGES[stageOf(r.total)][1]}</span> ${esc(r.name)} ${TITLE(i, r.gender === 'f') ? `<span class="tier">${TITLE(i, r.gender === 'f')}</span>` : ''}</span><span class="sc">${seasonPts(r)}</span></div>`;
+  const tot = m.total || 0, si = stageOf(tot), nx = STAGES[si + 1], sk = streakOf(m), today = m.day === dayKey();
+  const prog = nx ? Math.round(100 * (tot - STAGES[si][0]) / (nx[0] - STAGES[si][0])) : 100;
+  const myC = (X.certs || []).filter(c => c.status === 'ok' && c.uid === X.uid).length;
   const lim = X.full ? 100 : 5;
   let list;
   if (!B) list = `<p class="sub" style="margin:0">جارٍ تحميل الترتيب…</p>`;
   else if (!B.length) list = `<p class="sub" style="margin:0">لا نقاط بعد. ${g('ابدأ', 'ابدئي')} محادثة ${g('لتتصدّر', 'لتتصدّري')} الترتيب.</p>`;
   else list = B.slice(0, lim).map(row).join('') + (my >= lim ? row(B[my], my) : '') + (B.length > 5 ? `<button class="x" data-act="full" style="margin-top:8px">${X.full ? 'عرض أقل' : 'عرض الترتيب كاملاً'}</button>` : '');
-  return pc + `<div class="card stack"><div class="stats"><div class="stat"><b>${m.total || 0}</b><span>${g('نقاطك', 'نقاطكِ')}</span></div><div class="stat"><b>${my >= 0 ? my + 1 : '–'}</b><span>${g('ترتيبك', 'ترتيبكِ')}${B ? ' من ' + B.length : ''}</span></div></div>
-    <div><h2>ترتيب المتنافسين</h2><div>${list}</div></div>
-    <p class="sub" style="margin:0">الفهم من أول محاولة: 10 نقاط × المستوى. بعد الإعادة: 5 × المستوى. إكمال المحادثة: 10 نقاط.</p></div>`;
+  return pc + `<div class="card stack"><div class="stats three"><div class="stat"><b>${seasonPts(m)}</b><span>نقاط الموسم</span></div><div class="stat"><b>${my >= 0 ? my + 1 : '–'}</b><span>${g('ترتيبك', 'ترتيبكِ')}${B && B.length ? ' من ' + B.length : ''}</span></div><div class="stat fire"><b>🔥 ${sk}</b><span>أيام متتالية</span></div></div>
+    <div class="stgbox"><div class="row" style="justify-content:space-between"><span class="stg">${STAGES[si][1]} <span>${STAGES[si][2]}</span> <span lang="zh">${STAGES[si][3]}</span></span><span class="sub" style="margin:0"><span>النقاط الكلية:</span> <b>${tot}</b></span></div>
+      <div class="bar"><i style="width:${prog}%"></i></div>
+      <p class="sub" style="margin:0">${nx ? `<span>باقي على مرحلة</span> ${nx[1]} <span>${nx[2]}</span>: <b>${nx[0] - tot}</b> <span>نقطة</span>` : '<span>وصلت إلى أعلى مرحلة!</span>'}</p></div>
+    ${sk && !today ? `<p class="sub" style="margin:0">${g('تدرّب', 'تدرّبي')} اليوم لتحافظ على سلسلتك 🔥</p>` : !sk ? `<p class="sub" style="margin:0">${g('اكسب', 'اكسبي')} نقاطاً كل يوم لتبني سلسلة أيام متتالية 🔥</p>` : ''}
+    <div class="row"><button class="btn plain grow" data-act="certs">🏅 شهاداتي <b>${myC}</b></button><button class="btn plain grow" data-act="honor">🏆 لوحة الشرف</button></div>
+    <div><h2>ترتيب الموسم ${SEASON()}</h2><div>${list}</div></div>
+    <p class="sub" style="margin:0">الفهم من أول محاولة: 10 نقاط × المستوى. بعد الإعادة: 5 × المستوى. إكمال المحادثة: 10 نقاط. تحدي الأسبوع: النقاط مضاعفة ×2.</p></div>`;
 }
 function lockNote(guest){
   const why = guest ? 'المحادثات مخصّصة للمتنافسين المقبولين. سجّل اسمك أولاً، وتُفتح لك بعد موافقة المشرف.' : X.off ? 'تعذّر الاتصال بخدمة المنافسة. تحقق من الإنترنت ثم أعد فتح الصفحة.'
@@ -898,8 +1187,9 @@ function vAdmin(){
   return header() + `<div class="qhead"><h2>لوحة المشرف</h2><button class="x" data-act="adminOut">خروج المشرف</button></div><div class="sec">
     <button class="tile" data-act="preview"><span class="grow"><h3>صفحة التسجيل للجدد</h3><span class="meta">شاهد ما يراه المسجّل الجديد عند فتح التطبيق أول مرة</span></span><span class="go">‹</span></button>
     <div class="card"><h3>طلبات الانضمام (${P.length})</h3>${P.length ? P.map(r => `<div class="li">${who(r)}${lk(r)}${btn('approve', r, 'موافقة', 'ok')}${btn('reject', r, 'رفض', 'bad')}</div>`).join('') : '<p class="sub">لا توجد طلبات جديدة.</p>'}</div>
-    <div class="card"><h3>المتنافسون (${A.length})</h3>${A.length ? A.map(r => `<div class="li">${who(r)}<span class="chip">${r.total || 0} نقطة</span>${lk(r)}${btn('reset', r, 'تصفير النقاط')}${btn('reject', r, 'إيقاف', 'bad')}</div>`).join('') : '<p class="sub">لا يوجد متنافسون بعد.</p>'}</div>
+    <div class="card"><h3>المتنافسون (${A.length})</h3>${A.length ? A.map(r => `<div class="li">${who(r)}<span class="chip">الموسم: ${seasonPts(r)}</span><span class="chip">الكلي: ${r.total || 0}</span>${lk(r)}${btn('reset', r, 'تصفير النقاط')}${btn('reject', r, 'إيقاف', 'bad')}</div>`).join('') : '<p class="sub">لا يوجد متنافسون بعد.</p>'}</div>
     ${PR.length ? `<div class="card"><h3>أولياء الأمور والمعلمون (${PR.length})</h3><p class="sub" style="margin:0">للاطلاع فقط، لا يظهرون في الترتيب.</p>${PR.map(r => `<div class="li">${who(r)}${lk(r)}${btn('reject', r, 'إيقاف', 'bad')}</div>`).join('')}</div>` : ''}
+    ${vSeasonAdmin(A)}
     ${J.length ? `<div class="card"><h3>المرفوضون والموقوفون (${J.length})</h3>${J.map(r => `<div class="li">${who(r)}${btn('approve', r, 'قبول', 'ok')}${btn('del', r, 'حذف', 'bad')}</div>`).join('')}</div>` : ''}
     ${back}</div>`;
 }
@@ -1238,8 +1528,8 @@ function installHelp(){
 }
 const CREDIT = '<p class="credit">© الحقوق محفوظة · فكرة وتنفيذ <b dir="ltr">alfifitop2015</b> · بواسطة <b>Claude</b></p>';
 function vList(){
-  const lv = SAVE.level || 0;
-  const tile = s => { const b = SAVE.best[s.id]; return `<button class="tile" data-talk="${s.id}"><span class="grow"><h3>${s.t}</h3><span class="meta">${LANG === 'zh' ? '' : `<span class="zh" lang="zh">${s.z}</span> · `}${s.turns.length} جمل${b != null ? ' · أفضل نتيجة ' + b + '%' : ''}</span></span><span class="go">‹</span></button>`; };
+  const lv = SAVE.level || 0, chId = challenge(), chT = TALKS.find(x => x.id === chId);
+  const tile = s => { const b = SAVE.best[s.id]; return `<button class="tile ${s.id === chId ? 'chtile' : ''}" data-talk="${s.id}"><span class="grow"><h3>${s.t}${s.id === chId ? ' <span class="x2">×2</span>' : ''}</h3><span class="meta">${LANG === 'zh' ? '' : `<span class="zh" lang="zh">${s.z}</span> · `}${s.turns.length} جمل${b != null ? ' · أفضل نتيجة ' + b + '%' : ''}</span></span><span class="go">‹</span></button>`; };
   const groups = [1, 2, 3].filter(l => !lv || l === lv).map(l => `<h2>محادثات المستوى ال${LV[l]}</h2>${TALKS.filter(x => x.l === l).map(tile).join('')}`).join('');
   return header() + inappNote() + `<div class="band"><span class="tcmic">${MICSVG}</span><div class="grow"><h1>المحادثة الصوتية</h1><p class="sub">تحدّث بالصينية، والتطبيق يسمعك ويصحّح لك.</p></div></div>
   <div class="sec">
@@ -1248,6 +1538,7 @@ function vList(){
    ${vComp()}
    ${X.me && X.uid ? '<div class="foot"><button class="x" data-act="mylink">الدخول من جهاز آخر</button></div>' : ''}
    ${allowed() ? `
+   ${isParent(X.me) ? '' : `<div class="chal"><div class="grow"><span class="lbl">🏆 تحدي الأسبوع</span><h3>${chT.t}</h3><span class="meta">نقاط مضاعفة ×2 حتى نهاية الأسبوع</span></div><button class="btn" data-talk="${chT.id}">ابدأ</button></div>`}
    <div class="stack" style="gap:6px"><span class="lbl">من يبدأ الحوار؟</span>
     <div class="seg">${[['app','التطبيق يسأل وأنا أجيب'],['me','أنا أبدأ والتطبيق يرد']].map(([v, n]) => `<button class="${(SAVE.mode === 'me' ? 'me' : 'app') === v ? 'on' : ''}" data-mode="${v}" aria-pressed="${(SAVE.mode === 'me' ? 'me' : 'app') === v}">${n}</button>`).join('')}</div>
     <div class="card"><p style="margin:0;font-size:14px">${SAVE.mode === 'me'
@@ -1280,10 +1571,10 @@ function vRun(){
     : `<button class="mic ${TK.listening ? 'on' : ''}" data-act="tkMic" aria-label="${TK.listening ? 'إيقاف' : 'تكلّم'}">${MICSVG}</button><div class="tklive" id="tklive" lang="zh">${TK.listening ? '…' : ''}</div><p class="note">${TK.listening ? 'أستمع إليك… تكلّم الآن، ثم اضغط للإيقاف' : 'اضغط وتكلّم بالصينية'}</p><button class="x" data-act="tkType">اكتب بدلاً من ذلك</button>`}
     ${TK.attempts < 2 ? `<button class="x" data-act="tkShow">${TK.mode === 'me' ? 'لا أعرف، أظهر الجملة' : 'لا أعرف، اقترح رداً'}</button>` : ''}</div>`;
   return header() + inappNote() + `<div class="qhead"><h2>${s.t}${LANG === 'zh' ? '' : ` <span class="zh" lang="zh" style="font-size:16px;color:var(--muted)">${s.z}</span>`}</h2><button class="x" data-act="tkQuit">إنهاء</button></div>
-  <div class="sec"><p class="prog">الجملة ${Math.min(TK.i + 1, n)} من ${n} · المستوى ال${LV[s.l]} · ${TK.mode === 'me' ? 'أنت تبدأ' : 'التطبيق يبدأ'}${AIOK ? ' · تصحيح بالذكاء الاصطناعي' : ''}${isParent(X.me) ? ' · وضع الاطلاع (بلا نقاط)' : ''}</p><div class="bar"><i style="width:${100 * (TK.done ? n : TK.i) / n}%"></i></div>
+  <div class="sec"><p class="prog">الجملة ${Math.min(TK.i + 1, n)} من ${n} · المستوى ال${LV[s.l]} · ${TK.mode === 'me' ? 'أنت تبدأ' : 'التطبيق يبدأ'}${AIOK ? ' · تصحيح بالذكاء الاصطناعي' : ''}${isParent(X.me) ? ' · وضع الاطلاع (بلا نقاط)' : s.id === challenge() ? ' · تحدي الأسبوع ×2' : ''}</p><div class="bar"><i style="width:${100 * (TK.done ? n : TK.i) / n}%"></i></div>
   ${tutorCard()}<div class="chat" aria-live="polite">${log}</div>${ctl}</div>${CREDIT}`;
 }
-function render(){ app.innerHTML = view === 'run' && TK ? vRun() : view === 'admin' ? vAdmin() : view === 'preview' && X.admin ? vPreview() : vList(); }
+function render(){ app.innerHTML = view === 'run' && TK ? vRun() : view === 'admin' ? vAdmin() : view === 'preview' && X.admin ? vPreview() : view === 'certs' && X.me ? vCerts() : view === 'honor' && (X.me || X.admin) ? vHonor() : vList(); }
 
 /* ============ المقطع التعريفي ============ */
 function closeIntro(){ const el = document.getElementById('intro'); if (!el) return; const v = el.querySelector('video'); if (v){ try{ v.pause(); }catch(e){} } el.remove(); document.body.style.overflow = ''; }
@@ -1319,6 +1610,14 @@ app.addEventListener('click', e => {
   if (b.dataset.act === 'admin'){ X.err = ''; go('admin'); return; }
   if (b.dataset.act === 'home'){ X.err = ''; X.confirm = ''; go('list'); return; }
   if (b.dataset.act === 'adminOut'){ if (authA) authA.signOut(); go('list'); return; }
+  if (b.dataset.act === 'certs'){ go('certs'); return; }
+  if (b.dataset.act === 'honor'){ X.back = view; go('honor'); return; }
+  if (b.dataset.act === 'goback'){ go(X.back === 'admin' ? 'admin' : 'list'); return; }
+  if (b.dataset.cert){ const c = (X.certs || []).find(x => x.id === b.dataset.cert); if (c) openCert(c); return; }
+  if (b.dataset.cdel){ const id = b.dataset.cdel; if (X.confirm !== 'cdel' + id){ X.confirm = 'cdel' + id; return render(); } X.confirm = ''; fsA.collection('zhCerts').doc(id).delete().then(() => toast('تم إلغاء الشهادة'), afail); return; }
+  if (b.dataset.pc != null){ const p = (X.pend || [])[+b.dataset.pc]; if (!p) return; if (b.dataset.pv === 'view') openCert(Object.assign({at:Date.now()}, p)); else issueCert(p, b.dataset.pv); return; }
+  if (b.dataset.act === 'endSeason'){ endSeason(); return; }
+  if (b.dataset.act === 'saveSigner'){ const v = (($('#signer') && $('#signer').value) || '').trim().slice(0, 40); fsA.collection('zhConfig').doc('main').set({signer:v}, {merge:true}).then(() => toast(v ? 'تم حفظ الاسم' : 'تم حذف الاسم'), afail); return; }
   if (b.dataset.act === 'full'){ X.full = !X.full; render(); return; }
   if (b.dataset.act === 'install'){ const ev = installEvt; if (ev){ installEvt = null; ev.prompt(); render(); } else installHelp(); return; }
   const act = b.dataset.act; if (!act || (!TK && act !== 'tkList')) return;
@@ -1333,6 +1632,7 @@ document.addEventListener('toggle', e => { if (e.target && e.target.id === 'logi
 app.addEventListener('input', e => { if (e.target.id === 'jname') JF.name = e.target.value; if (e.target.id === 'jpin') JF.pin = e.target.value; });
 /* المشرف يصحّح صفة المسجّل إذا أخطأ في التسجيل (طالب، ولي أمر، معلم…) */
 app.addEventListener('change', e => {
+  if (e.target.id === 'chsel' && X.admin){ const v = e.target.value; fsA.collection('zhConfig').doc('main').set({ch:v ? {wk:weekNo(), talk:v} : null}, {merge:true}).then(() => toast('تم تحديث تحدي الأسبوع'), afail); return; }
   const id = e.target.dataset && e.target.dataset.kind; if (!id || !X.admin || !fsA) return;
   const [role, gender] = e.target.value.split(':');
   fsA.collection(COL).doc(id).update({role, gender, updated:Date.now()}).then(() => toast('تم تغيير الصفة'), () => toast('لم يُنفَّذ الطلب. تحقق من الإنترنت ومن نشر قواعد قاعدة البيانات.'));
@@ -1342,6 +1642,8 @@ app.addEventListener('submit', e => {
   if (e.target.id === 'loginform'){ if (view === 'preview'){ toast('هذه معاينة فقط، لا يُرسل الطلب.'); return; } if (!X.busy) enterWithCode(); return; }
   if (e.target.id === 'pinform'){ if (!X.busy) savePin(); return; }
   if (e.target.id === 'joinform'){ if (view === 'preview'){ toast('هذه معاينة فقط، لا يُرسل الطلب.'); return; } if (!X.busy) join(); return; }
+  if (e.target.id === 'specform'){ const id = ($('#scuid') && $('#scuid').value) || '', t = (($('#sctitle') && $('#sctitle').value) || '').trim().slice(0, 40); const r = (X.rows || []).find(x => x.id === id);
+    if (!r || !t) return toast('اختر الطالب واكتب سبب التميّز.'); issueCert({uid:r.id, name:r.name || '', gender:r.gender || 'm', kind:'special', title:t}, 'ok'); e.target.reset(); return; }
   if (e.target.id === 'admform'){ if (!X.busy) adminLogin(); return; }
   const i = $('#tkin'); if (!i || !TK || TK.busy) return;
   const v = i.value.trim(); if (v) tkEval([v.slice(0, 300)]);
