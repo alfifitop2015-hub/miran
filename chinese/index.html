@@ -121,7 +121,9 @@ label.f{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:14p
 .brd .nm{min-width:0;overflow-wrap:anywhere}
 .tier{font-size:11px;padding:1px 8px;border-radius:999px;border:1px solid var(--chalk);white-space:nowrap}
 .li{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
-.li:last-child{border-bottom:none}.li .grow{overflow-wrap:anywhere}
+.li:last-child{border-bottom:none}.li .grow{overflow-wrap:break-word;word-break:normal}
+.li>.grow{flex:1 1 100%;display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-width:0}
+.li>.grow b{white-space:normal}.li .kindsel{flex:0 0 auto;width:auto;min-width:96px}
 .x.ok{border-color:var(--ok);color:var(--ok)}.x.bad{border-color:var(--bad);color:var(--bad)}
 .foot{display:flex;justify-content:center;margin-top:6px}
 .ivcard{display:flex;align-items:center;gap:14px;width:100%;text-align:start;border:none;border-radius:18px;padding:12px 16px;background:linear-gradient(135deg,#1F1A4A,#2F2475);box-shadow:0 10px 22px -14px #1F1A4A;color:#fff}
