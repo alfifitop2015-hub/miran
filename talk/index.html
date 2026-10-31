@@ -168,7 +168,7 @@ h1{font-size:28px;font-weight:800}h2{font-size:21px;font-weight:700}h3{font-size
 @keyframes ivok{50%{transform:scale(1.06)}}@keyframes ivtw{50%{opacity:.35;transform:scale(.8)}}@keyframes ivpulse{50%{transform:scale(1.05)}}
 @media (prefers-reduced-motion:reduce){.iv-ov *,.iv-ov{animation:none!important}}
 
-.credit{text-align:center;font-size:12px;color:var(--muted);padding:18px 16px 26px;line-height:1.7}.credit b{font-weight:700}
+.credit{text-align:center;font-size:11.5px;color:var(--muted);line-height:1.6;position:sticky;bottom:0;z-index:20;margin-top:14px;padding:6px 12px calc(6px + env(safe-area-inset-bottom,0px));background:color-mix(in srgb,var(--paper) 90%,transparent);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);border-top:1px solid var(--line)}.credit b{font-weight:700}
 .rkt{display:inline-block;font-size:12px;font-weight:700;border-radius:99px;padding:1px 9px;margin-inline-start:4px;vertical-align:middle;white-space:nowrap}
 .rkt.r1{background:#FFE9A8;color:#7A5200}.rkt.r2{background:#E6E9F0;color:#3E4658}.rkt.r3{background:#F6D9C2;color:#7A3E12}.rkt.r4{background:color-mix(in srgb,var(--pink) 16%,transparent);color:var(--pink)}.rkt.r5{background:color-mix(in srgb,var(--en) 14%,transparent);color:var(--en)}.rkt.r6{background:color-mix(in srgb,var(--th) 14%,transparent);color:var(--th)}
 .seccard{display:flex;align-items:center;gap:16px;width:100%;text-align:start;border:none;border-radius:20px;padding:20px;color:#fff;background:linear-gradient(135deg,var(--c),var(--c2));box-shadow:0 14px 30px -14px var(--c);cursor:pointer}
@@ -1115,6 +1115,7 @@ async function drawCert(d){await certFonts();const W=1600,H=1130,c=document.crea
  x.fillStyle='#4a4560';x.font='500 32px '+FB;x.fillText(`${GRADES[d.grade]?GRADES[d.grade]+' · ':''}${d.day?(F?'أتمّتها في ':'أتمّها في ')+hDate(d.day):''}`,W/2,P+892);
  x.fillStyle=c1;x.font='600 30px '+FB;x.fillText('كلما تدرّبت أكثر زادت نقاطك 🌟',W/2,P+948);
  x.fillStyle='#8a86a0';x.font='500 22px '+FB;x.textAlign='right';x.fillText('إدارة منافسة مِران',W-P-115,H-P-62);
+ x.save();x.direction='rtl';x.textAlign='center';x.fillStyle='rgba(255,255,255,.92)';x.font='500 22px '+FB;x.fillText('© جميع الحقوق محفوظة · فكرة وإعداد وتنفيذ alfifitop2015 بواسطة Claude AI',W/2,H-18);x.restore();
  x.textAlign='left';x.direction='ltr';x.fillText('No. S'+n+'-'+(d.rank||0)+'-'+(d.sid||'').slice(0,6).toUpperCase(),P+115,H-P-62);
  return c}
 function rr(x,a,b,w,h,r){x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+h,r);x.arcTo(a+w,b+h,a,b+h,r);x.arcTo(a,b+h,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath()}
