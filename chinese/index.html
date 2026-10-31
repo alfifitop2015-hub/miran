@@ -127,6 +127,7 @@ label.f{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:14p
 .lvh{display:flex;align-items:center;gap:8px}.lvh i{width:14px;height:14px;border-radius:4px;flex:none}
 .lvh1 i{background:var(--lv1b)}.lvh2 i{background:var(--lv2b)}.lvh3 i{background:var(--lv3)}
 .medal{font-size:30px;line-height:1}
+.semh{font-size:17px;color:var(--acc);border-bottom:2px solid var(--line);padding-bottom:4px;margin-top:6px}
 .certimg img{width:100%;height:auto;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.15);display:block}
 .okbox{background:var(--okbg);color:var(--ok);font-weight:700;border-radius:12px;padding:10px 12px}
 .btn.danger{background:var(--bad)}
@@ -302,7 +303,7 @@ const app = $('#app');
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const KEY = 'zh-talk-v1';
 /* ============ محادثات كتب اللغة الصينية للمرحلة المتوسطة (السعودية) ============
-   محادثة لكل وحدة، مبنية على موضوعات دروس كتاب الطالب (أول متوسط ف1، ثاني متوسط ف1، ثالث متوسط ف1 وف2).
+   محادثة لكل وحدة، مبنية على موضوعات دروس كتاب الطالب للفصلين الدراسيين في كل صف.
    صيغة الجملة: [سؤال التطبيق، النطق، المعنى، تلميح، رد نموذجي، نطقه، كلمات مفتاحية، المعنى بالإنجليزية] */
 const GRADES = {1:'أول متوسط', 2:'ثاني متوسط', 3:'ثالث متوسط'};
 const BOOK = [
@@ -398,6 +399,104 @@ const BOOK = [
 ['你打算什么时候去中国？','Nǐ dǎsuan shénme shíhou qù Zhōngguó?','متى تنوي الذهاب إلى الصين؟','我打算…去（明年 / 暑假）','我打算明年暑假去。','Wǒ dǎsuan míngnián shǔjià qù.','打算|明年|暑假|时候','When do you plan to go to China?'],
 ['你想去中国的哪个城市？','Nǐ xiǎng qù Zhōngguó de nǎ ge chéngshì?','أي مدينة صينية تريد زيارتها؟','我想去…（北京 / 上海）','我想去北京。','Wǒ xiǎng qù Běijīng.','北京|上海|想去|广州','Which Chinese city do you want to visit?'],
 ['你想在那儿做什么？','Nǐ xiǎng zài nàr zuò shénme?','ماذا تريد أن تفعل هناك؟','我想…','我想去看长城。','Wǒ xiǎng qù kàn Chángchéng.','想|看|长城|吃|说汉语','What do you want to do there?']]},
+/* ---------- أول متوسط: الفصل الثاني ---------- */
+{id:'g1b1',g:1,s:2,u:1,t:'الوقت والتاريخ',en:'Time and date',z:'现在几点？ · 你们几月几日开学？',turns:[
+['现在几点？','Xiànzài jǐ diǎn?','كم الساعة الآن؟','现在…点','现在八点半。','Xiànzài bā diǎn bàn.','点|半|分','What time is it now?'],
+['你们几月几日开学？','Nǐmen jǐ yuè jǐ rì kāixué?','في أي يوم وشهر تبدأ دراستكم؟','我们…月…日开学','我们八月二十四日开学。','Wǒmen bā yuè èrshísì rì kāixué.','月|日|号|开学','When does your school term start?'],
+['你几点上课？','Nǐ jǐ diǎn shàngkè?','في أي ساعة تبدأ حصصك؟','我…点上课','我七点上课。','Wǒ qī diǎn shàngkè.','点|上课','What time do your classes start?'],
+['你几点放学？','Nǐ jǐ diǎn fàngxué?','في أي ساعة ينتهي دوامك المدرسي؟','我…点放学','我一点放学。','Wǒ yī diǎn fàngxué.','点|放学','What time does school finish?'],
+['今天是几月几日？','Jīntiān shì jǐ yuè jǐ rì?','ما تاريخ اليوم؟','今天是…月…日','今天是十一月一日。','Jīntiān shì shíyī yuè yī rì.','月|日|号','What’s the date today?']]},
+{id:'g1b2',g:1,s:2,u:2,t:'الجدول اليومي والخطط',en:'Schedule and plans',z:'我早上五点起床 · 你要去哪儿玩儿？',turns:[
+['你早上几点起床？','Nǐ zǎoshang jǐ diǎn qǐchuáng?','متى تستيقظ صباحاً؟','我早上…点起床','我早上五点起床。','Wǒ zǎoshang wǔ diǎn qǐchuáng.','点|起床','What time do you get up?'],
+['起床以后你做什么？','Qǐchuáng yǐhòu nǐ zuò shénme?','ماذا تفعل بعد أن تستيقظ؟','起床以后我…','起床以后我吃早饭。','Qǐchuáng yǐhòu wǒ chī zǎofàn.','以后|吃|早饭|洗','What do you do after getting up?'],
+['你晚上几点睡觉？','Nǐ wǎnshang jǐ diǎn shuìjiào?','متى تنام ليلاً؟','我晚上…点睡觉','我晚上十点睡觉。','Wǒ wǎnshang shí diǎn shuìjiào.','点|睡觉','What time do you go to bed?'],
+['周末你要去哪儿玩儿？','Zhōumò nǐ yào qù nǎr wánr?','إلى أين تريد أن تذهب للتنزه في نهاية الأسبوع؟','我要去…玩儿','我要去公园玩儿。','Wǒ yào qù gōngyuán wánr.','去|玩|要','Where do you want to go for fun at the weekend?'],
+['你和谁一起去？','Nǐ hé shéi yìqǐ qù?','مع من تذهب؟','我和…一起去','我和我的家人一起去。','Wǒ hé wǒ de jiārén yìqǐ qù.','和|一起','Who are you going with?']]},
+{id:'g1b3',g:1,s:2,u:3,t:'المهن والعمل',en:'Jobs and work',z:'我想当医生 · 你爸爸在哪儿工作？',turns:[
+['你以后想当什么？','Nǐ yǐhòu xiǎng dāng shénme?','ماذا تريد أن تصبح في المستقبل؟','我想当…','我想当医生。','Wǒ xiǎng dāng yīshēng.','想当|医生|老师','What do you want to be in future?'],
+['你为什么想当医生？','Nǐ wèishénme xiǎng dāng yīshēng?','لماذا تريد أن تصبح طبيباً؟','因为我想…','因为我想帮助别人。','Yīnwèi wǒ xiǎng bāngzhù biérén.','因为|帮助|喜欢','Why do you want to be a doctor?'],
+['你爸爸在哪儿工作？','Nǐ bàba zài nǎr gōngzuò?','أين يعمل والدك؟','他在…工作','他在医院工作。','Tā zài yīyuàn gōngzuò.','在|工作|医院|学校|公司','Where does your father work?'],
+['你妈妈做什么工作？','Nǐ māma zuò shénme gōngzuò?','ما عمل والدتك؟','她是…','她是老师。','Tā shì lǎoshī.','她是|老师|医生|工作|在家','What does your mother do?'],
+['你喜欢什么工作？','Nǐ xǐhuan shénme gōngzuò?','ما العمل الذي تحبه؟','我喜欢…','我喜欢老师的工作。','Wǒ xǐhuan lǎoshī de gōngzuò.','喜欢|工作','What job do you like?']]},
+{id:'g1b4',g:1,s:2,u:4,t:'الطقس ودرجة الحرارة',en:'Weather and temperature',z:'明天天气怎么样？ · 今天比昨天热',turns:[
+['明天天气怎么样？','Míngtiān tiānqì zěnmeyàng?','كيف سيكون الطقس غداً؟','明天…','明天很热。','Míngtiān hěn rè.','热|冷|晴|雨|风','What will the weather be like tomorrow?'],
+['今天多少度？','Jīntiān duōshao dù?','كم درجة الحرارة اليوم؟','今天…度','今天三十五度。','Jīntiān sānshíwǔ dù.','度','What’s the temperature today?'],
+['今天比昨天热吗？','Jīntiān bǐ zuótiān rè ma?','هل اليوم أحرّ من أمس؟','今天比昨天…','今天比昨天热。','Jīntiān bǐ zuótiān rè.','比|热|冷','Is today hotter than yesterday?'],
+['利雅得的夏天热不热？','Lìyǎdé de xiàtiān rè bu rè?','هل صيف الرياض حار؟','很热 / 非常热','利雅得的夏天非常热。','Lìyǎdé de xiàtiān fēicháng rè.','热|非常|很','Is summer in Riyadh hot?'],
+['下雨的时候你做什么？','Xià yǔ de shíhou nǐ zuò shénme?','ماذا تفعل عندما تمطر؟','下雨的时候我…','下雨的时候我在家看书。','Xià yǔ de shíhou wǒ zài jiā kàn shū.','在家|看|出去|玩','What do you do when it rains?']]},
+{id:'g1b5',g:1,s:2,u:5,t:'وسائل المواصلات',en:'Getting around',z:'你怎么去学校？ · 坐火车没有坐飞机快',turns:[
+['你怎么去学校？','Nǐ zěnme qù xuéxiào?','كيف تذهب إلى المدرسة؟','我坐…去学校','我坐校车去学校。','Wǒ zuò xiàochē qù xuéxiào.','坐|车|走路|开车','How do you get to school?'],
+['从你家到学校远吗？','Cóng nǐ jiā dào xuéxiào yuǎn ma?','هل المدرسة بعيدة عن بيتك؟','不远 / 很远','不太远。','Bú tài yuǎn.','远|近|不远','Is school far from your home?'],
+['坐车要多长时间？','Zuò chē yào duō cháng shíjiān?','كم تستغرق الطريق بالسيارة؟','要…分钟','要二十分钟。','Yào èrshí fēnzhōng.','分钟|小时|要','How long does it take by car?'],
+['坐火车快还是坐飞机快？','Zuò huǒchē kuài háishi zuò fēijī kuài?','أيهما أسرع: القطار أم الطائرة؟','坐火车没有坐飞机快','坐火车没有坐飞机快。','Zuò huǒchē méiyǒu zuò fēijī kuài.','飞机|快|没有','Which is faster, the train or the plane?'],
+['你坐过飞机吗？','Nǐ zuò guo fēijī ma?','هل ركبت الطائرة من قبل؟','我坐过 / 我没坐过','我坐过飞机。','Wǒ zuò guo fēijī.','坐过|没坐过','Have you ever been on a plane?']]},
+{id:'g1b6',g:1,s:2,u:6,t:'الاتجاهات والمرافق',en:'Directions and facilities',z:'书店在学校的东边 · 你的房间里有电脑吗？',turns:[
+['书店在哪儿？','Shūdiàn zài nǎr?','أين متجر الكتب؟','书店在…的东边 / 西边','书店在学校的东边。','Shūdiàn zài xuéxiào de dōngbian.','东边|西边|南边|北边|旁边|在','Where is the bookshop?'],
+['你家旁边有什么？','Nǐ jiā pángbiān yǒu shénme?','ماذا يوجد بجانب بيتك؟','我家旁边有…','我家旁边有一个超市。','Wǒ jiā pángbiān yǒu yí ge chāoshì.','有|超市|公园|学校|医院','What is next to your home?'],
+['你的房间里有电脑吗？','Nǐ de fángjiān lǐ yǒu diànnǎo ma?','هل في غرفتك حاسوب؟','有 / 没有','我的房间里有电脑。','Wǒ de fángjiān lǐ yǒu diànnǎo.','有|没有|电脑','Is there a computer in your room?'],
+['你的房间里还有什么？','Nǐ de fángjiān lǐ hái yǒu shénme?','ماذا يوجد أيضاً في غرفتك؟','还有…','还有一张床和一张桌子。','Hái yǒu yì zhāng chuáng hé yì zhāng zhuōzi.','床|桌子|椅子|书|有','What else is in your room?'],
+['洗手间在哪儿？','Xǐshǒujiān zài nǎr?','أين دورة المياه؟','在…（左边 / 右边）','洗手间在左边。','Xǐshǒujiān zài zuǒbian.','左边|右边|在|前边|后边','Where is the bathroom?']]},
+{id:'g1b7',g:1,s:2,u:7,t:'الدراسة والمواد',en:'Study and subjects',z:'我从星期天到星期四有中文课 · 我在学习中文呢',turns:[
+['你哪天有中文课？','Nǐ nǎ tiān yǒu Zhōngwén kè?','في أي أيام عندك حصة الصينية؟','我从星期…到星期…有中文课','我从星期天到星期四有中文课。','Wǒ cóng xīngqītiān dào xīngqīsì yǒu Zhōngwén kè.','星期|中文课|有','Which days do you have Chinese class?'],
+['你今天有几节课？','Nǐ jīntiān yǒu jǐ jié kè?','كم حصة عندك اليوم؟','我今天有…节课','我今天有六节课。','Wǒ jīntiān yǒu liù jié kè.','节课|有','How many classes do you have today?'],
+['你最喜欢什么课？','Nǐ zuì xǐhuan shénme kè?','ما مادتك المفضلة؟','我最喜欢…课','我最喜欢中文课。','Wǒ zuì xǐhuan Zhōngwén kè.','喜欢|课','What’s your favourite subject?'],
+['你在做什么呢？','Nǐ zài zuò shénme ne?','ماذا تفعل الآن؟','我在…呢','我在学习中文呢。','Wǒ zài xuéxí Zhōngwén ne.','在|呢|学习','What are you doing right now?'],
+['你觉得中文难吗？','Nǐ juéde Zhōngwén nán ma?','هل ترى الصينية صعبة؟','我觉得…','我觉得中文不太难，很有意思。','Wǒ juéde Zhōngwén bú tài nán, hěn yǒu yìsi.','难|不难|有意思|觉得','Do you think Chinese is hard?']]},
+{id:'g1b8',g:1,s:2,u:8,t:'التسوّق والسؤال عن السعر',en:'Shopping and prices',z:'我吃了三个包子 · 这个杯子多少钱？',turns:[
+['你早上吃了什么？','Nǐ zǎoshang chī le shénme?','ماذا أكلت في الصباح؟','我吃了…','我吃了三个包子。','Wǒ chī le sān ge bāozi.','吃了','What did you eat this morning?'],
+['这个杯子多少钱？','Zhè ge bēizi duōshao qián?','بكم هذا الكوب؟','…块钱','这个杯子二十块钱。','Zhè ge bēizi èrshí kuài qián.','块|钱|元','How much is this cup?'],
+['你要几个？','Nǐ yào jǐ ge?','كم واحداً تريد؟','我要…个','我要两个。','Wǒ yào liǎng ge.','要|个','How many do you want?'],
+['你想买什么颜色的？','Nǐ xiǎng mǎi shénme yánsè de?','أي لون تريد أن تشتري؟','我想买…的','我想买红色的。','Wǒ xiǎng mǎi hóngsè de.','色|红|蓝|白|想买','What colour would you like to buy?'],
+['一共四十块，你用现金还是手机付？','Yígòng sìshí kuài, nǐ yòng xiànjīn háishi shǒujī fù?','المجموع أربعون، هل تدفع نقداً أم بالجوال؟','我用…付','我用手机付。','Wǒ yòng shǒujī fù.','手机|现金|付','That’s forty in total — cash or phone?']]},
+/* ---------- ثاني متوسط: الفصل الثاني ---------- */
+{id:'g2b1',g:2,s:2,u:1,t:'تفضيل الأشياء واختيارها',en:'Preferences and choices',z:'你试试这件衣服吧 · 巧克力的比草莓的更好吃',turns:[
+['你试试这件衣服吧！','Nǐ shìshi zhè jiàn yīfu ba!','جرّب هذا الثوب!','好的，我试试','好的，我试试。','Hǎo de, wǒ shìshi.','试|好','Try this outfit on!'],
+['这件衣服怎么样？','Zhè jiàn yīfu zěnmeyàng?','ما رأيك في هذا الثوب؟','很合适 / 有点儿大','这件衣服很漂亮，也很合适。','Zhè jiàn yīfu hěn piàoliang, yě hěn héshì.','漂亮|合适|大|小','How is this outfit?'],
+['你喜欢巧克力的还是草莓的？','Nǐ xǐhuan qiǎokèlì de háishi cǎoméi de?','هل تحب نكهة الشوكولاتة أم الفراولة؟','我觉得…的更好吃','我觉得巧克力的比草莓的更好吃。','Wǒ juéde qiǎokèlì de bǐ cǎoméi de gèng hǎochī.','巧克力|草莓|更|比','Do you prefer chocolate or strawberry?'],
+['你最喜欢什么颜色？','Nǐ zuì xǐhuan shénme yánsè?','ما لونك المفضل؟','我最喜欢…','我最喜欢粉色。','Wǒ zuì xǐhuan fěnsè.','色|喜欢','What’s your favourite colour?'],
+['这两个，你要哪一个？','Zhè liǎng ge, nǐ yào nǎ yí ge?','من هذين الاثنين، أيهما تريد؟','我要…的那个','我要大的那个。','Wǒ yào dà de nà ge.','要|那个|这个|大|小','Of these two, which one do you want?']]},
+{id:'g2b2',g:2,s:2,u:2,t:'الزملاء والدراسة',en:'Classmates and study',z:'他个子高高的 · 一边走路一边说话',turns:[
+['你的好朋友长什么样？','Nǐ de hǎo péngyou zhǎng shénme yàng?','كيف يبدو صديقك المقرّب؟','她个子高高的，眼睛大大的','她个子高高的，眼睛大大的。','Tā gèzi gāogāo de, yǎnjing dàdà de.','个子|高|眼睛|大|头发','What does your best friend look like?'],
+['她学习怎么样？','Tā xuéxí zěnmeyàng?','كيف مستواها الدراسي؟','她学习很…','她学习很好，很认真。','Tā xuéxí hěn hǎo, hěn rènzhēn.','好|认真|努力','How is she doing at school?'],
+['你们常常一起做什么？','Nǐmen chángcháng yìqǐ zuò shénme?','ماذا تفعلان معاً عادة؟','我们常常一边…一边…','我们常常一边走路一边说话。','Wǒmen chángcháng yìbiān zǒulù yìbiān shuōhuà.','一边|一起|聊天|学习','What do you often do together?'],
+['你喜欢一边吃东西一边看书吗？','Nǐ xǐhuan yìbiān chī dōngxi yìbiān kàn shū ma?','هل تحب أن تأكل وأنت تقرأ؟','喜欢 / 不喜欢，因为…','不喜欢，我喜欢安静地看书。','Bù xǐhuan, wǒ xǐhuan ānjìng de kàn shū.','喜欢|不喜欢|一边','Do you like eating while reading?'],
+['考试以前你和同学一起复习吗？','Kǎoshì yǐqián nǐ hé tóngxué yìqǐ fùxí ma?','هل تراجع مع زملائك قبل الاختبار؟','我们一起复习 / 我自己复习','我们常常一起复习。','Wǒmen chángcháng yìqǐ fùxí.','复习|一起|自己','Do you revise with classmates before exams?']]},
+{id:'g2b3',g:2,s:2,u:3,t:'الأماكن والسؤال عن الطريق',en:'Places and asking the way',z:'学校的南边是一家超市 · 离这儿远吗？',turns:[
+['学校的南边是什么？','Xuéxiào de nánbian shì shénme?','ماذا يوجد جنوب المدرسة؟','学校的南边是…','学校的南边是一家超市。','Xuéxiào de nánbian shì yì jiā chāoshì.','南边|超市|是|公园','What is south of the school?'],
+['请问，地铁站怎么走？','Qǐngwèn, dìtiězhàn zěnme zǒu?','لو سمحت، كيف أصل إلى محطة المترو؟','一直往前走，然后往…拐','一直往前走，然后往右拐。','Yìzhí wǎng qián zǒu, ránhòu wǎng yòu guǎi.','往|走|拐|前|右|左','Excuse me, how do I get to the metro station?'],
+['离这儿远吗？','Lí zhèr yuǎn ma?','هل هي بعيدة عن هنا؟','不远，走…分钟就到了','不远，走五分钟就到了。','Bù yuǎn, zǒu wǔ fēnzhōng jiù dào le.','远|不远|分钟|近','Is it far from here?'],
+['你家离学校远吗？','Nǐ jiā lí xuéxiào yuǎn ma?','هل بيتك بعيد عن المدرسة؟','我家离学校…','我家离学校很近。','Wǒ jiā lí xuéxiào hěn jìn.','离|近|远','Is your home far from school?'],
+['附近有医院吗？','Fùjìn yǒu yīyuàn ma?','هل يوجد مستشفى قريب؟','有，在…','有，在超市的旁边。','Yǒu, zài chāoshì de pángbiān.','有|没有|在|旁边','Is there a hospital nearby?']]},
+{id:'g2b4',g:2,s:2,u:4,t:'القدرات والعادات',en:'Abilities and habits',z:'你听懂了吗？ · 我早上5点就起床了',turns:[
+['老师说的话，你听懂了吗？','Lǎoshī shuō de huà, nǐ tīng dǒng le ma?','هل فهمت ما قاله المعلم؟','听懂了 / 没听懂','我听懂了。','Wǒ tīng dǒng le.','听懂|没听懂|懂','Did you understand what the teacher said?'],
+['你能看懂中文书吗？','Nǐ néng kàn dǒng Zhōngwén shū ma?','هل تستطيع فهم كتاب صيني؟','能看懂一点儿 / 看不懂','简单的我能看懂。','Jiǎndān de wǒ néng kàn dǒng.','看懂|看不懂|能|一点','Can you understand Chinese books?'],
+['你今天几点起床的？','Nǐ jīntiān jǐ diǎn qǐchuáng de?','متى استيقظت اليوم؟','我…点就起床了','我早上五点就起床了。','Wǒ zǎoshang wǔ diǎn jiù qǐchuáng le.','点|起床|就','What time did you get up today?'],
+['你每天都运动吗？','Nǐ měi tiān dōu yùndòng ma?','هل تمارس الرياضة كل يوم؟','我每天都… / 我有时候…','我每天都走路半个小时。','Wǒ měi tiān dōu zǒulù bàn ge xiǎoshí.','每天|运动|有时候|走路','Do you exercise every day?'],
+['你有什么好习惯？','Nǐ yǒu shénme hǎo xíguàn?','ما عاداتك الحسنة؟','我每天…','我每天早睡早起。','Wǒ měi tiān zǎo shuì zǎo qǐ.','每天|习惯|早|看书','What good habits do you have?']]},
+{id:'g2b5',g:2,s:2,u:5,t:'الطلبات والاقتراحات',en:'Requests and suggestions',z:'我马上上去 · 黄色的不如红色的好看',turns:[
+['快上来吃饭吧！','Kuài shànglai chī fàn ba!','اصعد بسرعة لتأكل!','好，我马上上去！','好，我马上上去！','Hǎo, wǒ mǎshàng shàngqu!','马上|好|来了|上去','Come up quickly and eat!'],
+['你能帮我拿一下书吗？','Nǐ néng bāng wǒ ná yíxià shū ma?','هل يمكنك أن تناولني الكتاب؟','当然可以 / 好的','当然可以，给你。','Dāngrán kěyǐ, gěi nǐ.','可以|好|给你','Could you pass me the book?'],
+['我想买一个书包，你觉得哪个好看？','Wǒ xiǎng mǎi yí ge shūbāo, nǐ juéde nǎ ge hǎokàn?','أريد شراء حقيبة، أيها أجمل برأيك؟','我觉得…的好看','我觉得黄色的不如红色的好看。','Wǒ juéde huángsè de bùrú hóngsè de hǎokàn.','觉得|好看|不如|红色|黄色','I want to buy a schoolbag — which looks better?'],
+['我们周末去哪儿？你有什么建议？','Wǒmen zhōumò qù nǎr? Nǐ yǒu shénme jiànyì?','أين نذهب في نهاية الأسبوع؟ ما اقتراحك؟','我们去…吧','我们去博物馆吧。','Wǒmen qù bówùguǎn ba.','去|吧|建议','Where shall we go at the weekend? Any suggestions?'],
+['我中文说得不好，怎么办？','Wǒ Zhōngwén shuō de bù hǎo, zěnme bàn?','لا أتكلم الصينية جيداً، ماذا أفعل؟','你应该多…','你应该多听多说，每天练习。','Nǐ yīnggāi duō tīng duō shuō, měi tiān liànxí.','应该|多|练习','My spoken Chinese isn’t good — what should I do?']]},
+{id:'g2b6',g:2,s:2,u:6,t:'التجارب والمشاهدات',en:'Experiences and impressions',z:'听说你去过中国 · 我是上个月去的',turns:[
+['听说你去过中国，是真的吗？','Tīngshuō nǐ qù guo Zhōngguó, shì zhēn de ma?','سمعت أنك زرت الصين، هل هذا صحيح؟','是真的 / 我还没去过','是真的，我去过一次。','Shì zhēn de, wǒ qù guo yí cì.','去过|真的|没去过|次','I heard you’ve been to China — is that true?'],
+['你是什么时候去的？','Nǐ shì shénme shíhou qù de?','متى ذهبت؟','我是…去的','我是上个月去的。','Wǒ shì shàng ge yuè qù de.','是|去的|上个月|去年','When did you go?'],
+['你是怎么去的？','Nǐ shì zěnme qù de?','كيف ذهبت؟','我是坐…去的','我是坐飞机去的。','Wǒ shì zuò fēijī qù de.','坐|飞机|去的','How did you go?'],
+['你去过哪些地方？','Nǐ qù guo nǎxiē dìfang?','ما الأماكن التي زرتها؟','我去过…','我去过北京和上海。','Wǒ qù guo Běijīng hé Shànghǎi.','去过|北京|上海','Which places have you been to?'],
+['你在那儿看到了什么？','Nǐ zài nàr kàndào le shénme?','ماذا رأيت هناك؟','我看到了…','我看到了长城和熊猫。','Wǒ kàndào le Chángchéng hé xióngmāo.','看到|看见','What did you see there?']]},
+{id:'g2b7',g:2,s:2,u:7,t:'الأعياد والإجازات',en:'Festivals and holidays',z:'你喜欢这个节日吗？ · 你们假期过得怎么样？',turns:[
+['你喜欢开斋节吗？','Nǐ xǐhuan Kāizhāi Jié ma?','هل تحب عيد الفطر؟','喜欢，因为…','很喜欢，因为可以和家人在一起。','Hěn xǐhuan, yīnwèi kěyǐ hé jiārén zài yìqǐ.','喜欢|因为|家人','Do you like Eid al-Fitr?'],
+['过节的时候你们吃什么？','Guò jié de shíhou nǐmen chī shénme?','ماذا تأكلون في العيد؟','我们吃…','我们吃很多甜点和椰枣。','Wǒmen chī hěn duō tiándiǎn hé yēzǎo.','吃|甜点|椰枣|肉','What do you eat at festival time?'],
+['你们假期过得怎么样？','Nǐmen jiàqī guò de zěnmeyàng?','كيف قضيتم الإجازة؟','过得很…','过得很愉快。','Guò de hěn yúkuài.','过得|愉快|开心|很好','How was your holiday?'],
+['假期你做了什么？','Jiàqī nǐ zuò le shénme?','ماذا فعلت في الإجازة؟','我…了','我去看了爷爷奶奶。','Wǒ qù kàn le yéye nǎinai.','去|看|了','What did you do in the holidays?'],
+['你最喜欢哪个节日？','Nǐ zuì xǐhuan nǎ ge jiérì?','ما المناسبة المفضلة لديك؟','我最喜欢…','我最喜欢宰牲节。','Wǒ zuì xǐhuan Zǎishēng Jié.','节|最喜欢','Which festival do you like most?']]},
+{id:'g2b8',g:2,s:2,u:8,t:'الأشخاص والأماكن',en:'People and places',z:'哪个是哈立德？ · 桌子上放着十多本书',turns:[
+['照片上哪个是你？','Zhàopiàn shang nǎ ge shì nǐ?','أيهم أنت في الصورة؟','穿…的那个是我','穿白衣服的那个是我。','Chuān bái yīfu de nà ge shì wǒ.','那个|穿|是我|左边|右边','Which one in the photo is you?'],
+['哪个是哈立德？','Nǎ ge shì Hālìdé?','أيهم خالد؟','站在…的那个是…','站在中间的那个是哈立德。','Zhàn zài zhōngjiān de nà ge shì Hālìdé.','那个|站|中间|是','Which one is Khalid?'],
+['桌子上放着什么？','Zhuōzi shang fàng zhe shénme?','ماذا يوجد على الطاولة؟','桌子上放着…','桌子上放着十多本书。','Zhuōzi shang fàng zhe shí duō běn shū.','放着|书|本|桌子上','What’s on the table?'],
+['墙上挂着什么？','Qiáng shang guà zhe shénme?','ماذا يُعلَّق على الجدار؟','墙上挂着…','墙上挂着一张地图。','Qiáng shang guà zhe yì zhāng dìtú.','挂着|地图|画|照片','What’s hanging on the wall?'],
+['你的书包放在哪儿了？','Nǐ de shūbāo fàng zài nǎr le?','أين وضعت حقيبتك؟','放在…了','放在椅子上了。','Fàng zài yǐzi shang le.','放在|上|里|旁边','Where did you put your schoolbag?']]},
 /* ---------- ثالث متوسط: الفصل الأول ---------- */
 {id:'g3a1',g:3,s:1,u:1,t:'الحياة والتواصل',en:'Life and communication',z:'好久不见！ · 在利雅得遇见中国饺子',turns:[
 ['好久不见！你最近怎么样？','Hǎojiǔ bú jiàn! Nǐ zuìjìn zěnmeyàng?','لم أرك منذ مدة! كيف حالك مؤخراً؟','好久不见！我最近…','好久不见！我最近挺好的，就是有点儿忙。','Hǎojiǔ bú jiàn! Wǒ zuìjìn tǐng hǎo de, jiùshì yǒudiǎnr máng.','好久不见|最近|挺好|忙|不错','Long time no see! How have you been?'],
@@ -864,7 +963,7 @@ Object.assign(D, {
  'أول متوسط':['Grade 7 (1st intermediate)','初一'], 'ثاني متوسط':['Grade 8 (2nd intermediate)','初二'], 'ثالث متوسط':['Grade 9 (3rd intermediate)','初三'],
  'الصف الدراسي':['School grade','年级'], 'اختر صفك الدراسي':['Choose your school grade','选择你的年级'],
  'تظهر لك محادثات كتاب صفك، وتتنافس مع زميلاتك وزملائك في الصف نفسه.':['You get the conversations from your grade’s textbook and compete with classmates in the same grade.','你会看到本年级课本的对话，并与同年级同学比赛。'],
- 'محادثات عامة':['General conversations','综合对话'], 'الفصل الدراسي الأول':['First semester','第一学期'], 'الفصل الدراسي الثاني':['Second semester','第二学期'],
+ 'محادثات عامة':['General conversations','综合对话'], 'الفصل الأول':['Semester 1','第一学期'], 'الفصل الثاني':['Semester 2','第二学期'], 'الفصل الدراسي الأول':['First semester','第一学期'], 'الفصل الدراسي الثاني':['Second semester','第二学期'],
  'مبنية على موضوعات دروس كتاب اللغة الصينية المقرر.':['Based on the lesson topics of the official Chinese textbook.','根据中文课本各课主题编写。'],
  'اختر صفك الدراسي.':['Choose your school grade.','请选择你的年级。'],
  'كتاب الصف':['Textbook','课本'], 'بلا صف':['No grade','未选年级'], 'الكل':['All','全部']
@@ -1739,12 +1838,12 @@ function vList(){
   const lv = SAVE.level || 0, chId = challenge(), chT = TALKS.find(x => x.id === chId);
   const tile = s => { const b = SAVE.best[s.id]; return `<button class="tile lv${s.l} ${s.id === chId ? 'chtile' : ''}" data-talk="${s.id}"><span class="grow"><h3>${s.t}${s.id === chId ? ' <span class="x2">×2</span>' : ''}</h3><span class="meta">${LANG === 'zh' ? '' : `<span class="zh" lang="zh">${s.z}</span> · `}${s.turns.length} جمل${b != null ? ' · أفضل نتيجة ' + b + '%' : ''}</span></span><span class="go">‹</span></button>`; };
   const myG = X.me && !isParent(X.me) ? (X.me.grade || 0) : (SAVE.bookG || 1);
-  const btile = s => { const b = SAVE.best[s.id]; return `<button class="tile lv${s.g}" data-talk="${s.id}"><span class="grow"><h3>${s.t}</h3><span class="meta"><span>الوحدة ${s.u}</span> · ${LANG === 'zh' ? '' : `<span class="zh" lang="zh">${s.z}</span> · `}${s.turns.length} جمل${b != null ? ' · أفضل نتيجة ' + b + '%' : ''}</span></span><span class="go">‹</span></button>`; };
+  const btile = s => { const b = SAVE.best[s.id]; return `<button class="tile lv${s.g}" data-talk="${s.id}"><span class="grow"><h3>${s.t}</h3><span class="meta"><span>الوحدة ${s.u}</span> · ${LANG === 'zh' ? '' : `<span class="zh" lang="zh" dir="ltr">${s.z}</span>`}${b != null ? ' · أفضل نتيجة ' + b + '%' : ''}</span></span><span class="go">‹</span></button>`; };
   const bk = BOOK.filter(x => x.g === myG), sems = [...new Set(bk.map(x => x.s))];
   const books = myG ? `<div class="stack" style="gap:10px"><h2 class="lvh lvh${myG}"><i aria-hidden="true"></i>📘 محادثات كتاب ${GRADES[myG]}</h2>
     ${isParent(X.me) ? `<div class="seg">${[1, 2, 3].map(k => `<button type="button" class="${myG === k ? 'on' : ''}" data-bookg="${k}" aria-pressed="${myG === k}">${GRADES[k]}</button>`).join('')}</div>` : ''}
     <p class="sub" style="margin:0">مبنية على موضوعات دروس كتاب اللغة الصينية المقرر.</p>
-    ${sems.map(sm => (sems.length > 1 ? `<span class="lbl">${sm === 1 ? 'الفصل الدراسي الأول' : 'الفصل الدراسي الثاني'}</span>` : '') + bk.filter(x => x.s === sm).map(btile).join('')).join('')}</div>` : '';
+    ${sems.map(sm => `<h3 class="semh">${sm === 1 ? 'الفصل الدراسي الأول' : 'الفصل الدراسي الثاني'}</h3>` + bk.filter(x => x.s === sm).map(btile).join('')).join('')}</div>` : '';
   const groups = [1, 2, 3].filter(l => !lv || l === lv).map(l => `<h2 class="lvh lvh${l}"><i aria-hidden="true"></i>محادثات المستوى ال${LV[l]}</h2>${TALKS.filter(x => x.l === l).map(tile).join('')}`).join('');
   return header() + inappNote() + `<div class="band"><span class="tcmic">${MICSVG}</span><div class="grow"><h1>المحادثة الصوتية</h1><p class="sub">تحدّث بالصينية، والتطبيق يسمعك ويصحّح لك.</p></div></div>
   <div class="sec">
@@ -1788,7 +1887,7 @@ function vRun(){
     : `<button class="mic ${TK.listening ? 'on' : ''}" data-act="tkMic" aria-label="${TK.listening ? 'إيقاف' : 'تكلّم'}">${MICSVG}</button><div class="tklive" id="tklive" lang="zh">${TK.listening ? '…' : ''}</div><p class="note">${TK.listening ? 'أستمع إليك… تكلّم الآن، ثم اضغط للإيقاف' : 'اضغط وتكلّم بالصينية'}</p><button class="x" data-act="tkType">اكتب بدلاً من ذلك</button>`}
     ${TK.attempts < 2 ? `<button class="x" data-act="tkShow">${TK.mode === 'me' ? 'لا أعرف، أظهر الجملة' : 'لا أعرف، اقترح رداً'}</button>` : ''}</div>`;
   return header() + inappNote() + `<div class="qhead"><h2>${s.t}${LANG === 'zh' ? '' : ` <span class="zh" lang="zh" style="font-size:16px;color:var(--muted)">${s.z}</span>`}</h2><button class="x" data-act="tkQuit">إنهاء</button></div>
-  <div class="sec"><p class="prog">الجملة ${Math.min(TK.i + 1, n)} من ${n} · ${s.book ? 'كتاب ' + GRADES[s.g] + ' · الوحدة ' + s.u : 'المستوى ال' + LV[s.l]} · ${TK.mode === 'me' ? 'أنت تبدأ' : 'التطبيق يبدأ'}${AIOK ? ' · تصحيح بالذكاء الاصطناعي' : ''}${isParent(X.me) ? ' · وضع الاطلاع (بلا نقاط)' : s.id === challenge() ? ' · تحدي الأسبوع ×2' : ''}</p><div class="bar"><i style="width:${100 * (TK.done ? n : TK.i) / n}%"></i></div>
+  <div class="sec"><p class="prog">الجملة ${Math.min(TK.i + 1, n)} من ${n} · ${s.book ? 'كتاب ' + GRADES[s.g] + ' · ' + (s.s === 2 ? 'الفصل الثاني' : 'الفصل الأول') + ' · الوحدة ' + s.u : 'المستوى ال' + LV[s.l]} · ${TK.mode === 'me' ? 'أنت تبدأ' : 'التطبيق يبدأ'}${AIOK ? ' · تصحيح بالذكاء الاصطناعي' : ''}${isParent(X.me) ? ' · وضع الاطلاع (بلا نقاط)' : s.id === challenge() ? ' · تحدي الأسبوع ×2' : ''}</p><div class="bar"><i style="width:${100 * (TK.done ? n : TK.i) / n}%"></i></div>
   ${tutorCard()}<div class="chat" aria-live="polite">${log}</div>${ctl}</div>${CREDIT}`;
 }
 function render(){ app.innerHTML = view === 'run' && TK ? vRun() : view === 'admin' ? vAdmin() : view === 'preview' && X.admin ? vPreview() : view === 'certs' && X.me ? vCerts() : view === 'honor' && (X.me || X.admin) ? vHonor() : vList(); }
