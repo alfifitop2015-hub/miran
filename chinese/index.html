@@ -963,13 +963,17 @@ Object.assign(D, {
  'أول متوسط':['Grade 7 (1st intermediate)','初一'], 'ثاني متوسط':['Grade 8 (2nd intermediate)','初二'], 'ثالث متوسط':['Grade 9 (3rd intermediate)','初三'],
  'الصف الدراسي':['School grade','年级'], 'اختر صفك الدراسي':['Choose your school grade','选择你的年级'],
  'تظهر لك محادثات كتاب صفك، وتتنافس مع زميلاتك وزملائك في الصف نفسه.':['You get the conversations from your grade’s textbook and compete with classmates in the same grade.','你会看到本年级课本的对话，并与同年级同学比赛。'],
- 'محادثات عامة':['General conversations','综合对话'], 'الفصل الأول':['Semester 1','第一学期'], 'الفصل الثاني':['Semester 2','第二学期'], 'الفصل الدراسي الأول':['First semester','第一学期'], 'الفصل الدراسي الثاني':['Second semester','第二学期'],
+ 'محادثات عامة':['General conversations','综合对话'], 'الفصل الأول':['Semester 1','第一学期'], 'الفصل الثاني':['Semester 2','第二学期'],
+ 'الفصل الدراسي':['Semester','学期'], 'الأول':['First','第一'], 'الثاني':['Second','第二'], 'اختر صفك وفصلك الدراسي':['Choose your grade and semester','选择你的年级和学期'],
+ 'تظهر لك محادثات كتاب صفك للفصل الذي تدرسه، وتتنافس مع زميلاتك وزملائك في الصف نفسه.':['You get your grade’s textbook conversations for your current semester, and compete with classmates in the same grade.','你会看到本年级本学期的课本对话，并与同年级同学比赛。'], 'الفصل الدراسي الأول':['First semester','第一学期'], 'الفصل الدراسي الثاني':['Second semester','第二学期'],
  'مبنية على موضوعات دروس كتاب اللغة الصينية المقرر.':['Based on the lesson topics of the official Chinese textbook.','根据中文课本各课主题编写。'],
  'اختر صفك الدراسي.':['Choose your school grade.','请选择你的年级。'],
  'كتاب الصف':['Textbook','课本'], 'بلا صف':['No grade','未选年级'], 'الكل':['All','全部']
 });
 P.push(
  [/^📘 محادثات كتاب (.+)$/, m => [`📘 ${tx(m[1])} textbook conversations`, `📘 ${tx(m[1])}课本对话`]],
+ [/^مراجعة الفصل الأول \((\d+)\)$/, m => [`Review semester 1 (${m[1]})`, `复习第一学期（${m[1]}）`]],
+ [/^تم: (.+)$/, m => [`Done: ${tx(m[1])}`, `完成：${tx(m[1])}`]],
  [/^الوحدة (\d+)$/, m => [`Unit ${m[1]}`, `第${m[1]}单元`]],
  [/^كتاب (.+)$/, m => [`${tx(m[1])} textbook`, `${tx(m[1])}课本`]],
  [/^ترتيب الموسم (\d+) · (.+)$/, m => [`Season ${m[1]} ranking · ${tx(m[2])}`, `第 ${m[1]} 季排名 · ${tx(m[2])}`]]
@@ -1013,7 +1017,7 @@ applyLang();
 const FB = {apiKey:"AIzaSyDfDRNr06QJKPShAvjuc0UOaFYNlvU5NEo",authDomain:"miran-7ad31.firebaseapp.com",projectId:"miran-7ad31",storageBucket:"miran-7ad31.firebasestorage.app",messagingSenderId:"1089204486985",appId:"1:1089204486985:web:986b4a4ad56190c878d098"};
 const ADMIN_EMAIL = 'alfifitop2015@gmail.com';
 const X = {ready:false, off:false, uid:null, me:null, meLoaded:false, board:null, full:false, admin:false, rows:null, err:'', busy:false, confirm:''};
-const JF = {name:'', gender:'', role:'', pin:'', grade:0};
+const JF = {name:'', gender:'', role:'', pin:'', grade:0, term:1};
 let fsP = null, fsA = null, authP = null, authA = null, INC = null, unsubMe = null, unsubBoard = null, unsubAdmin = null;
 const g = (m, f) => X.me && X.me.gender === 'f' ? f : m;
 const COL = 'zhPlayers';
@@ -1090,7 +1094,8 @@ async function loadNames(){
   }catch(e){ X.names = []; }
   X.namesLoading = false; render();
 }
-const roleWord = r => isParent(r) ? parentWord(r) : (r.gender === 'f' ? 'طالبة' : 'طالب') + (GRADES[r.grade] ? ' · ' + GRADES[r.grade] : '');
+const TERMS = {1:'الفصل الأول', 2:'الفصل الثاني'};
+const roleWord = r => isParent(r) ? parentWord(r) : (r.gender === 'f' ? 'طالبة' : 'طالب') + (GRADES[r.grade] ? ' · ' + GRADES[r.grade] : '') + (TERMS[r.term] ? ' · ' + TERMS[r.term] : '');
 function attach(sid){
   X.uid = sid; X.meLoaded = false;
   if (unsubMe) unsubMe();
@@ -1172,7 +1177,7 @@ async function join(){
   try{
     if (!authP.currentUser) await authP.signInAnonymously();
     const u = authP.currentUser;
-    await fsP.collection(COL).doc(u.uid).set({name, gender:JF.gender, role:['parent', 'teacher'].includes(JF.role) ? JF.role : 'student', status:'pending', total:0, talks:0, created:Date.now(), updated:Date.now(), ...(stu ? {grade:JF.grade} : {})});
+    await fsP.collection(COL).doc(u.uid).set({name, gender:JF.gender, role:['parent', 'teacher'].includes(JF.role) ? JF.role : 'student', status:'pending', total:0, talks:0, created:Date.now(), updated:Date.now(), ...(stu ? {grade:JF.grade, term:JF.term === 2 ? 2 : 1} : {})});
     if (pin){ try{ await fsP.collection('zhSecrets').doc(u.uid).set({pin, at:Date.now(), by:'self'}); X.myPin = pin; X.pinFor = u.uid; }catch(e){} }
   }catch(e){
     X.err = e && e.code === 'permission-denied' ? 'المنافسة لم تُفعَّل بعد من المشرف. حاول لاحقاً.' : 'تعذّر إرسال الطلب. تحقق من الإنترنت ثم حاول مرة أخرى.';
@@ -1417,7 +1422,8 @@ function vParent(m){
 function joinForm(){ return `<form id="joinform" class="card stack"><div><h2>انضم إلى «ني هاو»</h2><p class="sub">سجّل اسمك وصفتك، ويُفتح لك التطبيق بعد موافقة المشرف. ولي الأمر والمعلم يدخلان للاطلاع والمتابعة فقط، ولا يدخلان المنافسة.</p></div>
     <label class="f">الاسم<input type="text" class="ar" id="jname" maxlength="20" autocomplete="off" value="${esc(JF.name)}" placeholder="اكتب اسمك"></label>
     <div class="seg">${[['m','student','طالب'],['f','student','طالبة'],['m','parent','ولي أمر'],['f','parent','ولية أمر'],['m','teacher','معلم'],['f','teacher','معلمة']].map(([gn, rl, lb]) => { const on = JF.gender === gn && (JF.role || 'student') === rl; return `<button type="button" class="${on ? 'on' : ''}" data-gen="${gn}" data-role="${rl}" aria-pressed="${on}" style="flex:1 1 40%">${lb}</button>`; }).join('')}</div>
-    ${(JF.role || 'student') === 'student' && JF.gender ? `<div class="stack" style="gap:6px"><span class="lbl">الصف الدراسي</span><div class="seg">${[1, 2, 3].map(k => `<button type="button" class="${JF.grade === k ? 'on' : ''}" data-jgrade="${k}" aria-pressed="${JF.grade === k}">${GRADES[k]}</button>`).join('')}</div></div>` : ''}
+    ${(JF.role || 'student') === 'student' && JF.gender ? `<div class="stack" style="gap:6px"><span class="lbl">الصف الدراسي</span><div class="seg">${[1, 2, 3].map(k => `<button type="button" class="${JF.grade === k ? 'on' : ''}" data-jgrade="${k}" aria-pressed="${JF.grade === k}">${GRADES[k]}</button>`).join('')}</div></div>
+    <div class="stack" style="gap:6px"><span class="lbl">الفصل الدراسي</span><div class="seg">${[[1, 'الأول'], [2, 'الثاني']].map(([k, n]) => `<button type="button" class="${JF.term === k ? 'on' : ''}" data-jterm="${k}" aria-pressed="${JF.term === k}">${n}</button>`).join('')}</div></div>` : ''}
     <label class="f">رقمك السري (اختياري، 4 أرقام)<input type="text" id="jpin" inputmode="numeric" dir="ltr" autocomplete="off" maxlength="4" pattern="[0-9]*" value="${esc(JF.pin)}" placeholder="••••"></label>
     <p class="sub" style="margin:-4px 0 0">تدخل به إلى حسابك من أي جهاز. تستطيع اختياره الآن أو لاحقاً.</p>
     ${X.err ? `<div class="warn">${esc(X.err)}</div>` : ''}
@@ -1450,7 +1456,9 @@ function vComp(){
   const tot = m.total || 0, si = stageOf(tot), nx = STAGES[si + 1], sk = streakOf(m), today = m.day === dayKey();
   const prog = nx ? Math.round(100 * (tot - STAGES[si][0]) / (nx[0] - STAGES[si][0])) : 100;
   const myC = (X.certs || []).filter(c => c.status === 'ok' && c.uid === X.uid).length;
-  const gc = !m.grade ? `<div class="card stack"><h2>اختر صفك الدراسي</h2><p class="sub" style="margin:0">تظهر لك محادثات كتاب صفك، وتتنافس مع زميلاتك وزملائك في الصف نفسه.</p><div class="seg">${[1, 2, 3].map(k => `<button type="button" data-setgrade="${k}">${GRADES[k]}</button>`).join('')}</div></div>` : '';
+  const gc = !m.grade || !m.term ? `<div class="card stack"><h2>اختر صفك وفصلك الدراسي</h2><p class="sub" style="margin:0">تظهر لك محادثات كتاب صفك للفصل الذي تدرسه، وتتنافس مع زميلاتك وزملائك في الصف نفسه.</p>
+    <span class="lbl">الصف الدراسي</span><div class="seg">${[1, 2, 3].map(k => `<button type="button" class="${m.grade === k ? 'on' : ''}" data-setgrade="${k}">${GRADES[k]}</button>`).join('')}</div>
+    <span class="lbl">الفصل الدراسي</span><div class="seg">${[[1, 'الأول'], [2, 'الثاني']].map(([k, n]) => `<button type="button" class="${m.term === k ? 'on' : ''}" data-setterm="${k}">${n}</button>`).join('')}</div></div>` : '';
   const lim = X.full ? 100 : 5;
   let list;
   if (!B) list = `<p class="sub" style="margin:0">جارٍ تحميل الترتيب…</p>`;
@@ -1488,7 +1496,7 @@ function vAdmin(){
   const P = by('pending').sort((a, b) => (a.created || 0) - (b.created || 0)), AA = by('approved').sort((a, b) => (b.total || 0) - (a.total || 0)), A = AA.filter(r => !isParent(r)), PR = AA.filter(isParent), J = by('rejected');
   const kind = r => (['parent', 'teacher'].includes(r.role) ? r.role : 'student') + ':' + (r.gender === 'f' ? 'f' : 'm');
   const KINDS = [['student:m','طالب'],['student:f','طالبة'],['parent:m','ولي أمر'],['parent:f','ولية أمر'],['teacher:m','معلم'],['teacher:f','معلمة']];
-  const who = r => `<span class="grow"><b>${esc(r.name || '')}</b> <select class="kindsel" data-kind="${esc(r.id)}" aria-label="تغيير الصفة" title="تغيير الصفة">${KINDS.map(([v, n]) => `<option value="${v}" ${kind(r) === v ? 'selected' : ''}>${n}</option>`).join('')}</select>${isParent(r) ? '' : `<select class="kindsel" data-gradeof="${esc(r.id)}" aria-label="الصف الدراسي" title="الصف الدراسي"><option value="0" ${!r.grade ? 'selected' : ''}>بلا صف</option>${[1, 2, 3].map(k => `<option value="${k}" ${r.grade === k ? 'selected' : ''}>${GRADES[k]}</option>`).join('')}</select>`}</span>`;
+  const who = r => `<span class="grow"><b>${esc(r.name || '')}</b> <select class="kindsel" data-kind="${esc(r.id)}" aria-label="تغيير الصفة" title="تغيير الصفة">${KINDS.map(([v, n]) => `<option value="${v}" ${kind(r) === v ? 'selected' : ''}>${n}</option>`).join('')}</select>${isParent(r) ? '' : `<select class="kindsel" data-gradeof="${esc(r.id)}" aria-label="الصف الدراسي" title="الصف الدراسي"><option value="0" ${!r.grade ? 'selected' : ''}>بلا صف</option>${[1, 2, 3].map(k => `<option value="${k}" ${r.grade === k ? 'selected' : ''}>${GRADES[k]}</option>`).join('')}</select><select class="kindsel" data-termof="${esc(r.id)}" aria-label="الفصل الدراسي" title="الفصل الدراسي">${[1, 2].map(k => `<option value="${k}" ${(r.term || 1) === k ? 'selected' : ''}>${TERMS[k]}</option>`).join('')}</select>`}</span>`;
   const lk = r => `<button class="x" data-alink="${esc(r.id)}">الرقم السري</button>`;
   const btn = (w, r, label, cls) => `<button class="x ${cls || ''}" data-adm="${w}" data-id="${esc(r.id)}">${X.confirm === w + r.id ? 'تأكيد: ' + label : label}</button>`;
   return header() + `<div class="qhead"><h2>لوحة المشرف</h2><button class="x" data-act="adminOut">خروج المشرف</button></div><div class="sec">
@@ -1837,13 +1845,16 @@ const CREDIT = '<p class="credit">© الحقوق محفوظة · فكرة وت�
 function vList(){
   const lv = SAVE.level || 0, chId = challenge(), chT = TALKS.find(x => x.id === chId);
   const tile = s => { const b = SAVE.best[s.id]; return `<button class="tile lv${s.l} ${s.id === chId ? 'chtile' : ''}" data-talk="${s.id}"><span class="grow"><h3>${s.t}${s.id === chId ? ' <span class="x2">×2</span>' : ''}</h3><span class="meta">${LANG === 'zh' ? '' : `<span class="zh" lang="zh">${s.z}</span> · `}${s.turns.length} جمل${b != null ? ' · أفضل نتيجة ' + b + '%' : ''}</span></span><span class="go">‹</span></button>`; };
-  const myG = X.me && !isParent(X.me) ? (X.me.grade || 0) : (SAVE.bookG || 1);
+  const stu = X.me && !isParent(X.me), myG = stu ? (X.me.grade || 0) : (SAVE.bookG || 1), myT = stu ? (X.me.term === 2 ? 2 : 1) : (SAVE.bookT === 2 ? 2 : 1);
   const btile = s => { const b = SAVE.best[s.id]; return `<button class="tile lv${s.g}" data-talk="${s.id}"><span class="grow"><h3>${s.t}</h3><span class="meta"><span>الوحدة ${s.u}</span> · ${LANG === 'zh' ? '' : `<span class="zh" lang="zh" dir="ltr">${s.z}</span>`}${b != null ? ' · أفضل نتيجة ' + b + '%' : ''}</span></span><span class="go">‹</span></button>`; };
-  const bk = BOOK.filter(x => x.g === myG), sems = [...new Set(bk.map(x => x.s))];
+  const bk = BOOK.filter(x => x.g === myG), cur = bk.filter(x => x.s === myT), prev = bk.filter(x => x.s < myT);
+  const tseg = `<div class="seg">${[[1, 'الفصل الأول'], [2, 'الفصل الثاني']].map(([k, n]) => `<button type="button" class="${myT === k ? 'on' : ''}" ${stu ? 'data-setterm' : 'data-bookt'}="${k}" aria-pressed="${myT === k}">${n}</button>`).join('')}</div>`;
   const books = myG ? `<div class="stack" style="gap:10px"><h2 class="lvh lvh${myG}"><i aria-hidden="true"></i>📘 محادثات كتاب ${GRADES[myG]}</h2>
     ${isParent(X.me) ? `<div class="seg">${[1, 2, 3].map(k => `<button type="button" class="${myG === k ? 'on' : ''}" data-bookg="${k}" aria-pressed="${myG === k}">${GRADES[k]}</button>`).join('')}</div>` : ''}
     <p class="sub" style="margin:0">مبنية على موضوعات دروس كتاب اللغة الصينية المقرر.</p>
-    ${sems.map(sm => `<h3 class="semh">${sm === 1 ? 'الفصل الدراسي الأول' : 'الفصل الدراسي الثاني'}</h3>` + bk.filter(x => x.s === sm).map(btile).join('')).join('')}</div>` : '';
+    ${tseg}
+    <h3 class="semh">${myT === 1 ? 'الفصل الدراسي الأول' : 'الفصل الدراسي الثاني'}</h3>${cur.map(btile).join('')}
+    ${prev.length ? `<details class="stack"><summary style="cursor:pointer;font-weight:700">مراجعة الفصل الأول (${prev.length})</summary><div class="stack" style="gap:10px;margin-top:10px">${prev.map(btile).join('')}</div></details>` : ''}</div>` : '';
   const groups = [1, 2, 3].filter(l => !lv || l === lv).map(l => `<h2 class="lvh lvh${l}"><i aria-hidden="true"></i>محادثات المستوى ال${LV[l]}</h2>${TALKS.filter(x => x.l === l).map(tile).join('')}`).join('');
   return header() + inappNote() + `<div class="band"><span class="tcmic">${MICSVG}</span><div class="grow"><h1>المحادثة الصوتية</h1><p class="sub">تحدّث بالصينية، والتطبيق يسمعك ويصحّح لك.</p></div></div>
   <div class="sec">
@@ -1918,6 +1929,9 @@ app.addEventListener('click', e => {
   if (b.dataset.act === 'intro'){ openIntro(); return; }
   if (b.dataset.lang){ setLang(b.dataset.lang); return; }
   if (b.dataset.gen){ JF.gender = b.dataset.gen; JF.role = b.dataset.role || 'student'; X.err = ''; render(); return; }
+  if (b.dataset.jterm){ JF.term = +b.dataset.jterm; render(); return; }
+  if (b.dataset.setterm){ const k = +b.dataset.setterm; if (X.me) X.me.term = k; fsP.collection(COL).doc(X.uid).update({term:k}).then(() => toast('تم: ' + TERMS[k]), () => toast('تعذّر الحفظ. تحقق من الإنترنت.')); render(); return; }
+  if (b.dataset.bookt){ SAVE.bookT = +b.dataset.bookt; persist(); render(); return; }
   if (b.dataset.jgrade){ JF.grade = +b.dataset.jgrade; X.err = ''; render(); return; }
   if (b.dataset.setgrade){ const k = +b.dataset.setgrade; if (X.me) X.me.grade = k; fsP.collection(COL).doc(X.uid).update({grade:k}).then(() => toast('تم حفظ صفك: ' + GRADES[k]), () => toast('تعذّر الحفظ. تحقق من الإنترنت.')); render(); return; }
   if (b.dataset.bookg){ SAVE.bookG = +b.dataset.bookg; persist(); render(); return; }
@@ -1951,6 +1965,7 @@ document.addEventListener('toggle', e => { if (e.target && e.target.id === 'logi
 app.addEventListener('input', e => { if (e.target.id === 'jname') JF.name = e.target.value; if (e.target.id === 'jpin') JF.pin = e.target.value; });
 /* المشرف يصحّح صفة المسجّل إذا أخطأ في التسجيل (طالب، ولي أمر، معلم…) */
 app.addEventListener('change', e => {
+  if (e.target.dataset && e.target.dataset.termof && X.admin){ fsA.collection(COL).doc(e.target.dataset.termof).update({term:+e.target.value}).then(() => toast('تم تغيير الفصل'), afail); return; }
   if (e.target.dataset && e.target.dataset.gradeof && X.admin){ const v = +e.target.value; fsA.collection(COL).doc(e.target.dataset.gradeof).update({grade:v || firebase.firestore.FieldValue.delete()}).then(() => toast('تم تغيير الصف'), afail); return; }
   if (e.target.id === 'chsel' && X.admin){ const v = e.target.value; fsA.collection('zhConfig').doc('main').set({ch:v ? {wk:weekNo(), talk:v} : null}, {merge:true}).then(() => toast('تم تحديث تحدي الأسبوع'), afail); return; }
   const id = e.target.dataset && e.target.dataset.kind; if (!id || !X.admin || !fsA) return;
