@@ -717,7 +717,7 @@ const D = {
  'جارٍ التحميل…':['Loading…','加载中…'],
  // الانضمام
  'انضم إلى «ني هاو»':['Join “Nǐ hǎo”','加入「你好」'],
- 'سجّل اسمك وصفتك، ويُفتح لك التطبيق بعد موافقة المشرف. ولي الأمر والمعلم يدخلان للاطلاع والمتابعة فقط، ولا يدخلان المنافسة.':['Enter your name and role. The app opens once the supervisor approves you. Parents and teachers can only view and follow progress; they do not compete.','填写你的名字和身份，管理员批准后即可使用。家长和老师只能查看和关注进度，不参加比赛。'],
+ 'سجّل اسمك وصفتك وصفّك الدراسي، ويُفتح لك التطبيق بعد موافقة المشرف. ولي الأمر والمعلم يدخلان للاطلاع والمتابعة فقط، ولا يدخلان المنافسة.':['Enter your name, role and school grade. The app opens once the supervisor approves you. Parents and teachers can only view and follow progress; they do not compete.','填写你的名字和身份，管理员批准后即可使用。家长和老师只能查看和关注进度，不参加比赛。'],
  'الاسم':['Name','名字'],
  'اكتب اسمك':['Type your name','输入你的名字'],
  'اكتب اسمك.':['Please type your name.','请输入你的名字。'],
@@ -1077,7 +1077,7 @@ Object.assign(D, {
  'للتدريب فقط، ولا تُحتسب فيها نقاط المنافسة.':['Practice only — no competition points.','仅供练习，不计比赛积分。'], 'تدريب حر بلا نقاط':['Free practice, no points','自由练习，不计分'],
  'النقاط من محادثات كتاب صفك فقط: الفهم من أول محاولة 10 × الصف، وبعد الإعادة 5 × الصف، وإكمال المحادثة 10. تحدي الأسبوع: النقاط مضاعفة ×2.':['Points come only from your grade’s textbook conversations: understood first time 10 × grade, after a retry 5 × grade, finishing a conversation 10. Weekly challenge: double points ×2.','只有本年级课本对话计分：第一次听懂 10×年级，重试后 5×年级，完成对话 10 分。每周挑战：积分翻倍×2。'],
  'يختار التطبيق كل أحد درساً من كتاب كل صف وفصل، ونقاطه مضاعفة ×2. تحديات هذا الأسبوع:':['Every Sunday the app picks a lesson from each grade and semester book, with double points ×2. This week’s challenges:','每周日为每个年级和学期选一课作为挑战，积分翻倍×2。本周挑战：'], 'الفصل الثاني':['Semester 2','第二学期'],
- 'الفصل الدراسي':['Semester','学期'], 'الأول':['First','第一'], 'الثاني':['Second','第二'], 'اختر صفك وفصلك الدراسي':['Choose your grade and semester','选择你的年级和学期'],
+ 'الفصل الدراسي':['Semester','学期'], 'الصف الدراسي':['School grade','年级'], '(للطلاب والطالبات)':['(students)','（学生填写）'], 'الأول':['First','第一'], 'الثاني':['Second','第二'], 'اختر صفك وفصلك الدراسي':['Choose your grade and semester','选择你的年级和学期'],
  'تظهر لك محادثات كتاب صفك للفصل الذي تدرسه، وتتنافس مع زميلاتك وزملائك في الصف نفسه.':['You get your grade’s textbook conversations for your current semester, and compete with classmates in the same grade.','你会看到本年级本学期的课本对话，并与同年级同学比赛。'], 'الفصل الدراسي الأول':['First semester','第一学期'], 'الفصل الدراسي الثاني':['Second semester','第二学期'],
  'مبنية على موضوعات دروس كتاب اللغة الصينية المقرر.':['Based on the lesson topics of the official Chinese textbook.','根据中文课本各课主题编写。'],
  'اختر صفك الدراسي.':['Choose your school grade.','请选择你的年级。'],
@@ -1536,10 +1536,10 @@ function vParent(m){
     <div><h2>تقدّم المتنافسين · الموسم ${SEASON()}</h2><div>${!A ? '<p class="sub" style="margin:0">جارٍ التحميل…</p>' : !A.length ? '<p class="sub" style="margin:0">لا يوجد متنافسون بعد.</p>' : A.map(row).join('')}</div></div>
     <p class="sub" style="margin:0">${isTeacher(m) ? 'تستطيع أيضاً تجربة المحادثات بالأسفل لتعرف ما يتدرّب عليه طلابك، دون أن تُحسب نقاط.' : 'تستطيع أيضاً تجربة المحادثات بالأسفل لتعرف ما يتدرّب عليه ابنك أو ابنتك، دون أن تُحسب نقاط.'}</p></div>`;
 }
-function joinForm(){ return `<form id="joinform" class="card stack"><div><h2>انضم إلى «ني هاو»</h2><p class="sub">سجّل اسمك وصفتك، ويُفتح لك التطبيق بعد موافقة المشرف. ولي الأمر والمعلم يدخلان للاطلاع والمتابعة فقط، ولا يدخلان المنافسة.</p></div>
+function joinForm(){ return `<form id="joinform" class="card stack"><div><h2>انضم إلى «ني هاو»</h2><p class="sub">سجّل اسمك وصفتك وصفّك الدراسي، ويُفتح لك التطبيق بعد موافقة المشرف. ولي الأمر والمعلم يدخلان للاطلاع والمتابعة فقط، ولا يدخلان المنافسة.</p></div>
     <label class="f">الاسم<input type="text" class="ar" id="jname" maxlength="20" autocomplete="off" value="${esc(JF.name)}" placeholder="اكتب اسمك"></label>
     <div class="seg">${[['m','student','طالب'],['f','student','طالبة'],['m','parent','ولي أمر'],['f','parent','ولية أمر'],['m','teacher','معلم'],['f','teacher','معلمة']].map(([gn, rl, lb]) => { const on = JF.gender === gn && (JF.role || 'student') === rl; return `<button type="button" class="${on ? 'on' : ''}" data-gen="${gn}" data-role="${rl}" aria-pressed="${on}" style="flex:1 1 40%">${lb}</button>`; }).join('')}</div>
-    ${(JF.role || 'student') === 'student' && JF.gender ? `<div class="stack" style="gap:6px"><span class="lbl">الصف الدراسي</span><div class="seg">${[1, 2, 3].map(k => `<button type="button" class="${JF.grade === k ? 'on' : ''}" data-jgrade="${k}" aria-pressed="${JF.grade === k}">${GRADES[k]}</button>`).join('')}</div></div>
+    ${(JF.role || 'student') === 'student' ? `<div class="stack" style="gap:6px"><span class="lbl">الصف الدراسي <small>(للطلاب والطالبات)</small></span><div class="seg">${[1, 2, 3].map(k => `<button type="button" class="${JF.grade === k ? 'on' : ''}" data-jgrade="${k}" aria-pressed="${JF.grade === k}">${GRADES[k]}</button>`).join('')}</div></div>
     <div class="stack" style="gap:6px"><span class="lbl">الفصل الدراسي</span><div class="seg">${[[1, 'الأول'], [2, 'الثاني']].map(([k, n]) => `<button type="button" class="${JF.term === k ? 'on' : ''}" data-jterm="${k}" aria-pressed="${JF.term === k}">${n}</button>`).join('')}</div></div>` : ''}
     <label class="f">رقمك السري (اختياري، 4 أرقام)<input type="text" id="jpin" inputmode="numeric" dir="ltr" autocomplete="off" maxlength="4" pattern="[0-9]*" value="${esc(JF.pin)}" placeholder="••••"></label>
     <p class="sub" style="margin:-4px 0 0">تدخل به إلى حسابك من أي جهاز. تستطيع اختياره الآن أو لاحقاً.</p>
