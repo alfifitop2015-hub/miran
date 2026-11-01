@@ -785,9 +785,10 @@ const D = {
  'لم يُقبل طلب الانضمام':['Your join request was not accepted','你的加入申请未通过'],
  'تواصل مع المشرف إن كان ذلك خطأ.':['Contact the supervisor if this is a mistake.','如有误会，请联系管理员。'],
  'تواصلي مع المشرف إن كان ذلك خطأ.':['Contact the supervisor if this is a mistake.','如有误会，请联系管理员。'],
- 'المحادثات مخصّصة للمتنافسين المقبولين. سجّل اسمك أولاً، وتُفتح لك بعد موافقة المشرف.':['Conversations are for approved competitors. Register your name first; they open after the supervisor approves you.','对话仅对已批准的参赛者开放。请先登记名字，管理员批准后即可使用。'],
- 'المحادثات مقفلة حتى يوافق المشرف على طلبك.':['Conversations are locked until the supervisor approves your request.','管理员批准申请前，对话处于锁定状态。'],
- 'المحادثات متاحة للمتنافسين المقبولين فقط.':['Conversations are for approved competitors only.','对话仅对已批准的参赛者开放。'],
+ 'محادثات التدريب والمنافسة تُفتح بعد التسجيل وموافقة المشرف.':['Practice conversations and the competition open after you register and the supervisor approves.','注册并经管理员批准后，即可使用练习对话和参加比赛。'],
+ 'DUMMY_OLD':['Conversations are for approved competitors. Register your name first; they open after the supervisor approves you.','对话仅对已批准的参赛者开放。请先登记名字，管理员批准后即可使用。'],
+ 'محادثات التدريب والمنافسة مقفلة حتى يوافق المشرف على طلبك.':['Practice conversations and the competition are locked until the supervisor approves your request.','管理员批准申请前，对话处于锁定状态。'],
+ 'محادثات التدريب متاحة للأعضاء المقبولين فقط.':['Practice conversations are for approved members only.','对话仅对已批准的参赛者开放。'],
  'تعذّر الاتصال بخدمة المنافسة. تحقق من الإنترنت ثم أعد فتح الصفحة.':['Could not reach the competition service. Check your internet and reopen the page.','无法连接比赛服务，请检查网络后重新打开页面。'],
  // المنافسة
  'نقاطك':['Your points','你的积分'], 'نقاطكِ':['Your points','你的积分'],
@@ -1620,11 +1621,11 @@ function vComp(){
     <p class="sub" style="margin:0">النقاط من محادثات كتاب صفك فقط: الفهم من أول محاولة 10 × الصف، وبعد الإعادة 5 × الصف، وإكمال المحادثة 10. تحدي الأسبوع: النقاط مضاعفة ×2.</p></div>`;
 }
 function lockNote(guest){
-  const why = guest ? 'المحادثات مخصّصة للمتنافسين المقبولين. سجّل اسمك أولاً، وتُفتح لك بعد موافقة المشرف.' : X.off ? 'تعذّر الاتصال بخدمة المنافسة. تحقق من الإنترنت ثم أعد فتح الصفحة.'
+  const why = guest ? 'محادثات التدريب والمنافسة تُفتح بعد التسجيل وموافقة المشرف.' : X.off ? 'تعذّر الاتصال بخدمة المنافسة. تحقق من الإنترنت ثم أعد فتح الصفحة.'
     : !X.ready || (X.uid && !X.meLoaded) ? ''
-    : !X.me ? 'المحادثات مخصّصة للمتنافسين المقبولين. سجّل اسمك أولاً، وتُفتح لك بعد موافقة المشرف.'
-    : X.me.status === 'pending' ? 'المحادثات مقفلة حتى يوافق المشرف على طلبك.'
-    : 'المحادثات متاحة للمتنافسين المقبولين فقط.';
+    : !X.me ? 'محادثات التدريب والمنافسة تُفتح بعد التسجيل وموافقة المشرف.'
+    : X.me.status === 'pending' ? 'محادثات التدريب والمنافسة مقفلة حتى يوافق المشرف على طلبك.'
+    : 'محادثات التدريب متاحة للأعضاء المقبولين فقط.';
   if (!why) return '';
   return `<div class="card row"><span class="lock" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2" fill="none"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none"/></svg></span><p class="grow" style="margin:0;font-size:15px">${why}</p></div>`;
 }
