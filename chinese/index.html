@@ -129,6 +129,13 @@ label.f{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:14p
 .medal{font-size:30px;line-height:1}
 .lesson summary{cursor:pointer;font-weight:700}.ltxt{display:flex;flex-direction:column;gap:6px;margin-top:10px}
 .lline{display:flex;align-items:center;gap:6px;font-family:var(--fz);font-size:17px;line-height:1.5}.lline span{flex:1}.lline b{color:var(--acc);white-space:nowrap}.lline .x{padding:4px 8px;flex:none}
+.logincard{border:2px solid var(--acc);background:var(--accsoft);padding:0;overflow:hidden}
+.logincard summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:14px 16px}
+.logincard summary::-webkit-details-marker{display:none}
+.logincard summary b{display:block;font-size:17px;color:var(--acc)}.logincard summary small{display:block;color:var(--muted);font-size:13px}
+.lic{font-size:26px;width:44px;height:44px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;flex:none}
+.lgo{font-size:22px;color:var(--acc);transition:transform .2s}.logincard[open] .lgo{transform:rotate(-90deg)}
+.logincard form{padding:0 16px 16px}
 .obsbox{border-top:2px dashed var(--line);padding-top:12px;margin-top:4px}
 .semh{font-size:17px;color:var(--acc);border-bottom:2px solid var(--line);padding-bottom:4px;margin-top:6px}
 .certimg img{width:100%;height:auto;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.15);display:block}
@@ -1072,7 +1079,7 @@ const P = [
 BOOK.forEach(b => { D[b.t] = [b.en, b.z]; b.turns.forEach(t => { if (!D[t[2]]) D[t[2]] = [t[7], t[0]]; }); });
 Object.assign(D, {
  'أول متوسط':['Grade 7 (1st intermediate)','初一'], 'ثاني متوسط':['Grade 8 (2nd intermediate)','初二'], 'ثالث متوسط':['Grade 9 (3rd intermediate)','初三'],
- 'الصف الدراسي':['School grade','年级'], '🎓 للطلاب والطالبات (المنافسة)':['🎓 Students (competition)','🎓 学生（参加比赛）'], '👁️ لأولياء الأمور والمعلمين':['👁️ Parents and teachers','👁️ 家长和老师'], '(للاطلاع والمتابعة فقط، بلا منافسة)':['(view and follow only, no competition)','（仅查看和关注，不参加比赛）'], 'اختر صفك الدراسي':['Choose your school grade','选择你的年级'],
+ 'الصف الدراسي':['School grade','年级'], 'اختر اسمك واكتب رقمك السري':['Pick your name and enter your PIN','选择你的名字并输入密码'], '🎓 للطلاب والطالبات (المنافسة)':['🎓 Students (competition)','🎓 学生（参加比赛）'], '👁️ لأولياء الأمور والمعلمين':['👁️ Parents and teachers','👁️ 家长和老师'], '(للاطلاع والمتابعة فقط، بلا منافسة)':['(view and follow only, no competition)','（仅查看和关注，不参加比赛）'], 'اختر صفك الدراسي':['Choose your school grade','选择你的年级'],
  'تظهر لك محادثات كتاب صفك، وتتنافس مع زميلاتك وزملائك في الصف نفسه.':['You get the conversations from your grade’s textbook and compete with classmates in the same grade.','你会看到本年级课本的对话，并与同年级同学比赛。'],
  'محادثات عامة':['General conversations','综合对话'], 'الفصل الأول':['Semester 1','第一学期'], '📖 نص الدرس':['📖 Lesson text','📖 课文'], 'محادثات عامة للتدريب الحر':['General conversations for free practice','自由练习对话'],
  'للتدريب فقط، ولا تُحتسب فيها نقاط المنافسة.':['Practice only — no competition points.','仅供练习，不计比赛积分。'], 'تدريب حر بلا نقاط':['Free practice, no points','自由练习，不计分'],
@@ -1539,7 +1546,13 @@ function vParent(m){
 }
 function joinForm(){
   const rb = L => L.map(([gn, rl, lb]) => { const on = JF.gender === gn && (JF.role || 'student') === rl; return `<button type="button" class="${on ? 'on' : ''}" data-gen="${gn}" data-role="${rl}" aria-pressed="${on}" style="flex:1 1 40%">${lb}</button>`; }).join('');
-  return `<form id="joinform" class="card stack"><div><h2>انضم إلى «ني هاو»</h2><p class="sub">سجّل اسمك وصفتك وصفّك الدراسي، ويُفتح لك التطبيق بعد موافقة المشرف. ولي الأمر والمعلم يدخلان للاطلاع والمتابعة فقط، ولا يدخلان المنافسة.</p></div>
+  return `<details class="card logincard" id="logindet" ${X.err2 || X.names ? 'open' : ''}><summary><span class="lic" aria-hidden="true">🔑</span><span class="grow"><b>مسجّل من قبل؟ ادخل إلى حسابك</b><small>اختر اسمك واكتب رقمك السري</small></span><span class="lgo" aria-hidden="true">‹</span></summary>
+      <form id="loginform" class="stack" style="margin-top:10px"><p class="sub" style="margin:0">اختر اسمك واكتب رقمك السري. تجده في جهازك الأول من زر «الدخول من جهاز آخر»، أو اطلبه من المشرف.</p>
+      <label class="f">اسمك<select id="lwho" class="lsel">${!X.names ? '<option value="">جارٍ التحميل…</option>' : !X.names.length ? '<option value="">لا توجد حسابات مقبولة بعد</option>' : '<option value="">اختر اسمك</option>' + X.names.map(r => `<option value="${esc(r.id)}">${esc(r.name)} · ${roleWord(r)}</option>`).join('')}</select></label>
+      <label class="f">الرقم السري<input type="text" id="lpin" inputmode="numeric" dir="ltr" autocomplete="off" maxlength="4" pattern="[0-9]*" placeholder="••••"></label>
+      ${X.err2 ? `<div class="warn">${esc(X.err2)}</div>` : ''}
+      <button class="btn wide" type="submit" ${X.busy ? 'disabled' : ''}>${X.busy ? 'جارٍ الدخول…' : 'دخول إلى حسابي'}</button></form></details>
+    <form id="joinform" class="card stack"><div><h2>انضم إلى «ني هاو»</h2><p class="sub">سجّل اسمك وصفتك وصفّك الدراسي، ويُفتح لك التطبيق بعد موافقة المشرف. ولي الأمر والمعلم يدخلان للاطلاع والمتابعة فقط، ولا يدخلان المنافسة.</p></div>
     <label class="f">الاسم<input type="text" class="ar" id="jname" maxlength="20" autocomplete="off" value="${esc(JF.name)}" placeholder="اكتب اسمك"></label>
     <div class="stack" style="gap:6px"><span class="lbl">🎓 للطلاب والطالبات (المنافسة)</span><div class="seg">${rb([['m','student','طالب'],['f','student','طالبة']])}</div></div>
     ${(JF.role || 'student') === 'student' ? `<div class="stack" style="gap:6px"><span class="lbl">الصف الدراسي</span><div class="seg">${[1, 2, 3].map(k => `<button type="button" class="${JF.grade === k ? 'on' : ''}" data-jgrade="${k}" aria-pressed="${JF.grade === k}">${GRADES[k]}</button>`).join('')}</div></div>
@@ -1549,12 +1562,7 @@ function joinForm(){
     <p class="sub" style="margin:-4px 0 0">تدخل به إلى حسابك من أي جهاز. تستطيع اختياره الآن أو لاحقاً.</p>
     ${X.err ? `<div class="warn">${esc(X.err)}</div>` : ''}
     <button class="btn wide" type="submit" ${X.busy ? 'disabled' : ''}>${X.busy ? 'جارٍ الإرسال…' : 'أرسل طلب الانضمام'}</button></form>
-    <details class="card" id="logindet" ${X.err2 || X.names ? 'open' : ''}><summary style="cursor:pointer;font-weight:700">مسجّل من قبل؟ ادخل إلى حسابك</summary>
-      <form id="loginform" class="stack" style="margin-top:10px"><p class="sub" style="margin:0">اختر اسمك واكتب رقمك السري. تجده في جهازك الأول من زر «الدخول من جهاز آخر»، أو اطلبه من المشرف.</p>
-      <label class="f">اسمك<select id="lwho" class="lsel">${!X.names ? '<option value="">جارٍ التحميل…</option>' : !X.names.length ? '<option value="">لا توجد حسابات مقبولة بعد</option>' : '<option value="">اختر اسمك</option>' + X.names.map(r => `<option value="${esc(r.id)}">${esc(r.name)} · ${roleWord(r)}</option>`).join('')}</select></label>
-      <label class="f">الرقم السري<input type="text" id="lpin" inputmode="numeric" dir="ltr" autocomplete="off" maxlength="4" pattern="[0-9]*" placeholder="••••"></label>
-      ${X.err2 ? `<div class="warn">${esc(X.err2)}</div>` : ''}
-      <button class="btn wide" type="submit" ${X.busy ? 'disabled' : ''}>${X.busy ? 'جارٍ الدخول…' : 'دخول إلى حسابي'}</button></form></details>`;
+`;
 }
 /* معاينة المشرف لصفحة التسجيل كما يراها المسجّل الجديد */
 function vPreview(){
