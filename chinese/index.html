@@ -141,6 +141,14 @@ label.f{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:14p
 .lic{font-size:26px;width:44px;height:44px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;flex:none}
 .lgo{font-size:22px;color:var(--acc);transition:transform .2s}.logincard[open] .lgo{transform:rotate(-90deg)}
 .logincard form{padding:0 16px 16px}
+/* لوحة المشرف: لون لكل قائمة حسب غرضها */
+.adm{--k:#888;border:1.5px solid color-mix(in srgb,var(--k) 45%,transparent);border-inline-start:7px solid var(--k);background:color-mix(in srgb,var(--k) 7%,var(--card))}
+.adm>h3{color:var(--k);padding-bottom:6px;border-bottom:1.5px solid color-mix(in srgb,var(--k) 30%,transparent);margin-bottom:6px}
+.adm .li{border-bottom-color:color-mix(in srgb,var(--k) 20%,transparent)}
+.adm-req{--k:#E08A00}.adm-g1{--k:#E0559B}.adm-g2{--k:#C2185B}.adm-g3{--k:#8E104B}.adm-g0{--k:#7A7A8C}
+.adm-obs{--k:#8E5BD9}.adm-rej{--k:#D93A3A}.adm-season{--k:#B8860B}.adm-cert{--k:#0F9488}.adm-chal{--k:#E8590C}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .adm-g3{--k:#FF7AB8}:root:not([data-theme="light"]) .adm-season{--k:#E8B931}}
+:root[data-theme="dark"] .adm-g3{--k:#FF7AB8}:root[data-theme="dark"] .adm-season{--k:#E8B931}
 .obsbox{border-top:2px dashed var(--line);padding-top:12px;margin-top:4px}
 .semh{font-size:17px;color:var(--acc);border-bottom:2px solid var(--line);padding-bottom:4px;margin-top:6px}
 .certimg img{width:100%;height:auto;border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.15);display:block}
@@ -1101,6 +1109,7 @@ Object.assign(D, {
  'اختر صفك الدراسي.':['Choose your school grade.','请选择你的年级。'],
  'كتاب الصف':['Textbook','课本'], 'بلا صف':['No grade','未选年级'], 'حدّد صف كل واحد منهم من الخانة بجانب اسمه، حتى يدخل منافسة صفه.':['Set each one’s grade from the box next to their name so they join their grade’s competition.','请在名字旁选择年级，让他们加入本年级的比赛。'], 'الكل':['All','全部']
 });
+P.unshift([/^(📥|🎓|👁️|⛔|🏅) (.+)$/, m => [`${m[1]} ${tx(m[2])}`, `${m[1]} ${tx(m[2])}`]]);
 P.unshift([/^المتنافسون · (.+) \((\d+)\)$/, m => [`Competitors · ${tx(m[1])} (${m[2]})`, `选手 · ${tx(m[1])}（${m[2]}）`]], [/^#(\d+) · الموسم: (\d+)$/, m => [`#${m[1]} · Season: ${m[2]}`, `第${m[1]}名 · 本季：${m[2]}`]]);
 P.push(
  [/^📘 محادثات كتاب (.+)$/, m => [`📘 ${tx(m[1])} textbook conversations`, `📘 ${tx(m[1])}课本对话`]],
@@ -1499,14 +1508,14 @@ function vSeasonAdmin(A){
   const S = SEASON(), pend = pendingCerts(), lead = A.filter(r => seasonPts(r) > 0).sort(bySeason).slice(0, 3);
   const issued = (X.certs || []).filter(c => c.status === 'ok');
   X.pend = pend;
-  return `<div class="card stack"><h3>🏆 المواسم والشهادات</h3>
+  return `<div class="card stack adm adm-season"><h3>🏆 المواسم والشهادات</h3>
     <div><p style="margin:0"><span>الموسم الحالي:</span> <b>${S}</b></p>
       ${lead.length ? [1, 2, 3, 0].map(gk => { const L = A.filter(r => seasonPts(r) > 0 && (r.grade || 0) === gk).sort(bySeason).slice(0, 3); return L.length ? `<span class="lbl">${GRADES[gk] || 'بلا صف'}</span>` + L.map((r, i) => `<div class="brd"><span class="n">${MEDAL[i]}</span><span class="nm">${esc(r.name)}</span><span class="sc">${seasonPts(r)}</span></div>`).join('') : ''; }).join('') : '<p class="sub" style="margin:0">لا نقاط في هذا الموسم بعد.</p>'}</div>
     <button class="btn wide ${X.confirm === 'season' ? 'danger' : ''}" data-act="endSeason">${X.confirm === 'season' ? 'تأكيد: إنهاء الموسم' : 'إنهاء الموسم وبدء موسم جديد'}</button>
     <p class="sub" style="margin:0">يُحفظ أصحاب المراكز الثلاثة الأولى في لوحة الشرف، وتبدأ نقاط الموسم من الصفر للجميع. النقاط الكلية والمراحل لا تتأثر.</p>
     <button class="x" data-act="honor">عرض لوحة الشرف</button>
   </div>
-  <div class="card stack"><h3>شهادات مستحقة (${pend.length})</h3>
+  <div class="card stack adm adm-cert"><h3>🏅 شهادات مستحقة (${pend.length})</h3>
     ${pend.length ? pend.map((p, i) => `<div class="li"><span class="grow"><b>${esc(p.name)}</b> <span class="meta">${esc(certTitle(p))}</span></span><button class="x ok" data-pc="${i}" data-pv="ok">اعتماد</button><button class="x" data-pc="${i}" data-pv="view">معاينة</button><button class="x" data-pc="${i}" data-pv="skip">تخطي</button></div>`).join('') : '<p class="sub" style="margin:0">لا توجد شهادات بانتظار الاعتماد.</p>'}
     <details><summary style="cursor:pointer;font-weight:700">منح شهادة تميّز خاصة</summary>
       <form id="specform" class="stack" style="margin-top:10px">
@@ -1519,7 +1528,7 @@ function vSeasonAdmin(A){
     <button class="x" data-act="saveSigner">حفظ الاسم</button>
     <p class="sub" style="margin:0">يظهر في خانة «المشرف» على كل الشهادات، القديمة والجديدة، وتستطيع تغييره متى شئت.</p>
   </div>
-  <div class="card stack"><h3>🔥 تحدي الأسبوع</h3>
+  <div class="card stack adm adm-chal"><h3>🔥 تحدي الأسبوع</h3>
     <p class="sub" style="margin:0">يختار التطبيق كل أحد درساً من كتاب كل صف وفصل، ونقاطه مضاعفة ×2. تحديات هذا الأسبوع:</p>
     ${[1, 2, 3].map(g => [1, 2].map(t => { const c = chalOf(g, t); return c ? `<div class="li"><span class="grow"><b>${GRADES[g]} · ${TERMS[t]}</b> <span class="meta">${esc(c.t)}</span></span></div>` : ''; }).join('')).join('')}
   </div>`;
@@ -1648,11 +1657,11 @@ function vAdmin(){
   const btn = (w, r, label, cls) => `<button class="x ${cls || ''}" data-adm="${w}" data-id="${esc(r.id)}">${X.confirm === w + r.id ? 'تأكيد: ' + label : label}</button>`;
   return header() + `<div class="qhead"><h2>لوحة المشرف</h2><button class="x" data-act="adminOut">خروج المشرف</button></div><div class="sec">
     <button class="tile" data-act="preview"><span class="grow"><h3>صفحة التسجيل للجدد</h3><span class="meta">شاهد ما يراه المسجّل الجديد عند فتح التطبيق أول مرة</span></span><span class="go">‹</span></button>
-    <div class="card"><h3>طلبات الانضمام (${P.length})</h3>${P.length ? P.map(r => `<div class="li">${who(r)}${lk(r)}${btn('approve', r, 'موافقة', 'ok')}${btn('reject', r, 'رفض', 'bad')}</div>`).join('') : '<p class="sub">لا توجد طلبات جديدة.</p>'}</div>
-    ${A.length ? [1, 2, 3, 0].map(gk => { const L = A.filter(r => (r.grade || 0) === gk).sort(bySeason); return L.length ? `<div class="card"><h3>المتنافسون · ${GRADES[gk] || 'بلا صف'} (${L.length})</h3>${gk ? '' : '<p class="sub" style="margin:0">حدّد صف كل واحد منهم من الخانة بجانب اسمه، حتى يدخل منافسة صفه.</p>'}${L.map((r, i) => `<div class="li">${who(r)}<span class="chip">${seasonPts(r) ? '#' + (i + 1) + ' · ' : ''}الموسم: ${seasonPts(r)}</span><span class="chip">الكلي: ${r.total || 0}</span>${lk(r)}${btn('reset', r, 'تصفير النقاط')}${btn('reject', r, 'إيقاف', 'bad')}</div>`).join('')}</div>` : ''; }).join('') : '<div class="card"><h3>المتنافسون (0)</h3><p class="sub">لا يوجد متنافسون بعد.</p></div>'}
-    ${PR.length ? `<div class="card"><h3>أولياء الأمور والمعلمون (${PR.length})</h3><p class="sub" style="margin:0">للاطلاع فقط، لا يظهرون في الترتيب.</p>${PR.map(r => `<div class="li">${who(r)}${lk(r)}${btn('reject', r, 'إيقاف', 'bad')}</div>`).join('')}</div>` : ''}
+    <div class="card adm adm-req"><h3>📥 طلبات الانضمام (${P.length})</h3>${P.length ? P.map(r => `<div class="li">${who(r)}${lk(r)}${btn('approve', r, 'موافقة', 'ok')}${btn('reject', r, 'رفض', 'bad')}</div>`).join('') : '<p class="sub">لا توجد طلبات جديدة.</p>'}</div>
+    ${A.length ? [1, 2, 3, 0].map(gk => { const L = A.filter(r => (r.grade || 0) === gk).sort(bySeason); return L.length ? `<div class="card adm adm-g${gk}"><h3>🎓 المتنافسون · ${GRADES[gk] || 'بلا صف'} (${L.length})</h3>${gk ? '' : '<p class="sub" style="margin:0">حدّد صف كل واحد منهم من الخانة بجانب اسمه، حتى يدخل منافسة صفه.</p>'}${L.map((r, i) => `<div class="li">${who(r)}<span class="chip">${seasonPts(r) ? '#' + (i + 1) + ' · ' : ''}الموسم: ${seasonPts(r)}</span><span class="chip">الكلي: ${r.total || 0}</span>${lk(r)}${btn('reset', r, 'تصفير النقاط')}${btn('reject', r, 'إيقاف', 'bad')}</div>`).join('')}</div>` : ''; }).join('') : '<div class="card adm adm-g0"><h3>🎓 المتنافسون (0)</h3><p class="sub">لا يوجد متنافسون بعد.</p></div>'}
+    ${PR.length ? `<div class="card adm adm-obs"><h3>👁️ أولياء الأمور والمعلمون (${PR.length})</h3><p class="sub" style="margin:0">للاطلاع فقط، لا يظهرون في الترتيب.</p>${PR.map(r => `<div class="li">${who(r)}${lk(r)}${btn('reject', r, 'إيقاف', 'bad')}</div>`).join('')}</div>` : ''}
     ${vSeasonAdmin(A)}
-    ${J.length ? `<div class="card"><h3>المرفوضون والموقوفون (${J.length})</h3>${J.map(r => `<div class="li">${who(r)}${btn('approve', r, 'قبول', 'ok')}${btn('del', r, 'حذف', 'bad')}</div>`).join('')}</div>` : ''}
+    ${J.length ? `<div class="card adm adm-rej"><h3>⛔ المرفوضون والموقوفون (${J.length})</h3>${J.map(r => `<div class="li">${who(r)}${btn('approve', r, 'قبول', 'ok')}${btn('del', r, 'حذف', 'bad')}</div>`).join('')}</div>` : ''}
     ${back}</div>`;
 }
 
