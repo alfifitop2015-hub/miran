@@ -129,6 +129,11 @@ label.f{display:flex;flex-direction:column;gap:6px;font-weight:600;font-size:14p
 .medal{font-size:30px;line-height:1}
 .lesson summary{cursor:pointer;font-weight:700}.ltxt{display:flex;flex-direction:column;gap:6px;margin-top:10px}
 .lline{display:flex;align-items:center;gap:6px;font-family:var(--fz);font-size:17px;line-height:1.5}.lline span{flex:1}.lline b{color:var(--acc);white-space:nowrap}.lline .x{padding:4px 8px;flex:none}
+.ptile{display:flex;align-items:center;gap:12px;width:100%;text-align:start;border:2px solid var(--acc);background:var(--accsoft);border-radius:16px;padding:14px 16px;color:var(--ink)}
+.ptile.obs{border-color:var(--pink);background:color-mix(in srgb,var(--pink) 12%,var(--card))}
+.ptile b{display:block;font-size:18px;color:var(--acc)}.ptile.obs b{color:var(--pink)}.ptile small{display:block;color:var(--muted);font-size:13px}
+.pic{font-size:28px;width:48px;height:48px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;flex:none}.pic.sm{font-size:22px;width:40px;height:40px;background:var(--accsoft)}
+.pathcard{border:2px solid var(--acc)}.pathcard.obs{border-color:var(--pink)}
 .logincard{border:2px solid var(--acc);background:var(--accsoft);padding:0;overflow:hidden}
 .logincard summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:14px 16px}
 .logincard summary::-webkit-details-marker{display:none}
@@ -1079,7 +1084,11 @@ const P = [
 BOOK.forEach(b => { D[b.t] = [b.en, b.z]; b.turns.forEach(t => { if (!D[t[2]]) D[t[2]] = [t[7], t[0]]; }); });
 Object.assign(D, {
  'أول متوسط':['Grade 7 (1st intermediate)','初一'], 'ثاني متوسط':['Grade 8 (2nd intermediate)','初二'], 'ثالث متوسط':['Grade 9 (3rd intermediate)','初三'],
- 'الصف الدراسي':['School grade','年级'], 'اختر اسمك واكتب رقمك السري':['Pick your name and enter your PIN','选择你的名字并输入密码'], '🎓 للطلاب والطالبات (المنافسة)':['🎓 Students (competition)','🎓 学生（参加比赛）'], '👁️ لأولياء الأمور والمعلمين':['👁️ Parents and teachers','👁️ 家长和老师'], '(للاطلاع والمتابعة فقط، بلا منافسة)':['(view and follow only, no competition)','（仅查看和关注，不参加比赛）'], 'اختر صفك الدراسي':['Choose your school grade','选择你的年级'],
+ 'الصف الدراسي':['School grade','年级'], 'مرحباً بك في «ني هاو»':['Welcome to Nǐ hǎo','欢迎来到「你好」'], 'اختر من أنت أولاً:':['First, tell us who you are:','请先选择你的身份：'],
+ 'طالب أو طالبة':['Student','学生'], 'أتدرّب وأدخل المنافسة مع صفّي':['I practise and compete with my grade','练习并和同年级同学比赛'], 'ولي أمر أو معلم':['Parent or teacher','家长或老师'], 'أتابع التقدّم فقط، بلا منافسة':['I only follow progress, no competition','只关注进度，不参加比赛'],
+ 'الطلاب والطالبات':['Students','学生'], 'أولياء الأمور والمعلمون':['Parents and teachers','家长和老师'], 'تغيير':['Change','更改'], 'تسجيل جديد':['New sign-up','新注册'], 'مسجّل من قبل':['Already registered','已注册'], 'الصفة':['Role','身份'], 'اختر صفتك.':['Choose your role.','请选择身份。'],
+ 'سجّل اسمك وصفّك الدراسي، ويُفتح لك التطبيق والمنافسة بعد موافقة المشرف.':['Enter your name and grade. The app and competition open once the supervisor approves.','填写名字和年级，管理员批准后即可使用并参加比赛。'],
+ 'للاطلاع على تقدّم المتنافسين ومتابعته فقط، دون منافسة أو نقاط. يُفتح لك بعد موافقة المشرف.':['To view and follow the competitors’ progress only — no competition or points. Opens once the supervisor approves.','仅用于查看和关注选手进度，不参加比赛、不计分。管理员批准后开放。'], 'اختر اسمك واكتب رقمك السري':['Pick your name and enter your PIN','选择你的名字并输入密码'], '🎓 للطلاب والطالبات (المنافسة)':['🎓 Students (competition)','🎓 学生（参加比赛）'], '👁️ لأولياء الأمور والمعلمين':['👁️ Parents and teachers','👁️ 家长和老师'], '(للاطلاع والمتابعة فقط، بلا منافسة)':['(view and follow only, no competition)','（仅查看和关注，不参加比赛）'], 'اختر صفك الدراسي':['Choose your school grade','选择你的年级'],
  'تظهر لك محادثات كتاب صفك، وتتنافس مع زميلاتك وزملائك في الصف نفسه.':['You get the conversations from your grade’s textbook and compete with classmates in the same grade.','你会看到本年级课本的对话，并与同年级同学比赛。'],
  'محادثات عامة':['General conversations','综合对话'], 'الفصل الأول':['Semester 1','第一学期'], '📖 نص الدرس':['📖 Lesson text','📖 课文'], 'محادثات عامة للتدريب الحر':['General conversations for free practice','自由练习对话'],
  'للتدريب فقط، ولا تُحتسب فيها نقاط المنافسة.':['Practice only — no competition points.','仅供练习，不计比赛积分。'], 'تدريب حر بلا نقاط':['Free practice, no points','自由练习，不计分'],
@@ -1140,7 +1149,7 @@ applyLang();
 const FB = {apiKey:"AIzaSyDfDRNr06QJKPShAvjuc0UOaFYNlvU5NEo",authDomain:"miran-7ad31.firebaseapp.com",projectId:"miran-7ad31",storageBucket:"miran-7ad31.firebasestorage.app",messagingSenderId:"1089204486985",appId:"1:1089204486985:web:986b4a4ad56190c878d098"};
 const ADMIN_EMAIL = 'alfifitop2015@gmail.com';
 const X = {ready:false, off:false, uid:null, me:null, meLoaded:false, board:null, full:false, admin:false, rows:null, err:'', busy:false, confirm:''};
-const JF = {name:'', gender:'', role:'', pin:'', grade:0, term:1};
+const JF = {name:'', gender:'', role:'', pin:'', grade:0, term:1, path:'', mode:'new'};
 let fsP = null, fsA = null, authP = null, authA = null, INC = null, unsubMe = null, unsubBoard = null, unsubAdmin = null;
 const g = (m, f) => X.me && X.me.gender === 'f' ? f : m;
 const COL = 'zhPlayers';
@@ -1280,7 +1289,7 @@ async function doLogout(){
   const u = authP && authP.currentUser;
   if (u && u.uid !== X.uid){ try{ await fsP.collection('zhDevices').doc(u.uid).delete(); }catch(e){} }
   if (unsubMe){ unsubMe(); unsubMe = null; }
-  X.me = null; X.uid = null; X.names = null; X.pinFor = null; X.myPin = undefined; X.linked = true; JF.name = ''; JF.gender = ''; JF.role = '';
+  X.me = null; X.uid = null; X.names = null; X.pinFor = null; X.myPin = undefined; X.linked = true; JF.name = ''; JF.gender = ''; JF.role = ''; JF.path = ''; JF.mode = 'new';
   subBoard();
   try{ await authP.signOut(); }catch(e){}
   view = 'list'; render(); window.scrollTo(0, 0); toast('تم الخروج من حسابك');
@@ -1292,6 +1301,7 @@ async function join(){
   const name = JF.name.trim().slice(0, 20);
   if (!name){ X.err = 'اكتب اسمك.'; return render(); }
   if (!JF.gender){ X.err = 'اختر صفتك: طالب، طالبة، ولي أمر، ولية أمر، معلم، أو معلمة.'; return render(); }
+  if (!JF.gender || !JF.role || (JF.path === 'obs') !== ['parent', 'teacher'].includes(JF.role)){ X.err = 'اختر صفتك.'; return render(); }
   const stu = !['parent', 'teacher'].includes(JF.role);
   if (stu && !JF.grade){ X.err = 'اختر صفك الدراسي.'; return render(); }
   const pin = JF.pin.replace(/\D/g, '');
@@ -1545,24 +1555,31 @@ function vParent(m){
     <p class="sub" style="margin:0">${isTeacher(m) ? 'تستطيع أيضاً تجربة المحادثات بالأسفل لتعرف ما يتدرّب عليه طلابك، دون أن تُحسب نقاط.' : 'تستطيع أيضاً تجربة المحادثات بالأسفل لتعرف ما يتدرّب عليه ابنك أو ابنتك، دون أن تُحسب نقاط.'}</p></div>`;
 }
 function joinForm(){
-  const rb = L => L.map(([gn, rl, lb]) => { const on = JF.gender === gn && (JF.role || 'student') === rl; return `<button type="button" class="${on ? 'on' : ''}" data-gen="${gn}" data-role="${rl}" aria-pressed="${on}" style="flex:1 1 40%">${lb}</button>`; }).join('');
-  return `<details class="card logincard" id="logindet" ${X.err2 || X.names ? 'open' : ''}><summary><span class="lic" aria-hidden="true">🔑</span><span class="grow"><b>مسجّل من قبل؟ ادخل إلى حسابك</b><small>اختر اسمك واكتب رقمك السري</small></span><span class="lgo" aria-hidden="true">‹</span></summary>
-      <form id="loginform" class="stack" style="margin-top:10px"><p class="sub" style="margin:0">اختر اسمك واكتب رقمك السري. تجده في جهازك الأول من زر «الدخول من جهاز آخر»، أو اطلبه من المشرف.</p>
-      <label class="f">اسمك<select id="lwho" class="lsel">${!X.names ? '<option value="">جارٍ التحميل…</option>' : !X.names.length ? '<option value="">لا توجد حسابات مقبولة بعد</option>' : '<option value="">اختر اسمك</option>' + X.names.map(r => `<option value="${esc(r.id)}">${esc(r.name)} · ${roleWord(r)}</option>`).join('')}</select></label>
+  const rb = L => L.map(([gn, rl, lb]) => { const on = JF.gender === gn && JF.role === rl; return `<button type="button" class="${on ? 'on' : ''}" data-gen="${gn}" data-role="${rl}" aria-pressed="${on}" style="flex:1 1 40%">${lb}</button>`; }).join('');
+  if (!JF.path) return `<div class="card stack"><div><h2>مرحباً بك في «ني هاو»</h2><p class="sub" style="margin:0">اختر من أنت أولاً:</p></div>
+    <button type="button" class="ptile" data-path="student"><span class="pic" aria-hidden="true">🎓</span><span class="grow"><b>طالب أو طالبة</b><small>أتدرّب وأدخل المنافسة مع صفّي</small></span><span class="lgo" aria-hidden="true">‹</span></button>
+    <button type="button" class="ptile obs" data-path="obs"><span class="pic" aria-hidden="true">👁️</span><span class="grow"><b>ولي أمر أو معلم</b><small>أتابع التقدّم فقط، بلا منافسة</small></span><span class="lgo" aria-hidden="true">‹</span></button></div>`;
+  const stu = JF.path === 'student', login = JF.mode === 'login';
+  if (login && !X.names && view !== 'preview') setTimeout(loadNames, 0);
+  const names = (X.names || []).filter(r => stu ? !isParent(r) : isParent(r));
+  const head = `<div class="row"><span class="pic sm" aria-hidden="true">${stu ? '🎓' : '👁️'}</span><h2 class="grow">${stu ? 'الطلاب والطالبات' : 'أولياء الأمور والمعلمون'}</h2><button type="button" class="x" data-path="">تغيير</button></div>
+    <div class="seg">${[['new', 'تسجيل جديد'], ['login', 'مسجّل من قبل']].map(([k, n]) => `<button type="button" class="${(JF.mode || 'new') === k ? 'on' : ''}" data-jmode="${k}" aria-pressed="${(JF.mode || 'new') === k}">${n}</button>`).join('')}</div>`;
+  if (login) return `<form id="loginform" class="card stack pathcard ${stu ? '' : 'obs'}">${head}
+      <p class="sub" style="margin:0">اختر اسمك واكتب رقمك السري. تجده في جهازك الأول من زر «الدخول من جهاز آخر»، أو اطلبه من المشرف.</p>
+      <label class="f">اسمك<select id="lwho" class="lsel">${!X.names ? '<option value="">جارٍ التحميل…</option>' : !names.length ? '<option value="">لا توجد حسابات مقبولة بعد</option>' : '<option value="">اختر اسمك</option>' + names.map(r => `<option value="${esc(r.id)}">${esc(r.name)} · ${roleWord(r)}</option>`).join('')}</select></label>
       <label class="f">الرقم السري<input type="text" id="lpin" inputmode="numeric" dir="ltr" autocomplete="off" maxlength="4" pattern="[0-9]*" placeholder="••••"></label>
       ${X.err2 ? `<div class="warn">${esc(X.err2)}</div>` : ''}
-      <button class="btn wide" type="submit" ${X.busy ? 'disabled' : ''}>${X.busy ? 'جارٍ الدخول…' : 'دخول إلى حسابي'}</button></form></details>
-    <form id="joinform" class="card stack"><div><h2>انضم إلى «ني هاو»</h2><p class="sub">سجّل اسمك وصفتك وصفّك الدراسي، ويُفتح لك التطبيق بعد موافقة المشرف. ولي الأمر والمعلم يدخلان للاطلاع والمتابعة فقط، ولا يدخلان المنافسة.</p></div>
+      <button class="btn wide" type="submit" ${X.busy ? 'disabled' : ''}>${X.busy ? 'جارٍ الدخول…' : 'دخول إلى حسابي'}</button></form>`;
+  return `<form id="joinform" class="card stack pathcard ${stu ? '' : 'obs'}">${head}
+    <p class="sub" style="margin:0">${stu ? 'سجّل اسمك وصفّك الدراسي، ويُفتح لك التطبيق والمنافسة بعد موافقة المشرف.' : 'للاطلاع على تقدّم المتنافسين ومتابعته فقط، دون منافسة أو نقاط. يُفتح لك بعد موافقة المشرف.'}</p>
     <label class="f">الاسم<input type="text" class="ar" id="jname" maxlength="20" autocomplete="off" value="${esc(JF.name)}" placeholder="اكتب اسمك"></label>
-    <div class="stack" style="gap:6px"><span class="lbl">🎓 للطلاب والطالبات (المنافسة)</span><div class="seg">${rb([['m','student','طالب'],['f','student','طالبة']])}</div></div>
-    ${(JF.role || 'student') === 'student' ? `<div class="stack" style="gap:6px"><span class="lbl">الصف الدراسي</span><div class="seg">${[1, 2, 3].map(k => `<button type="button" class="${JF.grade === k ? 'on' : ''}" data-jgrade="${k}" aria-pressed="${JF.grade === k}">${GRADES[k]}</button>`).join('')}</div></div>
+    <div class="stack" style="gap:6px"><span class="lbl">الصفة</span><div class="seg">${stu ? rb([['m','student','طالب'],['f','student','طالبة']]) : rb([['m','parent','ولي أمر'],['f','parent','ولية أمر'],['m','teacher','معلم'],['f','teacher','معلمة']])}</div></div>
+    ${stu ? `<div class="stack" style="gap:6px"><span class="lbl">الصف الدراسي</span><div class="seg">${[1, 2, 3].map(k => `<button type="button" class="${JF.grade === k ? 'on' : ''}" data-jgrade="${k}" aria-pressed="${JF.grade === k}">${GRADES[k]}</button>`).join('')}</div></div>
     <div class="stack" style="gap:6px"><span class="lbl">الفصل الدراسي</span><div class="seg">${[[1, 'الأول'], [2, 'الثاني']].map(([k, n]) => `<button type="button" class="${JF.term === k ? 'on' : ''}" data-jterm="${k}" aria-pressed="${JF.term === k}">${n}</button>`).join('')}</div></div>` : ''}
-    <div class="obsbox stack" style="gap:6px"><span class="lbl">👁️ لأولياء الأمور والمعلمين <small>(للاطلاع والمتابعة فقط، بلا منافسة)</small></span><div class="seg">${rb([['m','parent','ولي أمر'],['f','parent','ولية أمر'],['m','teacher','معلم'],['f','teacher','معلمة']])}</div></div>
     <label class="f">رقمك السري (اختياري، 4 أرقام)<input type="text" id="jpin" inputmode="numeric" dir="ltr" autocomplete="off" maxlength="4" pattern="[0-9]*" value="${esc(JF.pin)}" placeholder="••••"></label>
     <p class="sub" style="margin:-4px 0 0">تدخل به إلى حسابك من أي جهاز. تستطيع اختياره الآن أو لاحقاً.</p>
     ${X.err ? `<div class="warn">${esc(X.err)}</div>` : ''}
-    <button class="btn wide" type="submit" ${X.busy ? 'disabled' : ''}>${X.busy ? 'جارٍ الإرسال…' : 'أرسل طلب الانضمام'}</button></form>
-`;
+    <button class="btn wide" type="submit" ${X.busy ? 'disabled' : ''}>${X.busy ? 'جارٍ الإرسال…' : 'أرسل طلب الانضمام'}</button></form>`;
 }
 /* معاينة المشرف لصفحة التسجيل كما يراها المسجّل الجديد */
 function vPreview(){
@@ -2060,6 +2077,8 @@ app.addEventListener('click', e => {
   if (b.dataset.act === 'intro'){ openIntro(); return; }
   if (b.dataset.lang){ setLang(b.dataset.lang); return; }
   if (b.dataset.gen){ JF.gender = b.dataset.gen; JF.role = b.dataset.role || 'student'; X.err = ''; render(); return; }
+  if (b.dataset.path != null){ JF.path = b.dataset.path; JF.mode = 'new'; JF.gender = ''; JF.role = ''; X.err = ''; X.err2 = ''; render(); return; }
+  if (b.dataset.jmode){ JF.mode = b.dataset.jmode; X.err = ''; X.err2 = ''; render(); return; }
   if (b.dataset.jterm){ JF.term = +b.dataset.jterm; render(); return; }
   if (b.dataset.setterm){ const k = +b.dataset.setterm; if (X.me) X.me.term = k; fsP.collection(COL).doc(X.uid).update({term:k}).then(() => toast('تم: ' + TERMS[k]), () => toast('تعذّر الحفظ. تحقق من الإنترنت.')); render(); return; }
   if (b.dataset.bookt){ SAVE.bookT = +b.dataset.bookt; persist(); render(); return; }
