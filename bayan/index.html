@@ -202,17 +202,25 @@ function aiInit(){
   if(APPCHECK_SITE_KEY){const AC=await import(AI_SDK+'firebase-app-check.js');const ac=AC.initializeAppCheck(app,{provider:new AC.ReCaptchaEnterpriseProvider(APPCHECK_SITE_KEY),isTokenAutoRefreshEnabled:true});AC.getToken(ac).catch(()=>{})}
   return {ai:AI.getAI(app,{backend:new AI.GoogleAIBackend()}),getGenerativeModel:AI.getGenerativeModel}})().catch(e=>{aiPromise=null;throw e});
  return aiPromise}
-async function aiEvaluate(prompt,b64,mime,timeoutMs){
- const k=await aiInit();let lastErr=null;
- for(let i=0;i<AI_MODELS.length;i++){
+// الإرسال بالبث (stream) حتى لا ينقطع الاتصال في التسجيلات الطويلة، مع مهلة كافية
+async function aiEvaluate(prompt,b64,mime,timeoutMs,span,onText){
+ const k=await aiInit();let lastErr=null,think=true;
+ for(let i=0;i<AI_MODELS.length;){
   try{
-   const model=k.getGenerativeModel(k.ai,{model:AI_MODELS[i],generationConfig:{responseMimeType:'application/json',temperature:0.25,maxOutputTokens:12000}});
-   const res=await Promise.race([model.generateContent([{inlineData:{data:b64,mimeType:mime}},{text:prompt}]),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),timeoutMs))]);
-   let t=res.response.text().trim().replace(/^```(json)?/,'').replace(/```$/,'');
-   return JSON.parse(t);
+   const gc={responseMimeType:'application/json',temperature:0.25,maxOutputTokens:12000};
+   if(think)gc.thinkingConfig={thinkingBudget:span>480?0:1024};
+   const model=k.getGenerativeModel(k.ai,{model:AI_MODELS[i],generationConfig:gc},{timeout:timeoutMs});
+   const run=(async()=>{
+    const r=await model.generateContentStream([{inlineData:{data:b64,mimeType:mime}},{text:prompt}]);
+    let t='';for await(const ch of r.stream){try{t+=ch.text()}catch(e){}onText&&onText(t.length)}
+    if(!t.trim()){try{t=(await r.response).text()}catch(e){}}
+    return t})();
+   const t=await Promise.race([run,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),timeoutMs+20000))]);
+   return JSON.parse(String(t).trim().replace(/^```(json)?/,'').replace(/```$/,''));
   }catch(e){lastErr=e;const m=String((e&&(e.message||e.code))||e);
-   if(/not.?found|404|unsupported|is not supported/i.test(m))continue;
-   if(/JSON|Unexpected token|Unterminated/i.test(m)&&i<AI_MODELS.length-1)continue;
+   if(think&&/thinking|budget|invalid.?argument/i.test(m)){think=false;continue}
+   if(/not.?found|404|unsupported|is not supported/i.test(m)){i++;continue}
+   if(/JSON|Unexpected (token|end)|Unterminated|Expected/i.test(m)&&i<AI_MODELS.length-1){i++;continue}
    break}}
  throw lastErr||new Error('ai')}
 
@@ -554,7 +562,7 @@ function renderProc(){
   <ul class="steps">${STEPS.map((s,i)=>`<li class="${i<PROC.step?'done':i===PROC.step&&!PROC.err?'on':''}"><span class="ic">${i<PROC.step?'✓':''}</span>${s}</li>`).join('')}</ul>
   <div class="bar"><i id="pb" style="width:${Math.round(PROC.prog*100)}%"></i></div>
   <p class="muted small" id="pn" style="white-space:pre-line">${esc(PROC.note)}</p>
-  ${PROC.err?`<div class="err">${esc(PROC.err)}</div><div class="row" style="margin-top:12px">${job&&job.b64?'<button class="btn" id="bRetry">إعادة المحاولة</button>':''}<button class="btn ghost" id="bBack">العودة للرئيسية</button></div>`:''}
+  ${PROC.err?`<div class="err">${esc(PROC.err)}</div>${PROC.detail?`<p class="muted" style="font-size:11.5px;direction:ltr;text-align:left;margin:6px 0 0;word-break:break-all">${esc(PROC.detail)}</p>`:''}<div class="row" style="margin-top:12px">${job&&job.b64?'<button class="btn" id="bRetry">إعادة المحاولة</button>':''}<button class="btn ghost" id="bBack">العودة للرئيسية</button></div>`:''}
  </section>`;
  const r=$('#bRetry');if(r)r.onclick=()=>runAI();
  const b=$('#bBack');if(b)b.onclick=()=>{view='home';render()};
@@ -580,34 +588,48 @@ async function runJob(blob,meta,srcName){
   job.st=st;
   setStep(2,.3,'');
   const clip=trimPCM(pcm,st);pcm=null;
-  const kbps=st.span<=600?48:st.span<=2400?32:24;
+  const kbps=st.span<=600?48:st.span<=1200?32:st.span<=2400?24:16;
   const mp3=await encodeMP3(clip,kbps,p=>setProg(.3+p*.3));
   job.b64=await blobToB64(mp3);job.mime='audio/mpeg';job.audioURL=URL.createObjectURL(mp3);
   if(isFile)job.sizeNote=`✓ قُلّص الحجم من ${fmtMB(blob.size)} إلى ${fmtMB(mp3.size)} (صوت فقط).`;
   await runAI();
  }catch(e){console.error(e);PROC.err=e.message||'حدث خطأ غير متوقع.';renderProc()}
 }
+let WAKE=null,HIDDEN=false;
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&view==='proc')HIDDEN=true;else if(!document.hidden&&view==='proc'&&!PROC.err)keepAwake()});
+async function keepAwake(){try{if(!WAKE||WAKE.released)WAKE=await navigator.wakeLock.request('screen')}catch(e){}}
+function releaseAwake(){try{WAKE&&WAKE.release()}catch(e){}WAKE=null}
+function aiErrMsg(m){
+ if(/timeout|abort/i.test(m))return 'استغرق التقييم وقتًا أطول من المتوقع.';
+ if(/quota|429|resource.?exhausted/i.test(m))return 'الخدمة مشغولة حاليًا. انتظر دقيقة ثم أعد المحاولة.';
+ if(/too large|payload|413/i.test(m))return 'التسجيل كبير جدًا على خدمة التقييم. اقتطع جزءًا أقصر.';
+ if(/app.?check|permission|403|401|unauthenticated/i.test(m))return 'تعذّر التحقق من الموقع لدى خدمة التقييم. أعد تحميل الصفحة ثم حاول مجددًا.';
+ if(/fetch|network|Failed to load|import|load failed/i.test(m))return 'انقطع الاتصال بخدمة التقييم.';
+ return 'تعذّر الحصول على التقييم.'}
 async function runAI(){
- const st=job.st;PROC.err='';
- const est=Math.round(25+st.span/60*4);
- setStep(3,.62,(job.sizeNote?job.sizeNote+'\n':'')+`يستمع الذكاء الاصطناعي للتسجيل كاملًا… قد يستغرق ذلك قرابة ${est<60?toAr(est)+' ثانية':toAr(Math.ceil(est/60))+' دقائق'}.`);
- const t0=Date.now(),tick=setInterval(()=>{const p=Math.min(.97,.62+.35*(1-Math.exp(-(Date.now()-t0)/1000/est)));setProg(p)},400);
+ const st=job.st;PROC.err='';PROC.detail='';HIDDEN=false;keepAwake();
+ const mins=st.span/60,est=Math.round(30+mins*5);
+ const timeout=Math.min(900000,Math.max(240000,est*4000));
+ const base=(job.sizeNote?job.sizeNote+'\n':'')+`يستمع الذكاء الاصطناعي للتسجيل كاملًا… قد يستغرق ذلك قرابة ${est<60?toAr(est)+' ثانية':toAr(Math.ceil(est/60))+' دقائق'}.\n📱 أبقِ الشاشة مفتوحة ولا تغادر الصفحة حتى يكتمل.`;
+ setStep(3,.62,base);
+ const t0=Date.now();let writing=0;
+ const tick=setInterval(()=>{const p=writing?Math.min(.98,.85+.13*Math.min(1,writing/5000)):Math.min(.85,.62+.23*(1-Math.exp(-(Date.now()-t0)/1000/est)));setProg(p)},400);
+ const onText=n=>{if(!writing){const pn=$('#pn');if(pn)pn.textContent=(job.sizeNote?job.sizeNote+'\n':'')+'✍️ انتهى الاستماع، ويكتب التقييم الآن…'}writing=Math.max(1,n)};
  try{
-  let ai;
-  try{ai=await aiEvaluate(buildPrompt(job.meta,st),job.b64,job.mime,Math.max(120000,est*4000))}
-  catch(e){const m=String(e&&(e.message||e.code)||e);
-   if(/timeout/i.test(m))throw new Error('استغرق التقييم وقتًا أطول من المتوقع. اضغط «إعادة المحاولة».');
-   if(/quota|429|resource.?exhausted/i.test(m))throw new Error('الخدمة مشغولة حاليًا (تجاوز الحد المسموح). انتظر دقيقة ثم أعد المحاولة.');
-   if(/too large|size|payload|413/i.test(m))throw new Error('التسجيل كبير جدًا على خدمة التقييم. اقتطع جزءًا أقصر.');
-   if(/app.?check|permission|403|401|unauthenticated/i.test(m))throw new Error('تعذّر الاتصال بخدمة التقييم (التحقق من الموقع). افتح الصفحة من رابطها الرسمي وأعد المحاولة.');
-   if(/fetch|network|Failed to load|import/i.test(m))throw new Error('تعذّر الاتصال بالإنترنت أو بخدمة التقييم. تحقق من الاتصال وأعد المحاولة.');
-   throw new Error(m.startsWith('افتح')?m:'تعذّر الحصول على التقييم: '+m.slice(0,140))}
-  clearInterval(tick);
+  let ai=null,lastM='';
+  for(let attempt=1;attempt<=2&&!ai;attempt++){
+   try{ai=await aiEvaluate(buildPrompt(job.meta,st),job.b64,job.mime,timeout,st.span,onText)}
+   catch(e){lastM=String(e&&(e.message||e.code)||e);console.warn('ai attempt',attempt,e);
+    const transient=/timeout|abort|fetch|network|load failed|503|500|unavailable|overloaded|internal|JSON|Unexpected|Unterminated/i.test(lastM);
+    if(attempt===1&&transient){writing=0;const pn=$('#pn');if(pn)pn.textContent=base+'\n↻ تعثّر الاتصال، أعيد المحاولة تلقائيًا…';await new Promise(r=>setTimeout(r,2500));continue}
+    PROC.detail=lastM.slice(0,160);
+    throw new Error(aiErrMsg(lastM)+(HIDDEN?' يبدو أن الشاشة أُغلقت أو انتقلت لتطبيق آخر أثناء التقييم؛ أبقِ الصفحة مفتوحة ثم اضغط «إعادة المحاولة».':' اضغط «إعادة المحاولة».'))}}
+  clearInterval(tick);releaseAwake();
   if(!ai||ai.valid===false){PROC.err='لم يتمكن المقيّم من تقييم التسجيل: '+(aStr(ai&&ai.invalid_reason)||'لا يوجد كلام عربي واضح.');renderProc();return}
   const res=finalize(ai,st,job.meta);res.cut=!!job.cut;
   store.hist.unshift(res);store.hist=store.hist.slice(0,40);save();
   job.result=res;view='result';render();
- }catch(e){clearInterval(tick);PROC.err=e.message;renderProc()}
+ }catch(e){clearInterval(tick);releaseAwake();PROC.err=e.message;renderProc()}
 }
 function finalize(ai,st,meta){
  const c={};let total=0;
