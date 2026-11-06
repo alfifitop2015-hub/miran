@@ -228,7 +228,9 @@ let view='home';
 /* =================== الذكاء الاصطناعي (Firebase AI Logic + Gemini) =================== */
 const FB={apiKey:"AIzaSyDfDRNr06QJKPShAvjuc0UOaFYNlvU5NEo",authDomain:"miran-7ad31.firebaseapp.com",projectId:"miran-7ad31",storageBucket:"miran-7ad31.firebasestorage.app",messagingSenderId:"1089204486985",appId:"1:1089204486985:web:986b4a4ad56190c878d098"};
 const AI_SDK='https://www.gstatic.com/firebasejs/12.19.0/';
-const AI_MODELS=['gemini-3.8-flash','gemini-flash-latest','gemini-2.5-flash'];
+const AI_MODELS=['gemini-3.8-flash','gemini-3.6-flash','gemini-3.5-flash','gemini-flash-latest','gemini-3.5-flash-lite'];
+const FAST_MODELS=['gemini-3.5-flash-lite','gemini-3.8-flash','gemini-3.6-flash','gemini-flash-latest'];
+let AI_MODELS_OK='';
 const APPCHECK_SITE_KEY='6LfGiOstAAAAAESfhLqvBOgqQsv6KE9K5QXQl-CE';
 let aiPromise=null;
 function aiInit(){
@@ -239,30 +241,35 @@ function aiInit(){
   if(APPCHECK_SITE_KEY){const AC=await import(AI_SDK+'firebase-app-check.js');const ac=AC.initializeAppCheck(app,{provider:new AC.ReCaptchaEnterpriseProvider(APPCHECK_SITE_KEY),isTokenAutoRefreshEnabled:true});AC.getToken(ac).catch(()=>{})}
   return {ai:AI.getAI(app,{backend:new AI.GoogleAIBackend()}),getGenerativeModel:AI.getGenerativeModel}})().catch(e=>{aiPromise=null;throw e});
  return aiPromise}
-// استدعاء عام يعيد JSON — بالبث حتى لا ينقطع الاتصال، مع مهلة كافية
+// استدعاء عام يعيد JSON — بالبث حتى لا ينقطع الاتصال، مع تفكير مختصر لتسريع الرد
+// o.think: 'MINIMAL' | 'LOW' | null ؛ نجرب thinkingLevel (Gemini 3) ثم thinkingBudget ثم بدون
 async function aiJSON(parts,o){o=o||{};
- const k=await aiInit();let lastErr=null,think=o.budget!=null;
- for(let i=0;i<AI_MODELS.length;){
+ const k=await aiInit(),models=o.models||AI_MODELS;let lastErr=null;
+ if(o.budget!=null&&o.think==null)o.think=o.budget>0?'LOW':'MINIMAL';
+ let tm=o.think?0:2; // 0=level 1=budget 2=none
+ for(let i=0;i<models.length;){
   try{
    const gc={responseMimeType:'application/json',temperature:o.temp??0.25,maxOutputTokens:o.max||12000};
-   if(think)gc.thinkingConfig={thinkingBudget:o.budget};
-   const model=k.getGenerativeModel(k.ai,{model:AI_MODELS[i],generationConfig:gc},{timeout:o.timeout||120000});
+   if(tm===0)gc.thinkingConfig={thinkingLevel:o.think};
+   else if(tm===1)gc.thinkingConfig={thinkingBudget:o.think==='MINIMAL'?0:512};
+   const model=k.getGenerativeModel(k.ai,{model:models[i],generationConfig:gc},{timeout:o.timeout||120000});
    const run=(async()=>{
     const r=await model.generateContentStream(parts);
     let t='';for await(const ch of r.stream){try{t+=ch.text()}catch(e){}o.onText&&o.onText(t.length)}
     if(!t.trim()){try{t=(await r.response).text()}catch(e){}}
     return t})();
    const t=await Promise.race([run,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),(o.timeout||120000)+20000))]);
-   return JSON.parse(String(t).trim().replace(/^```(json)?/,'').replace(/```$/,''));
+   const out=JSON.parse(String(t).trim().replace(/^```(json)?/,'').replace(/```$/,''));
+   AI_MODELS_OK=models[i];return out;
   }catch(e){lastErr=e;const m=String((e&&(e.message||e.code))||e);
-   if(think&&/thinking|budget|invalid.?argument/i.test(m)){think=false;continue}
-   if(/not.?found|404|unsupported|is not supported/i.test(m)){i++;continue}
-   if(/quota|429|resource.?exhausted/i.test(m)&&i<AI_MODELS.length-1){i++;continue}
-   if(/JSON|Unexpected (token|end)|Unterminated|Expected/i.test(m)&&i<AI_MODELS.length-1){i++;continue}
+   if(/\[404|not.?found|unsupported|is not supported|no longer available/i.test(m)){i++;tm=o.think?0:2;continue}
+   if(tm<2&&/thinking|budget|level|invalid.?argument|\[400/i.test(m)){tm++;continue}
+   if(/quota|429|resource.?exhausted/i.test(m)&&i<models.length-1){i++;tm=o.think?0:2;continue}
+   if(/JSON|Unexpected (token|end)|Unterminated|Expected/i.test(m)&&i<models.length-1){i++;continue}
    break}}
  throw lastErr||new Error('ai')}
 async function aiEvaluate(prompt,b64,mime,timeoutMs,span,onText){
- return aiJSON([{inlineData:{data:b64,mimeType:mime}},{text:prompt}],{timeout:timeoutMs,budget:span>480?0:1024,onText})}
+ return aiJSON([{inlineData:{data:b64,mimeType:mime}},{text:prompt}],{timeout:timeoutMs,think:span>300?'MINIMAL':'LOW',onText})}
 
 /* =================== معالجة الصوت =================== */
 async function decodeAudio(buf){
@@ -411,6 +418,28 @@ function analyze(pcm){
 
 function trimPCM(pcm,st){const a=Math.max(0,Math.floor((st.firstSec-0.4)*16000)),b=Math.min(pcm.length,Math.ceil((st.lastSec+0.4)*16000));return pcm.subarray(a,b)}
 
+// ضغط متوازٍ على عدة أنوية للمعالج لتسريع التسجيلات الطويلة
+let ENC_URL=null;
+function encWorkerURL(){if(ENC_URL)return ENC_URL;
+ const lame=new URL('lame.min.js',location.href).href;
+ const src=`importScripts(${JSON.stringify(lame)});onmessage=e=>{const pcm=e.data.pcm,kbps=e.data.kbps,enc=new lamejs.Mp3Encoder(1,16000,kbps),blk=1152*20,i16=new Int16Array(blk),out=[];
+ for(let o=0;o<pcm.length;o+=blk){const n=Math.min(blk,pcm.length-o);for(let i=0;i<n;i++){let s=pcm[o+i];s=s<-1?-1:s>1?1:s;i16[i]=s<0?s*32768:s*32767}
+  const b=enc.encodeBuffer(n===blk?i16:i16.subarray(0,n));if(b.length)out.push(new Uint8Array(b));if((o/blk)%50===0)postMessage({p:o/pcm.length})}
+ const f=enc.flush();if(f.length)out.push(new Uint8Array(f));postMessage({done:out})}`;
+ return ENC_URL=URL.createObjectURL(new Blob([src],{type:'text/javascript'}))}
+async function encodeMP3Fast(pcm,kbps,onProg){
+ const N=Math.min(4,Math.max(1,(navigator.hardwareConcurrency||2)-1));
+ if(!window.Worker||N<2||pcm.length<16000*90||location.protocol==='file:')return encodeMP3(pcm,kbps,onProg);
+ try{
+  const step=Math.ceil(pcm.length/N/1152)*1152,prog=new Array(N).fill(0);
+  const parts=await Promise.all(Array.from({length:N},(_,k)=>new Promise((res,rej)=>{
+   const seg=pcm.slice(k*step,Math.min(pcm.length,(k+1)*step));if(!seg.length){res([]);return}
+   const w=new Worker(encWorkerURL());
+   w.onmessage=e=>{if(e.data.done){w.terminate();res(e.data.done)}else{prog[k]=e.data.p;onProg&&onProg(prog.reduce((a,b)=>a+b,0)/N)}};
+   w.onerror=e=>{w.terminate();rej(e)};
+   w.postMessage({pcm:seg,kbps},[seg.buffer])})));
+  return new Blob(parts.flat(),{type:'audio/mpeg'})}
+ catch(e){console.warn('parallel encode failed',e);return encodeMP3(pcm,kbps,onProg)}}
 async function encodeMP3(pcm,kbps,onProg){
  const enc=new lamejs.Mp3Encoder(1,16000,kbps),blk=1152*20,out=[];
  const i16=new Int16Array(blk);
@@ -425,7 +454,7 @@ const blobToB64=b=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=
 
 /* =================== التعليمات المرسلة للنموذج =================== */
 function buildPrompt(meta,st){
- const longTalk=st.span>360;
+ const longTalk=true;
  const pitchTxt=st.pitchSt?`انحراف طبقة الصوت المعياري ≈ ${st.pitchSt.toFixed(1)} نصف نغمة (أقل من 1.8 يدل على رتابة، 1.8–3 متوسط، أكثر من 3 تلوين حيوي)، متوسط الطبقة ≈ ${Math.round(st.pitchMed)} هرتز`:'تعذّر قياس طبقة الصوت آليًا';
  return `أنت خبير محكّم في فن الإلقاء والخطابة العربية، متخصص في العربية الفصحى واللهجة السعودية العامة بلهجاتها المحلية (النجدية والحجازية والجنوبية والشرقية والشمالية). استمع بعناية إلى التسجيل الصوتي المرفق وقيّم المتحدث تقييمًا مهنيًا دقيقًا منصفًا غير مجامل.
 
@@ -459,7 +488,7 @@ ${meta.topic?`- الموضوع أو الهدف أو الجمهور: ${meta.topic
 "register": "المستوى اللغوي: فصحى / عامية سعودية (حدّد اللهجة إن أمكن) / مزيج",
 "topic": "موضوع الكلام في سطر",
 "summary": "ملخص المضمون في 2–4 جمل",
-"transcript": ${longTalk?'""  (اتركه فارغًا لأن الكلام طويل)':'"تفريغ نصي كامل للكلام كما قيل بلهجته، مع علامات ترقيم"'},
+"transcript": ${longTalk?'""  (اتركه فارغًا)':'"تفريغ نصي كامل للكلام كما قيل بلهجته، مع علامات ترقيم"'},
 "word_count": 0,
 "criteria": {
  "content":   {"score": 0, "comment": "صحة الطرح والمحتوى — الدرجة من 20"},
@@ -482,7 +511,7 @@ ${meta.topic?`- الموضوع أو الهدف أو الجمهور: ${meta.topic
 "better_closing": "صياغة مقترحة لختام أقوى",
 "tips": ["3–5 تمارين أو نصائح عملية للمرة القادمة"]
 }
-"comment" لكل معيار: جملة أو جملتان محددتان. language_notes حتى 8 عناصر، factual_notes فقط عند وجود ملاحظة حقيقية، improvements من 2 إلى 5. "word_count": العدد التقريبي لكلمات المتحدث في التسجيل كله.`}
+"comment" لكل معيار: جملة أو جملتان محددتان. اجعل التعليقات مركّزة وموجزة. language_notes حتى 6 عناصر، factual_notes فقط عند وجود ملاحظة حقيقية، improvements من 2 إلى 5. "word_count": العدد التقريبي لكلمات المتحدث في التسجيل كله.`}
 
 /* =================== الواجهة =================== */
 const ICON={
@@ -650,15 +679,15 @@ async function runJob(blob,meta,srcName){
   job.st=st;
   setStep(2,.3,'');
   const clip=trimPCM(pcm,st);pcm=null;job.sampled=false;
-  const kbps=st.span<=600?48:st.span<=1200?32:st.span<=2400?24:16;
-  const mp3=await encodeMP3(clip,kbps,p=>setProg(.3+p*.3));
+  const kbps=st.span<=300?32:st.span<=900?24:16; // Gemini يخفّض الصوت داخليًا إلى 16 كيلوبت/ث، فلا فائدة من حجم أكبر
+  const mp3=await encodeMP3Fast(clip,kbps,p=>setProg(.3+p*.3));
   job.b64=await blobToB64(mp3);job.mime='audio/mpeg';job.audioURL=URL.createObjectURL(mp3);
   if(isFile)job.sizeNote=`✓ قُلّص الحجم من ${fmtMB(blob.size)} إلى ${fmtMB(mp3.size)} (صوت فقط).`;
-  if(st.span>900){const sm=await makeSample(clip);job.sampleB64=sm.b64;job.sampleSpan=sm.span}
   job.fullB64=job.b64;
   if(myId!==RUNID)return;
   await savePending();
-  await runAI();
+  if(st.span>900){const J=job;setTimeout(()=>makeSample(clip).then(sm=>{if(job===J){J.sampleB64=sm.b64;J.sampleSpan=sm.span;savePending()}}).catch(()=>{}),4000)}
+  runAI();
  }catch(e){if(myId!==RUNID)return;console.error(e);PROC.err=e.message||'حدث خطأ غير متوقع.';renderProc()}
 }
 /* ---------- العمل في الخلفية: حفظ المهمة واستئنافها تلقائيًا + تنبيه عند الجاهزية ---------- */
@@ -687,6 +716,7 @@ document.addEventListener('visibilitychange',()=>{
 async function keepAwake(){try{if(!document.hidden&&(!WAKE||WAKE.released))WAKE=await navigator.wakeLock.request('screen')}catch(e){}}
 function releaseAwake(){try{WAKE&&WAKE.release()}catch(e){}WAKE=null}
 function aiErrMsg(m){
+ if(/\[404|no longer available|not.?found/i.test(m))return 'نموذج الذكاء الاصطناعي غير متاح حاليًا.';
  if(/timeout|abort/i.test(m))return 'استغرق التقييم وقتًا أطول من المتوقع.';
  if(/quota|429|resource.?exhausted/i.test(m))return 'الخدمة مزدحمة حاليًا.';
  if(/too large|payload|413/i.test(m))return 'التسجيل كبير جدًا على خدمة التقييم. اقتطع جزءًا أقصر.';
@@ -704,6 +734,7 @@ async function runAI(){
  const base=()=>(job.sizeNote?job.sizeNote+'\n':'')+(job.sampled?'يقيّم الذكاء الاصطناعي عيّنات من البداية والوسط والنهاية':'يستمع الذكاء الاصطناعي للتسجيل كاملًا')+`… قد يستغرق ذلك قرابة ${est()<60?toAr(est())+' ثانية':toAr(Math.ceil(est()/60))+' دقائق'}.\n`+bg;
  const note=t=>{PROC.note=t;const pn=$('#pn');if(pn)pn.textContent=t};
  setStep(3,.62,base());
+ startTranscript();
  let t0=Date.now(),writing=0;const T0=Date.now();PROC.writing=0;
  const tick=setInterval(()=>{if(myId!==RUNID){clearInterval(tick);return}
   const e=est(),el=(Date.now()-t0)/1000,p=writing?Math.min(.98,.85+.13*Math.min(1,writing/5000)):Math.min(.85,.62+.23*(1-Math.exp(-el/e)));setProg(p);
@@ -720,7 +751,8 @@ async function runAI(){
    try{ai=await new Promise((res,rej)=>{CANCEL_ATTEMPT=rej;aiEvaluate(buildPrompt(job.meta,st),job.b64,job.mime,timeout(),job.sampled?job.sampleSpan:st.span,onText).then(res,rej)});CANCEL_ATTEMPT=null;if(myId!==RUNID)return}
    catch(e){CANCEL_ATTEMPT=null;if(myId!==RUNID)return;const m=String(e&&(e.message||e.code)||e);console.warn('ai',e);
     if(m==='resume'||m==='restart'){note(base()+'\n↻ أعيد إرسال التقييم الآن…');continue}
-    const transient=/stall|timeout|abort|fetch|network|load failed|503|500|unavailable|overloaded|internal|JSON|Unexpected|Unterminated/i.test(m);
+    const gone=/\[404|no longer available|not.?found/i.test(m);
+    const transient=!gone&&/stall|timeout|abort|fetch|network|load failed|503|500|unavailable|overloaded|internal|JSON|Unexpected|Unterminated/i.test(m);
     const isQuota=/quota|429|resource.?exhausted/i.test(m);
     // أوقف الجوال الصفحة في الخلفية: نكمل تلقائيًا عند العودة دون احتساب محاولة
     if((transient||isQuota)&&HIDDEN){
@@ -735,6 +767,7 @@ async function runAI(){
   stop();
   if(!ai||ai.valid===false){dropPending();PROC.err='لم يتمكن المقيّم من تقييم التسجيل: '+(aStr(ai&&ai.invalid_reason)||'لا يوجد كلام عربي واضح.');renderProc();notify('تعذّر التقييم','افتح «بيان» لمعرفة السبب.');return}
   const res=finalize(ai,st,job.meta,job.sampled?job.sampleSpan:st.span);res.cut=!!job.cut;res.sampled=!!job.sampled;
+  attachTranscript(res);
   store.hist.unshift(res);store.hist=store.hist.slice(0,40);save();dropPending();
   job.result=res;view='result';render();
   notify('تقييمك جاهز في «بيان»',`النتيجة: ${res.total} من 100 (${level(res.total)[0]})`);
@@ -756,6 +789,22 @@ function finalize(ai,st,meta,wspan){wspan=wspan||st.span;
    fillers:arr(ai.fillers).filter(x=>x&&aStr(x.word)).map(x=>({word:aStr(x.word),count:Math.max(0,Math.round(Number(x.count)||0))})).sort((a,b)=>b.count-a.count).slice(0,8),
    best_quote:aStr(ai.best_quote),better_opening:aStr(ai.better_opening),better_closing:aStr(ai.better_closing),
    tips:arr(ai.tips).map(aStr).filter(Boolean)}}}
+
+/* ---------- التفريغ النصي بالتوازي مع التقييم (لتسريع ظهور النتيجة) ---------- */
+function startTranscript(){
+ if(!job||job.trP||job.sampled||!job.st||job.st.span>480||!job.fullB64)return;
+ const J=job;
+ J.trP=aiJSON([{inlineData:{data:J.fullB64,mimeType:J.mime||'audio/mpeg'}},{text:'فرّغ كلام المتحدث في هذا التسجيل نصيًا كما قيل تمامًا بلهجته (فصحى أو عامية)، مع علامات ترقيم مناسبة وتقسيم إلى فقرات، دون تصحيح أو تعليق. أعد JSON فقط: {"transcript":""}'}],{timeout:240000,think:'MINIMAL',max:8000,temp:0.1,models:FAST_MODELS})
+  .then(r=>aStr(r&&r.transcript)).catch(()=>'')}
+function attachTranscript(res){
+ const J=job;if(!J||!J.trP){return}
+ res.trPending=true;
+ J.trP.then(t=>{res.trPending=false;if(t)res.ai.transcript=t;
+  const h=store.hist.find(x=>x.id===res.id);if(h){h.trPending=false;if(t)h.ai.transcript=t;save()}
+  const box=$('#trBox');if(box&&view==='result'&&job&&job.result&&job.result.id===res.id)box.innerHTML=trHTML(res)})}
+function trHTML(r){const a=r.ai||{};
+ if(a.transcript)return `<details class="tr" style="margin-top:10px"><summary>النص المفرّغ</summary><div class="trtext">${esc(a.transcript)}</div></details>`;
+ if(r.trPending&&job&&job.trP)return '<p class="muted small" style="margin:10px 0 0">⏳ جارٍ إعداد النص المفرّغ…</p>';return ''}
 
 /* ---------- النتيجة ---------- */
 function statLabel(v,arr){for(const [lim,txt,col] of arr)if(v<lim)return `<em style="color:${col}">${txt}</em>`;return ''}
@@ -780,8 +829,8 @@ function renderResult(){
   </div>
   ${job.audioURL&&!job.fromHist?`<audio controls src="${job.audioURL}" class="noprint"></audio>`:''}
  </section>
- ${a.topic||a.summary?`<section class="card"><h2>المضمون</h2>${a.topic?`<p style="margin:0 0 6px"><b>الموضوع:</b> ${esc(a.topic)}</p>`:''}${a.summary?`<p style="margin:0">${esc(a.summary)}</p>`:''}
-  ${a.transcript?`<details class="tr" style="margin-top:10px"><summary>النص المفرّغ</summary><div class="trtext">${esc(a.transcript)}</div></details>`:''}</section>`:''}
+ ${a.topic||a.summary||a.transcript||(r.trPending&&job&&job.trP)?`<section class="card"><h2>المضمون</h2>${a.topic?`<p style="margin:0 0 6px"><b>الموضوع:</b> ${esc(a.topic)}</p>`:''}${a.summary?`<p style="margin:0">${esc(a.summary)}</p>`:''}
+  <div id="trBox">${trHTML(r)}</div></section>`:''}
  <section class="card"><h2>تفصيل الدرجة</h2>
   ${CRIT.map(([k,lab,w])=>{const o=r.crit[k],p=o.score/w;return `<div class="crit"><div class="crit-h"><span>${lab}</span><b style="color:${pctColor(p)}">${toAr(o.score)} / ${toAr(w)}</b></div><div class="bar"><i style="width:${p*100}%;background:${pctColor(p)}"></i></div>${o.comment?`<p>${esc(o.comment)}</p>`:''}</div>`}).join('')}
  </section>
@@ -925,7 +974,7 @@ async function arenaOpen(){
  const r=await aiJSON([{text:sysTxt()+`
 
 ابدأ الجلسة الآن. أعد JSON فقط:
-{"topic":"عنوان قصير للتحدي","opening":"ترحيب قصير جدًا وتوضيح التحدي في جملة أو جملتين","question":"السؤال أو القضية أو الموقف الأول بوضوح (حتى 45 كلمة)"}`}],{timeout:60000,temp:0.9,max:1200,budget:0});
+{"topic":"عنوان قصير للتحدي","opening":"ترحيب قصير جدًا وتوضيح التحدي في جملة أو جملتين","question":"السؤال أو القضية أو الموقف الأول بوضوح (حتى 45 كلمة)"}`}],{timeout:60000,temp:0.9,max:1200,think:'MINIMAL'});
  A.topic=aStr(r.topic);const q=aStr(r.question);if(!q)throw new Error('JSON empty');
  A.turns.push({q});A.log.push({w:'ai',t:aStr(r.opening)},{w:'ai',t:q,q:true});
  await arenaAsk(aStr(r.opening)+' '+q);
@@ -976,7 +1025,7 @@ async function arenaAnswer(blob,dur,limit){
  turn.dur=dur;turn.limit=limit;turn.latency=st.empty?null:st.firstSec;
  turn.st=st.empty?null:{span:st.span,speakRatio:st.speakRatio,longPauses:st.longPauses,pitchSt:st.pitchSt,loudStd:st.loudStd};
  let b64=null;
- if(!st.empty){const mp3=await encodeMP3(trimPCM(pcm,st),48);b64=await blobToB64(mp3)}
+ if(!st.empty){const mp3=await encodeMP3(trimPCM(pcm,st),24);b64=await blobToB64(mp3)}
  const hist=A.turns.slice(0,A.i).map((t,k)=>`الجولة ${k+1}\nالمحاور: ${t.q}\nالمشارك: ${t.a||'(لم يُجب)'}`).join('\n\n');
  const prompt=sysTxt()+`
 
@@ -988,7 +1037,7 @@ ${last?'هذه آخر جولة: اجعل "reaction" تعليقًا ختاميً�
 {"transcript":"تفريغ إجابته كما قالها بلهجته","note":"ملاحظة تقييمية مختصرة دقيقة لهذه الإجابة: قوة الحجة، الصلة بالسؤال، التهرب إن وجد، الثبات، اللغة، الأداء الصوتي","scores":{"argument":0,"relevance":0,"delivery":0},"reaction":"ردّك المنطوق على إجابته في جملة أو جملتين بحسب مستوى الضغط (لا تُكثر المديح، ولا تكشف الدرجات)","next":"السؤال التالي (حتى 40 كلمة)"}
 "scores" من 0 إلى 10.`;
  const parts=b64?[{inlineData:{data:b64,mimeType:'audio/mpeg'}},{text:prompt}]:[{text:prompt}];
- const r=await aiJSON(parts,{timeout:90000,temp:0.7,max:2500,budget:0});
+ const r=await aiJSON(parts,{timeout:90000,temp:0.7,max:2500,think:'MINIMAL'});
  if(!A||A.ended)return;
  turn.a=st.empty?'':aStr(r.transcript)||'(إجابة غير واضحة)';turn.note=aStr(r.note);
  const sc=r.scores||{};turn.scores={argument:clamp(+sc.argument||0,0,10),relevance:clamp(+sc.relevance||0,0,10),delivery:clamp(+sc.delivery||0,0,10)};
@@ -1027,7 +1076,7 @@ ${done.length<A.rounds?`ملاحظة: أنهى المشارك الجلسة بع�
 "model":{"question":"السؤال الذي كانت إجابته الأضعف","answer":"إجابة نموذجية قوية عنه بأسلوب المشارك ولهجته (3–5 جمل)"},
 "fillers":[{"word":"","count":0}],
 "tips":["3–4 تمارين عملية لتنمية المواجهة والحجة والارتجال"]}
-"score" في turns من 10.`}],{timeout:180000,temp:0.3,max:6000,budget:1024});
+"score" في turns من 10.`}],{timeout:180000,temp:0.3,max:6000,think:'LOW'});
  const c={};let total=0;
  for(const [k,,w] of ACRIT){const o=(r.criteria||{})[k]||{};let s=Number(o.score);if(!isFinite(s))s=0;if(s>w)s=s<=10?s/10*w:s/100*w;s=clamp(Math.round(s*2)/2,0,w);c[k]={score:s,comment:aStr(o.comment)};total+=s}
  const tr=arr(r.turns);
@@ -1133,6 +1182,8 @@ function renderArenaResult(){
 /* =================== تشغيل =================== */
 window.addEventListener('beforeunload',e=>{if(REC||(view==='arenaRun'&&A)){e.preventDefault();e.returnValue=''}});
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
+// تسخين الاتصال بخدمة التقييم مبكرًا (تحميل المكتبة ورمز التحقق) لتوفير ثوانٍ عند أول طلب
+if(location.protocol==='https:')(window.requestIdleCallback||setTimeout)(()=>aiInit().catch(()=>{}),1500);
 (async()=>{
  const pd=await kv('get','pending');
  if(pd&&pd.b64&&Date.now()-pd.at<48*3600*1000){
