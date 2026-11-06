@@ -899,20 +899,44 @@ let A=null; // جلسة المواجهة الحالية
 let VOICE=null;
 function pickVoice(){try{const vs=speechSynthesis.getVoices();VOICE=vs.find(v=>/^ar[-_]SA/i.test(v.lang))||vs.find(v=>/^ar/i.test(v.lang))||null}catch(e){}}
 if(window.speechSynthesis){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
-function ttsUnlock(){try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}catch(e){}}
-function ttsStop(){try{speechSynthesis.cancel()}catch(e){}}
-function say(text){
+/* صوت «حامد» (ar-SA-HamedNeural) من خدمة Microsoft الرسمية عبر وسيط Apps Script يخفي المفتاح.
+   إن لم يُضبط الرابط أو تعذّر الوصول يُستخدم صوت الجهاز العربي بسرعة هادئة. */
+const TTS_URL='';
+const HAMED_RATE='-10%';
+const SIL='data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjYwLjE2LjEwMAAAAAAAAAAAAAAA//OEwAAAAAAAAAAAAEluZm8AAAAPAAAACQAABCAARUVFRUVFRUVFRUVdXV1dXV1dXV1dXXR0dHR0dHR0dHR0i4uLi4uLi4uLi4uioqKioqKioqKiorq6urq6urq6urq60dHR0dHR0dHR0dHo6Ojo6Ojo6Ojo6P//////////////AAAAAExhdmM2MC4zMQAAAAAAAAAAAAAAACQD8AAAAAAAAAQgDeb0IwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//NExAAAAANIAAAAAExBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExFMAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKYAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKwAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKwAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKwAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMu//NExKwAAANIAAAAADEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NExKwAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NExKwAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
+let HAUD=null;const TTS_CACHE=new Map();
+function ttsUnlock(){try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}catch(e){}
+ try{HAUD=HAUD||new Audio();HAUD.src=SIL;const p=HAUD.play();p&&p.catch(()=>{})}catch(e){}}
+function ttsStop(){try{speechSynthesis.cancel()}catch(e){}try{HAUD&&HAUD.pause()}catch(e){}}
+function hamedFetch(text){
+ if(!TTS_URL)return Promise.reject(new Error('no tts'));
+ if(TTS_CACHE.has(text))return TTS_CACHE.get(text);
+ const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),15000);
+ const p=fetch(TTS_URL,{method:'POST',body:JSON.stringify({text,rate:HAMED_RATE}),signal:ctl.signal})
+  .then(r=>r.json()).then(j=>{clearTimeout(t);if(!j||!j.audio)throw new Error(j&&j.error||'tts');return j.audio})
+  .catch(e=>{clearTimeout(t);TTS_CACHE.delete(text);throw e});
+ TTS_CACHE.set(text,p);return p}
+function sayDevice(text,res){
+ if(!window.speechSynthesis){setTimeout(res,300);return}
+ const parts=String(text).split(/(?<=[.!؟?…:،])\s+/).reduce((a,s)=>{if(a.length&&(a[a.length-1]+' '+s).length<160)a[a.length-1]+=' '+s;else a.push(s);return a},[]).filter(x=>x.trim());
+ let i=0;const next=()=>{if(!A||A.ttsDone)return;if(i>=parts.length){res();return}
+  const u=new SpeechSynthesisUtterance(parts[i++]);u.lang=VOICE?VOICE.lang:'ar-SA';if(VOICE)u.voice=VOICE;u.rate=0.85;u.pitch=0.95;
+  u.onend=next;u.onerror=next;speechSynthesis.speak(u)};
+ next()}
+// text: النص المعروض، spoken: نسخة مشكولة للنطق الدقيق
+function say(text,spoken){
+ const sp=String(spoken||text||'').trim();
  return new Promise(res=>{
-  if(!text||!store.voice||!window.speechSynthesis){setTimeout(res,store.voice?0:400);return}
+  if(!sp||!store.voice){setTimeout(res,store.voice?0:400);return}
   ttsStop();
-  const parts=String(text).split(/(?<=[.!؟?…:])\s+/).reduce((a,s)=>{if(a.length&&(a[a.length-1]+' '+s).length<180)a[a.length-1]+=' '+s;else a.push(s);return a},[]).filter(x=>x.trim());
-  let i=0,done=false;const fin=()=>{if(!done){done=true;clearTimeout(guard);res()}};
-  const guard=setTimeout(fin,String(text).length*110+4000);
-  A&&(A.ttsFin=fin);
-  const next=()=>{if(done)return;if(i>=parts.length){fin();return}
-   const u=new SpeechSynthesisUtterance(parts[i++]);u.lang=VOICE?VOICE.lang:'ar-SA';if(VOICE)u.voice=VOICE;u.rate=1;u.pitch=1;
-   u.onend=next;u.onerror=next;speechSynthesis.speak(u)};
-  next()})}
+  let done=false;const fin=()=>{if(!done){done=true;clearTimeout(guard);if(A)A.ttsDone=true;res()}};
+  const guard=setTimeout(fin,sp.length*160+15000);
+  if(A){A.ttsFin=()=>{ttsStop();fin()};A.ttsDone=false}
+  if(TTS_URL){
+   hamedFetch(sp).then(b64=>{if(done)return;HAUD=HAUD||new Audio();HAUD.onended=fin;HAUD.onerror=()=>{if(!done)sayDevice(sp,fin)};HAUD.src='data:audio/mpeg;base64,'+b64;
+     const p=HAUD.play();p&&p.catch(()=>{if(!done)sayDevice(sp,fin)})})
+    .catch(()=>{if(!done)sayDevice(sp,fin)})}
+  else sayDevice(sp,fin)})}
 
 /* ---------- الشاشة الرئيسية للمواجهة ---------- */
 function renderArenaHome(){
@@ -934,7 +958,7 @@ function renderArenaHome(){
   <input type="text" id="actx" value="${esc(store.actx||'')}" placeholder="${esc(m.ph)}">
   <label class="f" for="anm">اسم المشارك <span class="muted small">(اختياري)</span></label>
   <input type="text" id="anm" value="${esc(store.name)}" placeholder="مثال: محمد العتيبي">
-  <label class="toggle"><input type="checkbox" id="avoice" ${store.voice?'checked':''}> صوت المحاور مسموع ${VOICE?'':'<span class="muted small">(قد لا يتوفر صوت عربي في هذا المتصفح، وستظهر الأسئلة مكتوبة)</span>'}</label>
+  <label class="toggle"><input type="checkbox" id="avoice" ${store.voice?'checked':''}> صوت المحاور مسموع ${TTS_URL?'<span class="muted small">(بصوت «حامد»)</span>':VOICE?'':'<span class="muted small">(قد لا يتوفر صوت عربي في هذا المتصفح، وستظهر الأسئلة مكتوبة)</span>'}</label>
   <button class="btn" id="aStart" style="width:100%;margin-top:14px;padding:14px;font-size:17px">${ICON.mic.replace('<svg','<svg width="22" height="22"')}ابدأ المواجهة</button>
   <div class="hint">🎧 استخدم سماعة إن أمكن، وتحدّث في مكان هادئ. يبدأ التسجيل تلقائيًا بعد انتهاء المحاور من السؤال، والمهلة تظهر أمامك.</div>
  </section>`}
@@ -976,14 +1000,14 @@ async function arenaOpen(){
  const r=await aiJSON([{text:sysTxt()+`
 
 ابدأ الجلسة الآن. أعد JSON فقط:
-{"topic":"عنوان قصير للتحدي","opening":"ترحيب قصير جدًا وتوضيح التحدي في جملة أو جملتين","question":"السؤال أو القضية أو الموقف الأول بوضوح (حتى 45 كلمة)"}`}],{timeout:60000,temp:0.9,max:1200,think:'MINIMAL'});
+{"topic":"عنوان قصير للتحدي","opening":"ترحيب قصير جدًا وتوضيح التحدي في جملة أو جملتين","question":"السؤال أو القضية أو الموقف الأول بوضوح (حتى 45 كلمة)","speak":"نص opening ثم question نفسه حرفيًا مشكولًا تشكيلًا كاملًا دقيقًا لكل الحروف ما عدا أواخر الكلمات، ليُنطق صحيحًا"}`}],{timeout:60000,temp:0.9,max:2000,think:'MINIMAL'});
  A.topic=aStr(r.topic);const q=aStr(r.question);if(!q)throw new Error('JSON empty');
  A.turns.push({q});A.log.push({w:'ai',t:aStr(r.opening)},{w:'ai',t:q,q:true});
- await arenaAsk(aStr(r.opening)+' '+q);
+ await arenaAsk(aStr(r.opening)+' '+q,aStr(r.speak));
 }
-async function arenaAsk(text){
+async function arenaAsk(text,spoken){
  if(!A||A.ended)return;A.phase='speaking';drawArena();
- await say(text);
+ await say(text,spoken);
  if(!A||A.phase!=='speaking')return;
  const p=prepSec(A.i);
  if(p&&!A.turns[A.i].prepped){A.turns[A.i].prepped=true;A.phase='prep';A.left=p;drawArena();
@@ -1020,7 +1044,7 @@ async function arenaAnswer(blob,dur,limit){
  let pcm;try{pcm=await decodeAudio(await blob.arrayBuffer())}catch(e){throw new Error('decode: تعذّرت قراءة التسجيل')}
  const st=analyze(pcm);
  if(st.empty||st.speech<1.2){
-  if(A.retries++<2){const t='لم أسمعك بوضوح. اقترب من المايكروفون وأجب مرة أخرى من فضلك.';A.log.push({w:'ai',t});await arenaAsk(t);return}
+  if(A.retries++<2){const t='لم أسمعك بوضوح. اقترب من المايكروفون وأجب مرة أخرى من فضلك.';A.log.push({w:'ai',t});await arenaAsk(t,'لَمْ أَسْمَعْكَ بِوُضُوحٍ. اِقْتَرِبْ مِنَ المَايْكْرُوفُونِ، وَأَجِبْ مَرَّةً أُخْرَى مِنْ فَضْلِكَ.');return}
   st.empty=true}
  A.retries=0;
  const turn=A.turns[A.i],last=A.i>=A.rounds-1;
@@ -1036,18 +1060,18 @@ ${hist?`ما سبق من الحوار:\n${hist}\n\n`:''}الجولة الحال�
 ${st.empty?'المشارك لم يقل شيئًا مسموعًا (صمت).':`إجابة المشارك صوتية مرفقة، مدتها ${Math.round(st.span)} ثانية من مهلة ${limit} ثانية، وبدأ الكلام بعد ${st.firstSec.toFixed(1)} ثانية من بدء التسجيل.`}
 ${last?'هذه آخر جولة: اجعل "reaction" تعليقًا ختاميًا قصيرًا يشكره ويخبره أن التقييم جاهز، واترك "next" فارغًا.':'اجعل "next" السؤال أو التحدي التالي مبنيًا على كلامه هو: تعمّق في نقطة ضعيفة، أو اطلب مثالًا ودليلًا، أو قدّم اعتراضًا أو حجة مضادة، أو فاجئه بزاوية جديدة؛ ونوّع بين الجولات.'}
 أعد JSON فقط:
-{"transcript":"تفريغ إجابته كما قالها بلهجته","note":"ملاحظة تقييمية مختصرة دقيقة لهذه الإجابة: قوة الحجة، الصلة بالسؤال، التهرب إن وجد، الثبات، اللغة، الأداء الصوتي","scores":{"argument":0,"relevance":0,"delivery":0},"reaction":"ردّك المنطوق على إجابته في جملة أو جملتين بحسب مستوى الضغط (لا تُكثر المديح، ولا تكشف الدرجات)","next":"السؤال التالي (حتى 40 كلمة)"}
+{"transcript":"تفريغ إجابته كما قالها بلهجته","note":"ملاحظة تقييمية مختصرة دقيقة لهذه الإجابة: قوة الحجة، الصلة بالسؤال، التهرب إن وجد، الثبات، اللغة، الأداء الصوتي","scores":{"argument":0,"relevance":0,"delivery":0},"reaction":"ردّك المنطوق على إجابته في جملة أو جملتين بحسب مستوى الضغط (لا تُكثر المديح، ولا تكشف الدرجات)","next":"السؤال التالي (حتى 40 كلمة)","speak":"نص reaction ثم next نفسه حرفيًا مشكولًا تشكيلًا كاملًا دقيقًا لكل الحروف ما عدا أواخر الكلمات، ليُنطق صحيحًا"}
 "scores" من 0 إلى 10.`;
  const parts=b64?[{inlineData:{data:b64,mimeType:'audio/mpeg'}},{text:prompt}]:[{text:prompt}];
- const r=await aiJSON(parts,{timeout:90000,temp:0.7,max:2500,think:'MINIMAL'});
+ const r=await aiJSON(parts,{timeout:90000,temp:0.7,max:3500,think:'MINIMAL'});
  if(!A||A.ended)return;
  turn.a=st.empty?'':aStr(r.transcript)||'(إجابة غير واضحة)';turn.note=aStr(r.note);
  const sc=r.scores||{};turn.scores={argument:clamp(+sc.argument||0,0,10),relevance:clamp(+sc.relevance||0,0,10),delivery:clamp(+sc.delivery||0,0,10)};
  A.log.push({w:'me',t:turn.a||'(صمت)'});
  const reaction=aStr(r.reaction),next=aStr(r.next);
  if(reaction)A.log.push({w:'ai',t:reaction});
- if(!last&&next){A.i++;A.turns.push({q:next});A.log.push({w:'ai',t:next,q:true});await arenaAsk(reaction+' '+next)}
- else{A.phase='speaking';drawArena();await say(reaction);if(A)arenaStep(arenaFinal)}
+ if(!last&&next){A.i++;A.turns.push({q:next});A.log.push({w:'ai',t:next,q:true});await arenaAsk(reaction+' '+next,aStr(r.speak))}
+ else{A.phase='speaking';drawArena();await say(reaction,aStr(r.speak));if(A)arenaStep(arenaFinal)}
 }
 async function arenaFinal(){
  const done=A.turns.filter(t=>t.a!=null);
