@@ -154,6 +154,7 @@ footer.credit{text-align:center;color:var(--muted);font-size:12.5px;padding:18px
 </div>
 <input type="file" id="fileIn" accept="audio/*,video/*,.mp3,.m4a,.wav,.ogg,.opus,.aac,.amr,.webm,.mp4,.3gp" hidden>
 <script src="lame.min.js"></script>
+<script src="mp4box.min.js"></script>
 <script>
 'use strict';
 /* =================== الإعدادات =================== */
@@ -226,6 +227,101 @@ async function decodeAudio(buf){
  if(ab.sampleRate!==16000){ // احتياط: إعادة تشكيل بسيطة
   const r=ab.sampleRate/16000,m=Math.floor(n/r),o=new Float32Array(m);for(let i=0;i<m;i++)o[i]=out[Math.floor(i*r)];out=o}
  return out}
+
+/* =================== تقليل حجم الفيديوهات الكبيرة تلقائيًا ===================
+   نقرأ مسار الصوت فقط من داخل الفيديو (دون تحميل الفيديو كاملًا في الذاكرة)،
+   ونحوّله مباشرة إلى صوت أحادي 16 كيلوهرتز، ثم يُضغط MP3 صغير قبل الإرسال. */
+const fmtMB=b=>b>=1024*1024*1024?toAr((b/1024/1024/1024).toFixed(1))+' جيجابايت':b>=1024*1024?toAr((b/1024/1024).toFixed(b<10*1024*1024?1:0))+' ميجابايت':toAr(Math.max(1,Math.round(b/1024)))+' كيلوبايت';
+class Down16{ // تحويل تدريجي لأي معدل عيّنات إلى 16 كيلوهرتز مع مرشح يمنع التشويه
+ constructor(inRate,maxSec){this.r=inRate/16000;this.out=new Float32Array(Math.ceil(maxSec*16000)+16000);this.n=0;this.pos=0;this.base=0;this.prev=0;this.full=false;
+  this.f=[];if(inRate>17000){const fc=Math.min(7000,inRate*0.43),w=2*Math.PI*fc/inRate,c=Math.cos(w),al=Math.sin(w)/(2*0.7071),a0=1+al;
+   const co={b0:(1-c)/2/a0,b1:(1-c)/a0,b2:(1-c)/2/a0,a1:-2*c/a0,a2:(1-al)/a0};this.f=[{...co,x1:0,x2:0,y1:0,y2:0},{...co,x1:0,x2:0,y1:0,y2:0}]}}
+ push(x){if(this.full||!x.length)return;
+  for(const s of this.f){for(let i=0;i<x.length;i++){const v=x[i],y=s.b0*v+s.b1*s.x1+s.b2*s.x2-s.a1*s.y1-s.a2*s.y2;s.x2=s.x1;s.x1=v;s.y2=s.y1;s.y1=y;x[i]=y}}
+  const L=x.length,o=this.out;
+  while(true){const idx=this.pos-this.base,i=Math.floor(idx);if(i+1>=L)break;const fr=idx-i,a=i<0?this.prev:x[i];
+   o[this.n++]=a+(x[i+1]-a)*fr;this.pos+=this.r;if(this.n>=o.length){this.full=true;break}}
+  this.prev=x[L-1];this.base+=L}
+ result(){return this.out.subarray(0,this.n)}}
+function monoOf(ad){const n=ad.numberOfFrames,ch=ad.numberOfChannels,m=new Float32Array(n),tmp=new Float32Array(n);
+ const planar=/planar/.test(ad.format);
+ if(planar){for(let c=0;c<ch;c++){ad.copyTo(tmp,{planeIndex:c,format:'f32-planar'});for(let i=0;i<n;i++)m[i]+=tmp[i]/ch}}
+ else{try{for(let c=0;c<ch;c++){ad.copyTo(tmp,{planeIndex:c,format:'f32-planar'});for(let i=0;i<n;i++)m[i]+=tmp[i]/ch}}
+  catch(e){const all=new Float32Array(n*ch);ad.copyTo(all,{planeIndex:0,format:'f32'});for(let i=0;i<n;i++){let s=0;for(let c=0;c<ch;c++)s+=all[i*ch+c];m[i]=s/ch}}}
+ return m}
+const isMP4ish=f=>/\.(mp4|m4v|mov|m4a|3gp|3g2|qt)$/i.test(f.name||'')||/(mp4|quicktime|3gpp|m4a|x-m4a|aac)/i.test(f.type||'');
+const isVideo=f=>/^video\//.test(f.type||'')||/\.(mp4|m4v|mov|3gp|3g2|webm|mkv|avi|qt)$/i.test(f.name||'');
+
+// المسار السريع: MP4/MOV عبر mp4box + AudioDecoder (يقرأ بايتات الصوت فقط)
+async function extractMP4(file,maxSec,onProg){
+ if(!window.MP4Box||!window.AudioDecoder||!window.EncodedAudioChunk)throw new Error('unsupported');
+ const mp=MP4Box.createFile();let info=null,perr=null;
+ mp.onReady=i=>{info=i};mp.onError=e=>{perr=e};
+ let off=0,guard=0;
+ while(!info&&!perr&&off<file.size&&guard++<4000){
+  const end=Math.min(file.size,off+2*1024*1024),ab=await file.slice(off,end).arrayBuffer();ab.fileStart=off;
+  const nx=mp.appendBuffer(ab);off=(typeof nx==='number'&&nx>off)?nx:end}
+ if(!info)throw new Error('unsupported');
+ const tr=info.audioTracks&&info.audioTracks[0];if(!tr)throw new Error('noaudio');
+ const trak=mp.getTrackById(tr.id),samples=trak.samples||[];if(!samples.length)throw new Error('unsupported');
+ const ent=trak.mdia.minf.stbl.stsd.entries[0];let desc;
+ try{const d=ent.esds.esd.descs[0].descs[0];if(d&&d.data)desc=new Uint8Array(d.data)}catch(e){}
+ const sr=tr.audio.sample_rate,chn=tr.audio.channel_count;
+ const cfg={codec:tr.codec==='mp4a'?'mp4a.40.2':tr.codec,sampleRate:sr,numberOfChannels:chn};if(desc)cfg.description=desc;
+ const sup=await AudioDecoder.isConfigSupported(cfg).catch(()=>({supported:false}));if(!sup.supported)throw new Error('unsupported');
+ const ts=samples[0].timescale,lastIdx=(()=>{let k=samples.length;for(let i=0;i<samples.length;i++)if(samples[i].cts/ts>maxSec){k=i;break}return k})();
+ const totalSec=Math.min(maxSec,(samples[samples.length-1].cts+samples[samples.length-1].duration)/ts);
+ let ds=null,derr=null;
+ const dec=new AudioDecoder({output:ad=>{try{if(!ds)ds=new Down16(ad.sampleRate,totalSec+2);ds.push(monoOf(ad))}catch(e){derr=e}finally{ad.close()}},error:e=>{derr=e}});
+ dec.configure(cfg);
+ let i=0;
+ while(i<lastIdx){
+  if(derr)throw derr;
+  // اجمع العيّنات المتجاورة في قراءة واحدة
+  let j=i,start=samples[i].offset,end=start+samples[i].size;
+  while(j+1<lastIdx&&samples[j+1].offset===end&&end-start<4*1024*1024){j++;end+=samples[j].size}
+  const bytes=new Uint8Array(await file.slice(start,end).arrayBuffer());
+  for(let k=i;k<=j;k++){const s=samples[k];
+   dec.decode(new EncodedAudioChunk({type:'key',timestamp:Math.round(s.cts*1e6/ts),duration:Math.round(s.duration*1e6/ts),data:bytes.subarray(s.offset-start,s.offset-start+s.size)}))}
+  i=j+1;onProg&&onProg(i/lastIdx);
+  while(dec.decodeQueueSize>64)await new Promise(r=>setTimeout(r,5));
+  await new Promise(r=>setTimeout(r,0))}
+ await dec.flush();dec.close();if(derr)throw derr;
+ if(!ds||!ds.n)throw new Error('noaudio');
+ return {pcm:ds.result(),fullSec:(samples[samples.length-1].cts+samples[samples.length-1].duration)/ts}}
+
+// احتياط أخير للملفات الضخمة بصيغ أخرى: تشغيل الصوت داخليًا بسرعة مضاعفة دون إسماعه وجمعه
+async function extractByPlayback(file,maxSec,onProg){
+ const AC=window.AudioContext||window.webkitAudioContext,ac=new AC();await ac.resume().catch(()=>{});
+ const url=URL.createObjectURL(file),el=document.createElement(isVideo(file)?'video':'audio');
+ el.src=url;el.preload='auto';el.playsInline=true;el.setAttribute('playsinline','');
+ await new Promise((res,rej)=>{el.onloadedmetadata=res;el.onerror=()=>rej(new Error('decode'));setTimeout(()=>rej(new Error('decode')),20000)});
+ const dur=Math.min(maxSec,el.duration||maxSec),rate=2;
+ el.preservesPitch=false;el.mozPreservesPitch=false;el.webkitPreservesPitch=false;
+ const srcN=ac.createMediaElementSource(el),sp=ac.createScriptProcessor(4096,1,1),mute=ac.createGain();mute.gain.value=0;
+ const ds=new Down16(ac.sampleRate/rate,dur+2);
+ sp.onaudioprocess=e=>{if(!el.paused)ds.push(new Float32Array(e.inputBuffer.getChannelData(0)))};
+ srcN.connect(sp);sp.connect(mute);mute.connect(ac.destination);
+ el.playbackRate=rate;
+ try{await el.play()}catch(e){ac.close();URL.revokeObjectURL(url);throw new Error('decode')}
+ await new Promise(res=>{const t=setInterval(()=>{onProg&&onProg(el.currentTime/dur);if(el.ended||el.currentTime>=dur||ds.full){clearInterval(t);res()}},300);el.onended=()=>{clearInterval(t);res()}});
+ el.pause();try{sp.disconnect();srcN.disconnect()}catch(e){}ac.close();URL.revokeObjectURL(url);
+ if(!ds.n)throw new Error('decode');
+ return {pcm:ds.result(),fullSec:el.duration||dur}}
+
+// يختار أفضل طريقة لقراءة الملف
+async function loadAudio(file,onProg,onMode){
+ const maxSec=MAX_MIN*60;
+ if(isMP4ish(file)||isVideo(file)){
+  try{onMode&&onMode('fast');return await extractMP4(file,maxSec,onProg)}
+  catch(e){if(e&&e.message==='noaudio')throw new Error('الفيديو لا يحتوي على صوت.');console.warn('mp4 path',e)}}
+ if(file.size<=250*1024*1024){
+  onMode&&onMode('decode');
+  try{const pcm=await decodeAudio(await file.arrayBuffer());const full=pcm.length/16000;return {pcm:full>maxSec?pcm.subarray(0,maxSec*16000):pcm,fullSec:full}}
+  catch(e){console.warn('decode path',e)}}
+ onMode&&onMode('play');
+ try{return await extractByPlayback(file,maxSec,onProg)}
+ catch(e){throw new Error('تعذّرت قراءة الملف. جرّب صيغة شائعة مثل MP4 أو MP3 أو M4A.')}}
 
 // تحليل صوتي موضوعي: الصمت والوقفات وتنوّع النبرة ومستوى الصوت
 function analyze(pcm){
@@ -353,7 +449,7 @@ function renderHome(){
   <p>سجّل كلمتك أو محاضرتك أو تعليقك مباشرة، أو ارفع تسجيلًا جاهزًا (صوت أو فيديو)، وستحصل على تقييم مفصّل في المحتوى واللغة والترابط ونبرة الصوت والإلقاء.</p>
   <div class="big-actions">
    <button class="bigbtn gold" id="bRec">${ICON.mic}تسجيل مباشر<small>تحدّث الآن</small></button>
-   <button class="bigbtn" id="bUp">${ICON.up}رفع تسجيل<small>صوت أو فيديو حتى ${toAr(MAX_MIN)} دقيقة</small></button>
+   <button class="bigbtn" id="bUp">${ICON.up}رفع تسجيل<small>صوت أو فيديو بأي حجم · يُقلَّص تلقائيًا</small></button>
   </div>
  </section>
  <section class="card">
@@ -447,18 +543,17 @@ function stopRec(go){
 
 /* ---------- رفع ملف ---------- */
 $('#fileIn').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
- if(f.size>300*1024*1024){alert('الملف كبير جدًا (أكثر من 300 ميجابايت). اقتطع الجزء المطلوب أو ارفع ملفًا صوتيًا بدل الفيديو.');return}
  runJob(f,curMeta(),f.name)};
 
 /* ---------- المعالجة ---------- */
-const STEPS=['قراءة الصوت وتجهيزه','تحليل النبرة والوقفات ومستوى الصوت','ضغط التسجيل وإرساله','الاستماع والتقييم بالذكاء الاصطناعي'];
+let STEPS=['قراءة الصوت وتجهيزه','تحليل النبرة والوقفات ومستوى الصوت','ضغط التسجيل وإرساله','الاستماع والتقييم بالذكاء الاصطناعي'];
 let PROC={step:0,prog:0,err:'',note:''};
 function renderProc(){
  $('#app').innerHTML=`<section class="card">
   <h2>جارٍ تقييم الإلقاء…</h2>
   <ul class="steps">${STEPS.map((s,i)=>`<li class="${i<PROC.step?'done':i===PROC.step&&!PROC.err?'on':''}"><span class="ic">${i<PROC.step?'✓':''}</span>${s}</li>`).join('')}</ul>
   <div class="bar"><i id="pb" style="width:${Math.round(PROC.prog*100)}%"></i></div>
-  <p class="muted small" id="pn">${esc(PROC.note)}</p>
+  <p class="muted small" id="pn" style="white-space:pre-line">${esc(PROC.note)}</p>
   ${PROC.err?`<div class="err">${esc(PROC.err)}</div><div class="row" style="margin-top:12px">${job&&job.b64?'<button class="btn" id="bRetry">إعادة المحاولة</button>':''}<button class="btn ghost" id="bBack">العودة للرئيسية</button></div>`:''}
  </section>`;
  const r=$('#bRetry');if(r)r.onclick=()=>runAI();
@@ -468,14 +563,17 @@ function setStep(i,prog,note){PROC.step=i;PROC.prog=prog;if(note!=null)PROC.note
 function setProg(p){PROC.prog=p;const pb=$('#pb');if(pb)pb.style.width=Math.round(p*100)+'%'}
 
 async function runJob(blob,meta,srcName){
- job={meta,srcName,audioURL:URL.createObjectURL(blob)};
- PROC={step:0,prog:.03,err:'',note:''};view='proc';render();
+ job={meta,srcName};
+ const isFile=blob instanceof File,vid=isFile&&isVideo(blob),big=blob.size>25*1024*1024;
+ STEPS[0]=vid?'استخراج الصوت من الفيديو وتقليل حجمه':big?'تقليل حجم الملف وتجهيز الصوت':'قراءة الصوت وتجهيزه';
+ PROC={step:0,prog:.02,err:'',note:isFile?'حجم الملف الأصلي: '+fmtMB(blob.size):''};view='proc';render();
  try{
-  const buf=await blob.arrayBuffer();
-  let pcm;try{pcm=await decodeAudio(buf)}catch(e){throw new Error('تعذّرت قراءة الملف الصوتي. جرّب صيغة أخرى مثل MP3 أو M4A.')}
+  const base=PROC.note;
+  const {pcm:raw,fullSec}=await loadAudio(blob,p=>setProg(.02+p*.13),m=>{if(m==='play'){PROC.note=base+' — جارٍ استخراج الصوت (قد يستغرق نصف مدة المقطع)';const pn=$('#pn');if(pn)pn.textContent=PROC.note}});
+  let pcm=raw;
   const totalSec=pcm.length/16000;
-  if(totalSec>MAX_MIN*60+30)throw new Error(`مدة التسجيل ${durWords(totalSec)}، والحد الأقصى ${toAr(MAX_MIN)} دقيقة. اقتطع الجزء الذي تريد تقييمه.`);
-  setStep(1,.15,'المدة: '+durWords(totalSec));await new Promise(r=>setTimeout(r,30));
+  job.cut=fullSec>MAX_MIN*60+30;
+  setStep(1,.15,(job.cut?`المقطع ${durWords(fullSec)}، وسيُقيَّم أول ${toAr(MAX_MIN)} دقيقة منه.`:'المدة: '+durWords(totalSec)));await new Promise(r=>setTimeout(r,30));
   const st=analyze(pcm);
   if(st.empty||st.speech<3)throw new Error('لم أسمع كلامًا واضحًا في التسجيل. تأكد من أن المايكروفون يعمل وأن الصوت مسموع.');
   if(st.span<MIN_SEC)throw new Error('الكلام قصير جدًا للتقييم. تحدّث '+toAr(MIN_SEC)+' ثوانٍ على الأقل.');
@@ -484,14 +582,15 @@ async function runJob(blob,meta,srcName){
   const clip=trimPCM(pcm,st);pcm=null;
   const kbps=st.span<=600?48:st.span<=2400?32:24;
   const mp3=await encodeMP3(clip,kbps,p=>setProg(.3+p*.3));
-  job.b64=await blobToB64(mp3);job.mime='audio/mpeg';
+  job.b64=await blobToB64(mp3);job.mime='audio/mpeg';job.audioURL=URL.createObjectURL(mp3);
+  if(isFile)job.sizeNote=`✓ قُلّص الحجم من ${fmtMB(blob.size)} إلى ${fmtMB(mp3.size)} (صوت فقط).`;
   await runAI();
  }catch(e){console.error(e);PROC.err=e.message||'حدث خطأ غير متوقع.';renderProc()}
 }
 async function runAI(){
  const st=job.st;PROC.err='';
  const est=Math.round(25+st.span/60*4);
- setStep(3,.62,`يستمع الذكاء الاصطناعي للتسجيل كاملًا… قد يستغرق ذلك قرابة ${est<60?toAr(est)+' ثانية':toAr(Math.ceil(est/60))+' دقائق'}.`);
+ setStep(3,.62,(job.sizeNote?job.sizeNote+'\n':'')+`يستمع الذكاء الاصطناعي للتسجيل كاملًا… قد يستغرق ذلك قرابة ${est<60?toAr(est)+' ثانية':toAr(Math.ceil(est/60))+' دقائق'}.`);
  const t0=Date.now(),tick=setInterval(()=>{const p=Math.min(.97,.62+.35*(1-Math.exp(-(Date.now()-t0)/1000/est)));setProg(p)},400);
  try{
   let ai;
@@ -505,7 +604,7 @@ async function runAI(){
    throw new Error(m.startsWith('افتح')?m:'تعذّر الحصول على التقييم: '+m.slice(0,140))}
   clearInterval(tick);
   if(!ai||ai.valid===false){PROC.err='لم يتمكن المقيّم من تقييم التسجيل: '+(aStr(ai&&ai.invalid_reason)||'لا يوجد كلام عربي واضح.');renderProc();return}
-  const res=finalize(ai,st,job.meta);
+  const res=finalize(ai,st,job.meta);res.cut=!!job.cut;
   store.hist.unshift(res);store.hist=store.hist.slice(0,40);save();
   job.result=res;view='result';render();
  }catch(e){clearInterval(tick);PROC.err=e.message;renderProc()}
@@ -545,7 +644,7 @@ function renderResult(){
     <span class="level" style="background:${lbg};color:${lc}">${lv}</span>
     ${r.name?`<div><b>${esc(r.name)}</b></div>`:''}
     <p style="margin:4px 0">${esc(a.verdict)}</p>
-    <div class="meta"><span>${esc(r.meta.kind)}</span><span>⏱ ${durWords(st.span)}</span>${a.register?`<span>${esc(a.register)}</span>`:''}${a.word_count?`<span>≈ ${toAr(a.word_count)} كلمة</span>`:''}</div>
+    <div class="meta"><span>${esc(r.meta.kind)}</span><span>⏱ ${durWords(st.span)}</span>${r.cut?`<span>قُيّم أول ${toAr(MAX_MIN)} دقيقة</span>`:''}${a.register?`<span>${esc(a.register)}</span>`:''}${a.word_count?`<span>≈ ${toAr(a.word_count)} كلمة</span>`:''}</div>
    </div>
   </div>
   ${job.audioURL&&!job.fromHist?`<audio controls src="${job.audioURL}" class="noprint"></audio>`:''}
