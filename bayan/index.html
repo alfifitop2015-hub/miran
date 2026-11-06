@@ -618,16 +618,22 @@ function renderProc(){
   <ul class="steps">${STEPS.map((s,i)=>`<li class="${i<PROC.step?'done':i===PROC.step&&!PROC.err?'on':''}"><span class="ic">${i<PROC.step?'✓':''}</span>${s}</li>`).join('')}</ul>
   <div class="bar"><i id="pb" style="width:${Math.round(PROC.prog*100)}%"></i></div>
   <p class="muted small" id="pn" style="white-space:pre-line">${esc(PROC.note)}</p>
+  <p class="small" id="pel" style="margin:0;font-weight:600;color:var(--muted)"></p>
+  ${!PROC.err?`<div class="row" style="margin-top:12px"><button class="btn ghost" id="bNow" hidden>إعادة المحاولة الآن</button><button class="btn ghost" id="bCancel">إلغاء التقييم</button></div>`:''}
   ${PROC.err?`<div class="err">${esc(PROC.err)}</div>${PROC.detail?`<p class="muted" style="font-size:11.5px;direction:ltr;text-align:left;margin:6px 0 0;word-break:break-all">${esc(PROC.detail)}</p>`:''}<div class="row" style="margin-top:12px">${job&&job.b64?'<button class="btn" id="bRetry">إعادة المحاولة</button>':''}<button class="btn ghost" id="bBack">العودة للرئيسية</button></div>`:''}
  </section>`;
  const r=$('#bRetry');if(r)r.onclick=()=>runAI();
+ const c=$('#bCancel');if(c)c.onclick=()=>{if(confirm('إلغاء التقييم الحالي؟'))cancelJob()};
+ const nw=$('#bNow');if(nw)nw.onclick=()=>{nw.hidden=true;CANCEL_ATTEMPT&&CANCEL_ATTEMPT(new Error('restart'))};
  const b=$('#bBack');if(b)b.onclick=()=>{dropPending();view='home';render()};
 }
 function setStep(i,prog,note){PROC.step=i;PROC.prog=prog;if(note!=null)PROC.note=note;if(view==='proc')renderProc()}
 function setProg(p){PROC.prog=p;const pb=$('#pb');if(pb)pb.style.width=Math.round(p*100)+'%'}
 
+let RUNID=0,CANCEL_ATTEMPT=null;
+function cancelJob(){RUNID++;const c=CANCEL_ATTEMPT;CANCEL_ATTEMPT=null;c&&c(new Error('cancel'));AIBUSY=false;releaseAwake();dropPending();job=null;view='home';render()}
 async function runJob(blob,meta,srcName){
- job={meta,srcName};
+ const myId=++RUNID;job={meta,srcName};
  const isFile=blob instanceof File,vid=isFile&&isVideo(blob),big=blob.size>25*1024*1024;
  STEPS[0]=vid?'استخراج الصوت من الفيديو وتقليل حجمه':big?'تقليل حجم الملف وتجهيز الصوت':'قراءة الصوت وتجهيزه';
  PROC={step:0,prog:.02,err:'',note:isFile?'حجم الملف الأصلي: '+fmtMB(blob.size):''};view='proc';render();
@@ -650,9 +656,10 @@ async function runJob(blob,meta,srcName){
   if(isFile)job.sizeNote=`✓ قُلّص الحجم من ${fmtMB(blob.size)} إلى ${fmtMB(mp3.size)} (صوت فقط).`;
   if(st.span>900){const sm=await makeSample(clip);job.sampleB64=sm.b64;job.sampleSpan=sm.span}
   job.fullB64=job.b64;
+  if(myId!==RUNID)return;
   await savePending();
   await runAI();
- }catch(e){console.error(e);PROC.err=e.message||'حدث خطأ غير متوقع.';renderProc()}
+ }catch(e){if(myId!==RUNID)return;console.error(e);PROC.err=e.message||'حدث خطأ غير متوقع.';renderProc()}
 }
 /* ---------- العمل في الخلفية: حفظ المهمة واستئنافها تلقائيًا + تنبيه عند الجاهزية ---------- */
 let WAKE=null,HIDDEN=false,AIBUSY=false;
@@ -669,10 +676,13 @@ async function notify(title,body){
   const o={body,icon:'icon-192.png',badge:'icon-192.png',tag:'bayan-ready',lang:'ar',dir:'rtl',renotify:true};
   const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();
   if(reg)reg.showNotification(title,o);else new Notification(title,o)}catch(e){}}
+let HIDDEN_AT=0;
 document.addEventListener('visibilitychange',()=>{
- if(document.hidden){if(view==='proc'||view==='arenaRun')HIDDEN=true;return}
+ if(document.hidden){HIDDEN_AT=Date.now();if(view==='proc'||view==='arenaRun')HIDDEN=true;return}
  document.title='بيان · مقيّم الإلقاء والخطابة';
  if(view==='proc'&&PROC.waitResume&&!AIBUSY){PROC.waitResume=false;runAI()}
+ // غبت أكثر من 15 ثانية والطلب لم يبدأ بالرد: غالبًا جمّده الجوال، فنعيد إرساله فورًا
+ else if(view==='proc'&&AIBUSY&&!PROC.writing&&HIDDEN_AT&&Date.now()-HIDDEN_AT>15000&&CANCEL_ATTEMPT){CANCEL_ATTEMPT(new Error('resume'))}
  else if((view==='proc'&&!PROC.err)||view==='arenaRun')keepAwake()});
 async function keepAwake(){try{if(!document.hidden&&(!WAKE||WAKE.released))WAKE=await navigator.wakeLock.request('screen')}catch(e){}}
 function releaseAwake(){try{WAKE&&WAKE.release()}catch(e){}WAKE=null}
@@ -685,7 +695,7 @@ function aiErrMsg(m){
  return 'تعذّر الحصول على التقييم.'}
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function runAI(){
- if(AIBUSY)return;AIBUSY=true;
+ if(AIBUSY||!job)return;AIBUSY=true;const myId=RUNID;
  const st=job.st;PROC.err='';PROC.detail='';PROC.waitResume=false;keepAwake();
  if(job.sampled&&job.sampleB64)job.b64=job.sampleB64;
  const est=()=>Math.round(30+(job.sampled?job.sampleSpan:st.span)/60*5);
@@ -694,27 +704,33 @@ async function runAI(){
  const base=()=>(job.sizeNote?job.sizeNote+'\n':'')+(job.sampled?'يقيّم الذكاء الاصطناعي عيّنات من البداية والوسط والنهاية':'يستمع الذكاء الاصطناعي للتسجيل كاملًا')+`… قد يستغرق ذلك قرابة ${est()<60?toAr(est())+' ثانية':toAr(Math.ceil(est()/60))+' دقائق'}.\n`+bg;
  const note=t=>{PROC.note=t;const pn=$('#pn');if(pn)pn.textContent=t};
  setStep(3,.62,base());
- let t0=Date.now(),writing=0;
- const tick=setInterval(()=>{const e=est(),p=writing?Math.min(.98,.85+.13*Math.min(1,writing/5000)):Math.min(.85,.62+.23*(1-Math.exp(-(Date.now()-t0)/1000/e)));setProg(p)},400);
- const onText=n=>{if(!writing)note((job.sizeNote?job.sizeNote+'\n':'')+'✍️ انتهى الاستماع، ويكتب التقييم الآن…\n'+bg);writing=Math.max(1,n)};
- const stop=()=>{clearInterval(tick);releaseAwake();AIBUSY=false};
+ let t0=Date.now(),writing=0;const T0=Date.now();PROC.writing=0;
+ const tick=setInterval(()=>{if(myId!==RUNID){clearInterval(tick);return}
+  const e=est(),el=(Date.now()-t0)/1000,p=writing?Math.min(.98,.85+.13*Math.min(1,writing/5000)):Math.min(.85,.62+.23*(1-Math.exp(-el/e)));setProg(p);
+  const pe=$('#pel');if(pe)pe.textContent='⏱ مضى '+toAr(fmtDur((Date.now()-T0)/1000))+(el>e*1.6&&!writing?' — يستغرق أطول من المعتاد':'');
+  const nw=$('#bNow');if(nw&&!writing&&el>e*1.6)nw.hidden=false;
+  // مراقب التعليق: لا ردّ من الخدمة بعد وقت كافٍ ⇒ نعيد الإرسال تلقائيًا
+  if(!writing&&!document.hidden&&el>Math.max(90,e*2.5)&&CANCEL_ATTEMPT)CANCEL_ATTEMPT(new Error('stall'))},500);
+ const onText=n=>{if(myId!==RUNID)return;if(!writing){note((job.sizeNote?job.sizeNote+'\n':'')+'✍️ انتهى الاستماع، ويكتب التقييم الآن…\n'+bg);const nw=$('#bNow');if(nw)nw.hidden=true}writing=Math.max(1,n);PROC.writing=writing};
+ const stop=()=>{clearInterval(tick);releaseAwake();CANCEL_ATTEMPT=null;if(myId===RUNID)AIBUSY=false};
  try{
   let ai=null,tries=0,quota=0;
   while(!ai){
-   HIDDEN=document.hidden;writing=0;t0=Date.now();
-   try{ai=await aiEvaluate(buildPrompt(job.meta,st),job.b64,job.mime,timeout(),job.sampled?job.sampleSpan:st.span,onText)}
-   catch(e){const m=String(e&&(e.message||e.code)||e);console.warn('ai',e);
-    const transient=/timeout|abort|fetch|network|load failed|503|500|unavailable|overloaded|internal|JSON|Unexpected|Unterminated/i.test(m);
+   HIDDEN=document.hidden;writing=0;PROC.writing=0;t0=Date.now();
+   try{ai=await new Promise((res,rej)=>{CANCEL_ATTEMPT=rej;aiEvaluate(buildPrompt(job.meta,st),job.b64,job.mime,timeout(),job.sampled?job.sampleSpan:st.span,onText).then(res,rej)});CANCEL_ATTEMPT=null;if(myId!==RUNID)return}
+   catch(e){CANCEL_ATTEMPT=null;if(myId!==RUNID)return;const m=String(e&&(e.message||e.code)||e);console.warn('ai',e);
+    if(m==='resume'||m==='restart'){note(base()+'\n↻ أعيد إرسال التقييم الآن…');continue}
+    const transient=/stall|timeout|abort|fetch|network|load failed|503|500|unavailable|overloaded|internal|JSON|Unexpected|Unterminated/i.test(m);
     const isQuota=/quota|429|resource.?exhausted/i.test(m);
     // أوقف الجوال الصفحة في الخلفية: نكمل تلقائيًا عند العودة دون احتساب محاولة
     if((transient||isQuota)&&HIDDEN){
      if(document.hidden){PROC.waitResume=true;stop();note((job.sizeNote?job.sizeNote+'\n':'')+'⏸️ أوقف الجوال الصفحة مؤقتًا في الخلفية — سأكمل التقييم تلقائيًا فور عودتك إليها.');return}
      note(base()+'\n↻ أكمل التقييم من حيث توقف…');continue}
-    if(isQuota&&quota<4){quota++;const w=20*quota;for(let s=w;s>0;s--){note(base()+`\n⏳ الخدمة مزدحمة الآن، سأعيد المحاولة تلقائيًا بعد ${toAr(s)} ثانية…`);await sleep(1000)}continue}
+    if(isQuota&&quota<4){quota++;const w=20*quota;for(let s=w;s>0;s--){if(myId!==RUNID)return;note(base()+`\n⏳ الخدمة مزدحمة الآن، سأعيد المحاولة تلقائيًا بعد ${toAr(s)} ثانية…`);await sleep(1000)}continue}
     if(transient&&tries<3){tries++;
      if(tries>=2&&job.sampleB64&&!job.sampled){job.sampled=true;job.b64=job.sampleB64;savePending();note('↻ التسجيل طويل جدًا على التقييم الكامل، سأقيّمه الآن من عيّنات: ٤ دقائق من البداية و٤ من الوسط و٤ من النهاية…\n'+bg)}
      else note(base()+'\n↻ تعثّر الاتصال، أعيد المحاولة تلقائيًا…');
-     await sleep(2500);continue}
+     await sleep(2500);if(myId!==RUNID)return;continue}
     PROC.detail=m.slice(0,160);throw new Error(aiErrMsg(m)+' اضغط «إعادة المحاولة».')}}
   stop();
   if(!ai||ai.valid===false){dropPending();PROC.err='لم يتمكن المقيّم من تقييم التسجيل: '+(aStr(ai&&ai.invalid_reason)||'لا يوجد كلام عربي واضح.');renderProc();notify('تعذّر التقييم','افتح «بيان» لمعرفة السبب.');return}
@@ -722,7 +738,7 @@ async function runAI(){
   store.hist.unshift(res);store.hist=store.hist.slice(0,40);save();dropPending();
   job.result=res;view='result';render();
   notify('تقييمك جاهز في «بيان»',`النتيجة: ${res.total} من 100 (${level(res.total)[0]})`);
- }catch(e){stop();PROC.err=e.message;renderProc();notify('تعذّر إكمال التقييم','افتح «بيان» واضغط «إعادة المحاولة».')}
+ }catch(e){stop();if(myId!==RUNID)return;PROC.err=e.message;renderProc();notify('تعذّر إكمال التقييم','افتح «بيان» واضغط «إعادة المحاولة».')}
 }
 function finalize(ai,st,meta,wspan){wspan=wspan||st.span;
  const c={};let total=0;
