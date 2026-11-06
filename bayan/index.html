@@ -257,6 +257,7 @@ async function aiJSON(parts,o){o=o||{};
   }catch(e){lastErr=e;const m=String((e&&(e.message||e.code))||e);
    if(think&&/thinking|budget|invalid.?argument/i.test(m)){think=false;continue}
    if(/not.?found|404|unsupported|is not supported/i.test(m)){i++;continue}
+   if(/quota|429|resource.?exhausted/i.test(m)&&i<AI_MODELS.length-1){i++;continue}
    if(/JSON|Unexpected (token|end)|Unterminated|Expected/i.test(m)&&i<AI_MODELS.length-1){i++;continue}
    break}}
  throw lastErr||new Error('ai')}
@@ -527,8 +528,8 @@ function renderHome(){
  ${histHTML}`;
  $('#kinds').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;store.kind=b.dataset.k;save();document.querySelectorAll('#kinds .chip').forEach(x=>x.setAttribute('aria-pressed',x===b))};
  $('#nm').oninput=e=>{store.name=e.target.value.trim();save()};
- $('#bRec').onclick=()=>startRec();
- $('#bUp').onclick=()=>$('#fileIn').click();
+ $('#bRec').onclick=()=>{askNotify();startRec()};
+ $('#bUp').onclick=()=>{askNotify();$('#fileIn').click()};
  bindCommon();
 }
 function curMeta(){const tp=$('#tp');return {kind:store.kind,name:store.name,topic:tp?tp.value.trim():(job&&job.meta?job.meta.topic:'')}}
@@ -602,11 +603,11 @@ $('#fileIn').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)retu
  runJob(f,curMeta(),f.name)};
 
 /* ---------- عيّنات للتسجيلات الطويلة (احتياط إن تعذّر تقييمها كاملة) ---------- */
-async function makeSample(clip){
+async function makeSample(clip,apply){
  const SR=16000,seg=4*60*SR,gap=new Float32Array(SR),n=clip.length,mid=Math.max(seg,Math.floor(n/2-seg/2));
  const parts=[clip.subarray(0,seg),gap,clip.subarray(mid,mid+seg),gap,clip.subarray(Math.max(mid+seg,n-seg),n)];
  const tot=parts.reduce((a,b)=>a+b.length,0),out=new Float32Array(tot);let o=0;for(const x of parts){out.set(x,o);o+=x.length}
- const mp3=await encodeMP3(out,32);job.b64=await blobToB64(mp3);job.sampled=true;job.sampleSpan=(tot-2*SR)/SR}
+ const mp3=await encodeMP3(out,32);return {b64:await blobToB64(mp3),span:(tot-2*SR)/SR}}
 
 /* ---------- المعالجة ---------- */
 let STEPS=['قراءة الصوت وتجهيزه','تحليل النبرة والوقفات ومستوى الصوت','ضغط التسجيل وإرساله','الاستماع والتقييم بالذكاء الاصطناعي'];
@@ -620,7 +621,7 @@ function renderProc(){
   ${PROC.err?`<div class="err">${esc(PROC.err)}</div>${PROC.detail?`<p class="muted" style="font-size:11.5px;direction:ltr;text-align:left;margin:6px 0 0;word-break:break-all">${esc(PROC.detail)}</p>`:''}<div class="row" style="margin-top:12px">${job&&job.b64?'<button class="btn" id="bRetry">إعادة المحاولة</button>':''}<button class="btn ghost" id="bBack">العودة للرئيسية</button></div>`:''}
  </section>`;
  const r=$('#bRetry');if(r)r.onclick=()=>runAI();
- const b=$('#bBack');if(b)b.onclick=()=>{view='home';render()};
+ const b=$('#bBack');if(b)b.onclick=()=>{dropPending();view='home';render()};
 }
 function setStep(i,prog,note){PROC.step=i;PROC.prog=prog;if(note!=null)PROC.note=note;if(view==='proc')renderProc()}
 function setProg(p){PROC.prog=p;const pb=$('#pb');if(pb)pb.style.width=Math.round(p*100)+'%'}
@@ -642,53 +643,86 @@ async function runJob(blob,meta,srcName){
   if(st.span<MIN_SEC)throw new Error('الكلام قصير جدًا للتقييم. تحدّث '+toAr(MIN_SEC)+' ثوانٍ على الأقل.');
   job.st=st;
   setStep(2,.3,'');
-  const clip=trimPCM(pcm,st);pcm=null;job.clip=st.span>900?clip:null;job.sampled=false;
+  const clip=trimPCM(pcm,st);pcm=null;job.sampled=false;
   const kbps=st.span<=600?48:st.span<=1200?32:st.span<=2400?24:16;
   const mp3=await encodeMP3(clip,kbps,p=>setProg(.3+p*.3));
   job.b64=await blobToB64(mp3);job.mime='audio/mpeg';job.audioURL=URL.createObjectURL(mp3);
   if(isFile)job.sizeNote=`✓ قُلّص الحجم من ${fmtMB(blob.size)} إلى ${fmtMB(mp3.size)} (صوت فقط).`;
+  if(st.span>900){const sm=await makeSample(clip);job.sampleB64=sm.b64;job.sampleSpan=sm.span}
+  job.fullB64=job.b64;
+  await savePending();
   await runAI();
  }catch(e){console.error(e);PROC.err=e.message||'حدث خطأ غير متوقع.';renderProc()}
 }
-let WAKE=null,HIDDEN=false;
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&view==='proc')HIDDEN=true;else if(!document.hidden&&view==='proc'&&!PROC.err)keepAwake()});
-async function keepAwake(){try{if(!WAKE||WAKE.released)WAKE=await navigator.wakeLock.request('screen')}catch(e){}}
+/* ---------- العمل في الخلفية: حفظ المهمة واستئنافها تلقائيًا + تنبيه عند الجاهزية ---------- */
+let WAKE=null,HIDDEN=false,AIBUSY=false;
+function idb(){return new Promise((res,rej)=>{const r=indexedDB.open('bayan',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function kv(op,k,v){try{const db=await idb();return await new Promise((res,rej)=>{const tx=db.transaction('kv',op==='get'?'readonly':'readwrite'),os=tx.objectStore('kv');const q=op==='get'?os.get(k):op==='set'?os.put(v,k):os.delete(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}catch(e){return null}}
+const PEND_KEYS=['meta','st','fullB64','b64','mime','sampleB64','sampleSpan','sampled','sizeNote','cut','srcName'];
+async function savePending(){if(!job)return;const o={at:Date.now()};PEND_KEYS.forEach(k=>o[k]=job[k]);await kv('set','pending',o)}
+const dropPending=()=>kv('del','pending');
+function askNotify(){try{if('Notification' in window&&Notification.permission==='default')Notification.requestPermission().catch(()=>{})}catch(e){}}
+async function notify(title,body){
+ if(!document.hidden)return;
+ document.title='✅ '+title;
+ try{if(!('Notification' in window)||Notification.permission!=='granted')return;
+  const o={body,icon:'icon-192.png',badge:'icon-192.png',tag:'bayan-ready',lang:'ar',dir:'rtl',renotify:true};
+  const reg=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();
+  if(reg)reg.showNotification(title,o);else new Notification(title,o)}catch(e){}}
+document.addEventListener('visibilitychange',()=>{
+ if(document.hidden){if(view==='proc'||view==='arenaRun')HIDDEN=true;return}
+ document.title='بيان · مقيّم الإلقاء والخطابة';
+ if(view==='proc'&&PROC.waitResume&&!AIBUSY){PROC.waitResume=false;runAI()}
+ else if((view==='proc'&&!PROC.err)||view==='arenaRun')keepAwake()});
+async function keepAwake(){try{if(!document.hidden&&(!WAKE||WAKE.released))WAKE=await navigator.wakeLock.request('screen')}catch(e){}}
 function releaseAwake(){try{WAKE&&WAKE.release()}catch(e){}WAKE=null}
 function aiErrMsg(m){
  if(/timeout|abort/i.test(m))return 'استغرق التقييم وقتًا أطول من المتوقع.';
- if(/quota|429|resource.?exhausted/i.test(m))return 'الخدمة مشغولة حاليًا. انتظر دقيقة ثم أعد المحاولة.';
+ if(/quota|429|resource.?exhausted/i.test(m))return 'الخدمة مزدحمة حاليًا.';
  if(/too large|payload|413/i.test(m))return 'التسجيل كبير جدًا على خدمة التقييم. اقتطع جزءًا أقصر.';
  if(/app.?check|permission|403|401|unauthenticated/i.test(m))return 'تعذّر التحقق من الموقع لدى خدمة التقييم. أعد تحميل الصفحة ثم حاول مجددًا.';
  if(/fetch|network|Failed to load|import|load failed/i.test(m))return 'انقطع الاتصال بخدمة التقييم.';
  return 'تعذّر الحصول على التقييم.'}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 async function runAI(){
- const st=job.st;PROC.err='';PROC.detail='';HIDDEN=false;keepAwake();
- const mins=st.span/60,est=Math.round(30+mins*5);
- const timeout=Math.min(900000,Math.max(240000,est*4000));
- const base=(job.sizeNote?job.sizeNote+'\n':'')+`يستمع الذكاء الاصطناعي للتسجيل كاملًا… قد يستغرق ذلك قرابة ${est<60?toAr(est)+' ثانية':toAr(Math.ceil(est/60))+' دقائق'}.\n📱 أبقِ الشاشة مفتوحة ولا تغادر الصفحة حتى يكتمل.`;
- setStep(3,.62,base);
- const t0=Date.now();let writing=0;
- const tick=setInterval(()=>{const p=writing?Math.min(.98,.85+.13*Math.min(1,writing/5000)):Math.min(.85,.62+.23*(1-Math.exp(-(Date.now()-t0)/1000/est)));setProg(p)},400);
- const onText=n=>{if(!writing){const pn=$('#pn');if(pn)pn.textContent=(job.sizeNote?job.sizeNote+'\n':'')+'✍️ انتهى الاستماع، ويكتب التقييم الآن…'}writing=Math.max(1,n)};
+ if(AIBUSY)return;AIBUSY=true;
+ const st=job.st;PROC.err='';PROC.detail='';PROC.waitResume=false;keepAwake();
+ if(job.sampled&&job.sampleB64)job.b64=job.sampleB64;
+ const est=()=>Math.round(30+(job.sampled?job.sampleSpan:st.span)/60*5);
+ const timeout=()=>Math.min(900000,Math.max(240000,est()*4000));
+ const bg='🔔 يمكنك الخروج من الصفحة أو قفل الشاشة؛ سأنبّهك عند جاهزية التقييم، وإن أوقف الجوال الصفحة أكملتُ تلقائيًا فور عودتك.';
+ const base=()=>(job.sizeNote?job.sizeNote+'\n':'')+(job.sampled?'يقيّم الذكاء الاصطناعي عيّنات من البداية والوسط والنهاية':'يستمع الذكاء الاصطناعي للتسجيل كاملًا')+`… قد يستغرق ذلك قرابة ${est()<60?toAr(est())+' ثانية':toAr(Math.ceil(est()/60))+' دقائق'}.\n`+bg;
+ const note=t=>{PROC.note=t;const pn=$('#pn');if(pn)pn.textContent=t};
+ setStep(3,.62,base());
+ let t0=Date.now(),writing=0;
+ const tick=setInterval(()=>{const e=est(),p=writing?Math.min(.98,.85+.13*Math.min(1,writing/5000)):Math.min(.85,.62+.23*(1-Math.exp(-(Date.now()-t0)/1000/e)));setProg(p)},400);
+ const onText=n=>{if(!writing)note((job.sizeNote?job.sizeNote+'\n':'')+'✍️ انتهى الاستماع، ويكتب التقييم الآن…\n'+bg);writing=Math.max(1,n)};
+ const stop=()=>{clearInterval(tick);releaseAwake();AIBUSY=false};
  try{
-  let ai=null,lastM='';
-  for(let attempt=1;attempt<=3&&!ai;attempt++){
-   try{ai=await aiEvaluate(buildPrompt(job.meta,st),job.b64,job.mime,job.sampled?Math.min(timeout,420000):timeout,job.sampled?job.sampleSpan:st.span,onText)}
-   catch(e){lastM=String(e&&(e.message||e.code)||e);console.warn('ai attempt',attempt,e);
-    const transient=/timeout|abort|fetch|network|load failed|503|500|unavailable|overloaded|internal|JSON|Unexpected|Unterminated/i.test(lastM);
-    const pn=()=>$('#pn');
-    if(attempt===1&&transient){writing=0;if(pn())pn().textContent=base+'\n↻ تعثّر الاتصال، أعيد المحاولة تلقائيًا…';await new Promise(r=>setTimeout(r,2500));continue}
-    if(attempt===2&&transient&&job.clip&&!job.sampled){writing=0;
-     if(pn())pn().textContent='↻ التسجيل طويل جدًا على التقييم الكامل، سأقيّمه الآن من عيّنات: ٤ دقائق من البداية و٤ من الوسط و٤ من النهاية…';
-     await makeSample(job.clip);continue}
-    PROC.detail=lastM.slice(0,160);
-    throw new Error(aiErrMsg(lastM)+(HIDDEN?' يبدو أن الشاشة أُغلقت أو انتقلت لتطبيق آخر أثناء التقييم؛ أبقِ الصفحة مفتوحة ثم اضغط «إعادة المحاولة».':' اضغط «إعادة المحاولة».'))}}
-  clearInterval(tick);releaseAwake();
-  if(!ai||ai.valid===false){PROC.err='لم يتمكن المقيّم من تقييم التسجيل: '+(aStr(ai&&ai.invalid_reason)||'لا يوجد كلام عربي واضح.');renderProc();return}
-  const res=finalize(ai,st,job.meta,job.sampled?job.sampleSpan:st.span);res.cut=!!job.cut;res.sampled=!!job.sampled;job.clip=null;
-  store.hist.unshift(res);store.hist=store.hist.slice(0,40);save();
+  let ai=null,tries=0,quota=0;
+  while(!ai){
+   HIDDEN=document.hidden;writing=0;t0=Date.now();
+   try{ai=await aiEvaluate(buildPrompt(job.meta,st),job.b64,job.mime,timeout(),job.sampled?job.sampleSpan:st.span,onText)}
+   catch(e){const m=String(e&&(e.message||e.code)||e);console.warn('ai',e);
+    const transient=/timeout|abort|fetch|network|load failed|503|500|unavailable|overloaded|internal|JSON|Unexpected|Unterminated/i.test(m);
+    const isQuota=/quota|429|resource.?exhausted/i.test(m);
+    // أوقف الجوال الصفحة في الخلفية: نكمل تلقائيًا عند العودة دون احتساب محاولة
+    if((transient||isQuota)&&HIDDEN){
+     if(document.hidden){PROC.waitResume=true;stop();note((job.sizeNote?job.sizeNote+'\n':'')+'⏸️ أوقف الجوال الصفحة مؤقتًا في الخلفية — سأكمل التقييم تلقائيًا فور عودتك إليها.');return}
+     note(base()+'\n↻ أكمل التقييم من حيث توقف…');continue}
+    if(isQuota&&quota<4){quota++;const w=20*quota;for(let s=w;s>0;s--){note(base()+`\n⏳ الخدمة مزدحمة الآن، سأعيد المحاولة تلقائيًا بعد ${toAr(s)} ثانية…`);await sleep(1000)}continue}
+    if(transient&&tries<3){tries++;
+     if(tries>=2&&job.sampleB64&&!job.sampled){job.sampled=true;job.b64=job.sampleB64;savePending();note('↻ التسجيل طويل جدًا على التقييم الكامل، سأقيّمه الآن من عيّنات: ٤ دقائق من البداية و٤ من الوسط و٤ من النهاية…\n'+bg)}
+     else note(base()+'\n↻ تعثّر الاتصال، أعيد المحاولة تلقائيًا…');
+     await sleep(2500);continue}
+    PROC.detail=m.slice(0,160);throw new Error(aiErrMsg(m)+' اضغط «إعادة المحاولة».')}}
+  stop();
+  if(!ai||ai.valid===false){dropPending();PROC.err='لم يتمكن المقيّم من تقييم التسجيل: '+(aStr(ai&&ai.invalid_reason)||'لا يوجد كلام عربي واضح.');renderProc();notify('تعذّر التقييم','افتح «بيان» لمعرفة السبب.');return}
+  const res=finalize(ai,st,job.meta,job.sampled?job.sampleSpan:st.span);res.cut=!!job.cut;res.sampled=!!job.sampled;
+  store.hist.unshift(res);store.hist=store.hist.slice(0,40);save();dropPending();
   job.result=res;view='result';render();
- }catch(e){clearInterval(tick);releaseAwake();PROC.err=e.message;renderProc()}
+  notify('تقييمك جاهز في «بيان»',`النتيجة: ${res.total} من 100 (${level(res.total)[0]})`);
+ }catch(e){stop();PROC.err=e.message;renderProc();notify('تعذّر إكمال التقييم','افتح «بيان» واضغط «إعادة المحاولة».')}
 }
 function finalize(ai,st,meta,wspan){wspan=wspan||st.span;
  const c={};let total=0;
@@ -845,7 +879,7 @@ function bindArenaHome(){
  $('#actx').oninput=e=>{store.actx=e.target.value.trim();save()};
  $('#anm').oninput=e=>{store.name=e.target.value.trim();save()};
  $('#avoice').onchange=e=>{store.voice=e.target.checked;save()};
- $('#aStart').onclick=()=>arenaStart();
+ $('#aStart').onclick=()=>{askNotify();arenaStart()};
 }
 
 /* ---------- تشغيل الجلسة ---------- */
@@ -990,6 +1024,7 @@ ${done.length<A.rounds?`ملاحظة: أنهى المشارك الجلسة بع�
   tips:arr(r.tips).map(aStr).filter(Boolean)};
  store.hist.unshift(res);store.hist=store.hist.slice(0,40);save();
  arenaClose();job={result:res};view='arenaResult';render();
+ notify('تقييم المواجهة جاهز',`النتيجة: ${res.total} من 100 (${level(res.total)[0]})`);
 }
 function arenaClose(){if(!A)return;ttsStop();try{A.rec&&A.rec.mr.stop()}catch(e){}try{A.stream.getTracks().forEach(t=>t.stop())}catch(e){}try{A.ac.close()}catch(e){}releaseAwake();A=null}
 function arenaQuit(){arenaClose();store.tab='arena';save();view='home';render()}
@@ -1080,9 +1115,13 @@ function renderArenaResult(){
 }
 
 /* =================== تشغيل =================== */
-window.addEventListener('beforeunload',e=>{if(REC||(view==='arenaRun'&&A)||view==='proc'&&!PROC.err){e.preventDefault();e.returnValue=''}});
+window.addEventListener('beforeunload',e=>{if(REC||(view==='arenaRun'&&A)){e.preventDefault();e.returnValue=''}});
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
-render();
+(async()=>{
+ const pd=await kv('get','pending');
+ if(pd&&pd.b64&&Date.now()-pd.at<48*3600*1000){
+  job=Object.assign({},pd);STEPS[0]='تجهيز الصوت';PROC={step:3,prog:.62,err:'',note:'↻ أكمل تقييم تسجيلك السابق من حيث توقف…'};view='proc';render();runAI();return}
+ render()})();
 </script>
 </body>
 </html>
