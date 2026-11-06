@@ -179,7 +179,7 @@ footer.credit{text-align:center;color:var(--muted);font-size:12.5px;padding:18px
 </head>
 <body>
 <div class="wrap">
-  <header class="top">
+  <header class="top" id="topHome" style="cursor:pointer" title="الصفحة الرئيسية">
     <img src="icon-192.png" alt="">
     <div>
       <h1>بيان</h1>
@@ -856,11 +856,13 @@ function renderResult(){
   <button class="btn" id="bNew">${ICON.mic.replace('<svg','<svg width="20" height="20"')}تقييم جديد</button>
   <button class="btn ghost" id="bPrint">طباعة / حفظ PDF</button>
   <button class="btn ghost" id="bShare">مشاركة النتيجة</button>
+  <button class="btn ghost" id="bHome">🏠 الصفحة الرئيسية</button>
  </div>
  <p class="muted small" style="text-align:center">التقييم آلي بالذكاء الاصطناعي للاسترشاد والتدريب، وقد يختلف قليلًا بين محاولة وأخرى.</p>`;
  requestAnimationFrame(()=>{setTimeout(()=>{const g=$('#garc');if(g)g.style.strokeDashoffset=off;
-  const t0=performance.now(),gn=$('#gnum');(function an(t){const p=Math.min(1,(t-t0)/1200);gn.textContent=toAr(Math.round(r.total*(1-Math.pow(1-p,3))));if(p<1)requestAnimationFrame(an)})(t0)},60)});
- $('#bNew').onclick=()=>{view='home';render()};
+  const t0=performance.now(),gn=$('#gnum');(function an(t){if(!gn||!gn.isConnected)return;const p=Math.min(1,(t-t0)/1200);gn.textContent=toAr(Math.round(r.total*(1-Math.pow(1-p,3))));if(p<1)requestAnimationFrame(an)})(t0)},60)});
+ $('#bNew').onclick=()=>{store.tab='eval';save();view='home';render()};
+ $('#bHome').onclick=()=>{view='home';render()};
  $('#bPrint').onclick=()=>{document.querySelectorAll('details.tr').forEach(d=>d.open=true);window.print()};
  $('#bShare').onclick=async()=>{
   const txt=`🎤 نتيجتي في «بيان» لتقييم الإلقاء: ${r.total}/100 (${lv})\n`+CRIT.map(([k,l,w])=>`• ${l}: ${r.crit[k].score}/${w}`).join('\n')+`\n${location.href}`;
@@ -1166,10 +1168,10 @@ function renderArenaResult(){
   <button class="btn" id="bAgain">مواجهة جديدة</button>
   <button class="btn ghost" id="bPrint">طباعة / حفظ PDF</button>
   <button class="btn ghost" id="bShare">مشاركة النتيجة</button>
-  <button class="btn ghost" id="bHome">الرئيسية</button>
+  <button class="btn ghost" id="bHome">🏠 الصفحة الرئيسية</button>
  </div>
  <p class="muted small" style="text-align:center">التقييم آلي بالذكاء الاصطناعي للاسترشاد والتدريب.</p>`;
- requestAnimationFrame(()=>{setTimeout(()=>{const g=$('#garc');if(g)g.style.strokeDashoffset=off;const t0=performance.now(),gn=$('#gnum');(function an(t){const p=Math.min(1,(t-t0)/1200);gn.textContent=toAr(Math.round(r.total*(1-Math.pow(1-p,3))));if(p<1)requestAnimationFrame(an)})(t0)},60)});
+ requestAnimationFrame(()=>{setTimeout(()=>{const g=$('#garc');if(g)g.style.strokeDashoffset=off;const t0=performance.now(),gn=$('#gnum');(function an(t){if(!gn||!gn.isConnected)return;const p=Math.min(1,(t-t0)/1200);gn.textContent=toAr(Math.round(r.total*(1-Math.pow(1-p,3))));if(p<1)requestAnimationFrame(an)})(t0)},60)});
  $('#bAgain').onclick=()=>{store.tab='arena';save();view='home';render()};
  $('#bHome').onclick=()=>{view='home';render()};
  $('#bPrint').onclick=()=>{document.querySelectorAll('details.tr').forEach(d=>d.open=true);window.print()};
@@ -1180,6 +1182,7 @@ function renderArenaResult(){
 }
 
 /* =================== تشغيل =================== */
+$('#topHome').onclick=()=>{if(view==='home'||view==='rec'||view==='arenaRun'||(view==='proc'&&!PROC.err))return;view='home';render()};
 try{render()}catch(e){console.error(e)}
 window.addEventListener('beforeunload',e=>{if(REC||(view==='arenaRun'&&A)){e.preventDefault();e.returnValue=''}});
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
