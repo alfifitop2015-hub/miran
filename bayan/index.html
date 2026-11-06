@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>بيان · مقيّم الإلقاء والخطابة</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="favicon-48.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#0B4D3A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="بيان">
+<meta name="application-name" content="بيان">
+<meta name="description" content="بيان: استمع لكلمتك أو محاضرتك أو تعليقك وقيّمها من 100 في المحتوى واللغة والترابط ونبرة الصوت — متخصص في العربية واللهجة السعودية.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Amiri:wght@400;700&display=swap">
+<style>
+:root{
+  --paper:#F6F3EA;--card:#FFFFFF;--ink:#16241F;--muted:#5D6B65;--line:#E4DFD0;
+  --green:#0B4D3A;--green2:#14785C;--gold:#C9962B;--goldbg:#FBF1D9;
+  --ok:#15803D;--okbg:#DCF5E5;--warn:#B45309;--warnbg:#FDEBD3;--bad:#C2410C;--badbg:#FDE2D6;
+  --acc:var(--green);--onacc:#FFFFFF;
+  --fd:"Reem Kufi","IBM Plex Sans Arabic",system-ui,sans-serif;
+  --fb:"IBM Plex Sans Arabic",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --fq:"Amiri","IBM Plex Sans Arabic",serif;
+  --r:18px;--sh:0 1px 2px rgba(20,40,30,.06),0 6px 22px rgba(20,40,30,.07);
+}
+@media (prefers-color-scheme:dark){:root{color-scheme:dark;--paper:#0E1714;--card:#16221E;--ink:#E9F0EC;--muted:#9DB0A8;--line:#26352F;--green:#3FC59A;--green2:#2FA67F;--gold:#E8BE5C;--goldbg:#2C2512;--ok:#4ADE80;--okbg:#12301F;--warn:#FBBF24;--warnbg:#33260D;--bad:#FB8B5B;--badbg:#3A1C12;--acc:#3FC59A;--onacc:#06231A;--sh:0 1px 2px rgba(0,0,0,.3),0 6px 22px rgba(0,0,0,.25)}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:16px;line-height:1.75;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit;cursor:pointer}
+.wrap{max-width:760px;margin:0 auto;padding:16px 16px 40px}
+header.top{display:flex;align-items:center;gap:12px;padding:6px 2px 14px}
+header.top img{width:46px;height:46px;border-radius:13px;box-shadow:var(--sh)}
+header.top h1{font-family:var(--fd);font-size:26px;margin:0;line-height:1.2;color:var(--green)}
+header.top p{margin:0;color:var(--muted);font-size:13.5px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--sh);margin-bottom:14px}
+.card h2{font-family:var(--fd);font-size:19px;margin:0 0 10px;color:var(--green);font-weight:600}
+.card h3{font-size:16px;margin:0 0 8px}
+.hero{background:linear-gradient(135deg,#0B4D3A,#14785C);color:#fff;border:none;position:relative;overflow:hidden}
+.hero h2{color:#fff;font-size:22px}
+.hero p{margin:0 0 4px;opacity:.92}
+.hero::after{content:"";position:absolute;inset:auto -60px -80px auto;width:220px;height:220px;border-radius:50%;border:28px solid rgba(232,190,92,.25)}
+.big-actions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0 4px;position:relative;z-index:1}
+.bigbtn{border:none;border-radius:16px;padding:16px 12px;background:#fff;color:#0B4D3A;font-weight:700;font-size:16.5px;display:flex;flex-direction:column;align-items:center;gap:6px;box-shadow:0 4px 14px rgba(0,0,0,.15)}
+.bigbtn.gold{background:#E8BE5C;color:#3A2A05}
+.bigbtn svg{width:30px;height:30px}
+.bigbtn small{font-weight:500;font-size:12.5px;opacity:.8}
+label.f{display:block;font-weight:600;font-size:14.5px;margin:12px 0 6px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:transparent;border-radius:999px;padding:6px 14px;font-size:14.5px}
+.chip[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);color:var(--onacc);font-weight:600}
+input[type=text],textarea{width:100%;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);border-radius:12px;padding:10px 12px;font:inherit;font-size:15px}
+input[type=text]:focus,textarea:focus{outline:2px solid var(--acc);border-color:transparent}
+.muted{color:var(--muted)}
+.small{font-size:13.5px}
+.btn{border:none;background:var(--acc);color:var(--onacc);border-radius:12px;padding:11px 18px;font-weight:700;font-size:15.5px;display:inline-flex;align-items:center;gap:8px;justify-content:center}
+.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink);font-weight:600}
+.btn.danger{background:var(--bad);color:#fff}
+.btn:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row.center{justify-content:center}
+/* recording */
+.rec-timer{font-family:var(--fd);font-size:56px;text-align:center;letter-spacing:2px;margin:6px 0 0;direction:ltr;font-variant-numeric:tabular-nums}
+.rec-state{text-align:center;font-weight:600;color:var(--muted)}
+.rec-dot{display:inline-block;width:11px;height:11px;border-radius:50%;background:#E5484D;margin-inline-end:6px;animation:blink 1.1s infinite}
+@keyframes blink{50%{opacity:.25}}
+canvas.viz{width:100%;height:120px;display:block;margin:12px 0}
+.hint{background:var(--goldbg);border-radius:12px;padding:10px 14px;font-size:14px;margin-top:10px}
+/* processing */
+.steps{list-style:none;padding:0;margin:10px 0}
+.steps li{display:flex;gap:10px;align-items:center;padding:8px 0;color:var(--muted)}
+.steps li .ic{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center;font-size:13px}
+.steps li.on{color:var(--ink);font-weight:600}
+.steps li.on .ic{border-color:var(--acc);border-top-color:transparent;animation:spin .9s linear infinite}
+.steps li.done{color:var(--ink)}
+.steps li.done .ic{background:var(--acc);border-color:var(--acc);color:var(--onacc)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--acc);border-radius:99px;transition:width .3s}
+/* result */
+.score-wrap{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.gauge{position:relative;width:170px;height:170px;flex:none;margin:0 auto}
+.gauge svg{width:100%;height:100%;transform:rotate(-90deg)}
+.gauge .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gauge .num b{font-family:var(--fd);font-size:50px;line-height:1}
+.gauge .num span{font-size:13px;color:var(--muted)}
+.score-info{flex:1;min-width:220px}
+.level{display:inline-block;font-family:var(--fd);font-size:21px;padding:2px 14px;border-radius:999px;margin-bottom:6px}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.meta span{background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:2px 11px;font-size:13px}
+.crit{padding:10px 0;border-top:1px solid var(--line)}
+.crit:first-of-type{border-top:none}
+.crit-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-weight:600}
+.crit-h b{font-family:var(--fd);font-size:17px;white-space:nowrap}
+.crit .bar{margin:6px 0 4px}
+.crit p{margin:0;font-size:14.5px;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat{background:var(--paper);border-radius:14px;padding:12px;border:1px solid var(--line)}
+.stat small{display:block;color:var(--muted);font-size:12.5px}
+.stat b{font-family:var(--fd);font-size:22px;display:block;line-height:1.4}
+.stat em{font-style:normal;font-size:12.5px;font-weight:600}
+ul.list{margin:0;padding-inline-start:20px}
+ul.list li{margin:4px 0}
+.imp{border-inline-start:4px solid var(--gold);background:var(--paper);border-radius:10px;padding:10px 12px;margin:8px 0}
+.imp b{display:block}
+.imp .ex{font-size:14px;color:var(--muted)}
+.imp .sg{font-size:14.5px;margin-top:4px}
+table.ln{width:100%;border-collapse:collapse;font-size:14.5px}
+table.ln th,table.ln td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:start;vertical-align:top}
+table.ln th{font-size:13px;color:var(--muted);font-weight:600}
+.said{color:var(--bad);text-decoration:line-through;text-decoration-thickness:1px}
+.better{color:var(--ok);font-weight:600}
+.quote{font-family:var(--fq);font-size:21px;line-height:1.9;background:var(--goldbg);border-radius:14px;padding:12px 16px;margin:0}
+.quote::before{content:"«"}.quote::after{content:"»"}
+.fill{display:inline-flex;gap:6px;align-items:center;background:var(--warnbg);color:var(--warn);border-radius:999px;padding:3px 12px;margin:3px;font-weight:600;font-size:14px}
+details.tr summary{cursor:pointer;font-weight:600;color:var(--green)}
+.trtext{white-space:pre-wrap;font-size:15px;line-height:1.95;background:var(--paper);border-radius:12px;padding:12px;margin-top:8px;max-height:420px;overflow:auto}
+.hist-item{display:flex;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid var(--line);cursor:pointer;background:none;border-inline:none;border-bottom:none;width:100%;text-align:start}
+.hist-item:first-child{border-top:none}
+.hist-item .sc{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;font-family:var(--fd);font-size:19px;flex:none}
+.hist-item .tt{flex:1;min-width:0}
+.hist-item .tt b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.err{background:var(--badbg);color:var(--bad);border-radius:12px;padding:12px 14px;font-weight:600}
+audio{width:100%;margin-top:6px}
+footer.credit{text-align:center;color:var(--muted);font-size:12.5px;padding:18px 10px 8px}
+.weights{display:grid;grid-template-columns:1fr auto;gap:2px 12px;font-size:14px}
+.weights span:nth-child(even){font-weight:700;color:var(--green)}
+@media (max-width:420px){.big-actions{grid-template-columns:1fr}.rec-timer{font-size:46px}}
+@media print{
+  body{background:#fff;color:#000}
+  .noprint,footer.credit button{display:none!important}
+  .card{box-shadow:none;break-inside:avoid;border-color:#ccc}
+  .trtext{max-height:none}
+  details.tr:not([open]){display:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <img src="icon-192.png" alt="">
+    <div>
+      <h1>بيان</h1>
+      <p>مقيّم الإلقاء والخطابة · العربية الفصحى واللهجة السعودية</p>
+    </div>
+  </header>
+  <main id="app"></main>
+  <footer class="credit" dir="rtl" lang="ar">© جميع الحقوق محفوظة · فكرة وإعداد وتنفيذ <b dir="ltr">alfifitop2015</b> بواسطة <span dir="ltr">Claude AI</span></footer>
+</div>
+<input type="file" id="fileIn" accept="audio/*,video/*,.mp3,.m4a,.wav,.ogg,.opus,.aac,.amr,.webm,.mp4,.3gp" hidden>
+<script src="lame.min.js"></script>
+<script>
+'use strict';
+/* =================== الإعدادات =================== */
+const MAX_MIN=60, MIN_SEC=8;
+const KINDS=['محاضرة أو درس','كلمة أو خطبة','تعليق أو رأي','عرض تقديمي','محادثة أو مقابلة','أخرى'];
+const CRIT=[
+ ['content','صحة الطرح والمحتوى',20],
+ ['language','سلامة اللغة والأسلوب',15],
+ ['coherence','الترابط والتنظيم',15],
+ ['clarity','وضوح النطق ومخارج الحروف',10],
+ ['tone','نبرة الصوت والتلوين الصوتي',10],
+ ['pace','سرعة الإلقاء والوقفات',10],
+ ['fluency','الطلاقة وقلة الحشو',10],
+ ['impact','التأثير والإقناع',10]];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const aStr=v=>typeof v==='string'?v.trim():'';
+const arr=v=>Array.isArray(v)?v:[];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const toAr=n=>String(n).replace(/\d/g,d=>'٠١٢٣٤٥٦٧٨٩'[d]);
+const fmtDur=s=>{s=Math.round(s);const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0')};
+const durWords=s=>{s=Math.round(s);if(s<60)return toAr(s)+' ثانية';const m=Math.floor(s/60),x=s%60;return toAr(m)+' دقيقة'+(x?' و'+toAr(x)+' ثانية':'')};
+function level(sc){return sc>=90?['متميّز','#0E7C4A','#D8F3E3']:sc>=80?['ممتاز','#15803D','#DCF5E5']:sc>=70?['جيد جدًا','#4D7C0F','#ECF7D4']:sc>=60?['جيد','#A16207','#FBF1D9']:sc>=50?['مقبول','#C2410C','#FDEBD3']:['يحتاج إلى تطوير','#B91C1C','#FDE2E2']}
+function pctColor(p){return p>=.85?'#15803D':p>=.7?'#4D7C0F':p>=.55?'#C9962B':p>=.4?'#C2410C':'#B91C1C'}
+
+/* =================== الحالة والتخزين =================== */
+const LS='bayan.v1';
+let store={hist:[],kind:KINDS[0],name:''};
+try{Object.assign(store,JSON.parse(localStorage.getItem(LS)||'{}'))}catch(e){}
+const save=()=>{try{localStorage.setItem(LS,JSON.stringify(store))}catch(e){}};
+let job=null;   // آخر تسجيل قيد المعالجة (للإعادة)
+let view='home';
+
+/* =================== الذكاء الاصطناعي (Firebase AI Logic + Gemini) =================== */
+const FB={apiKey:"AIzaSyDfDRNr06QJKPShAvjuc0UOaFYNlvU5NEo",authDomain:"miran-7ad31.firebaseapp.com",projectId:"miran-7ad31",storageBucket:"miran-7ad31.firebasestorage.app",messagingSenderId:"1089204486985",appId:"1:1089204486985:web:986b4a4ad56190c878d098"};
+const AI_SDK='https://www.gstatic.com/firebasejs/12.19.0/';
+const AI_MODELS=['gemini-3.8-flash','gemini-flash-latest','gemini-2.5-flash'];
+const APPCHECK_SITE_KEY='6LfGiOstAAAAAESfhLqvBOgqQsv6KE9K5QXQl-CE';
+let aiPromise=null;
+function aiInit(){
+ if(location.protocol==='file:')return Promise.reject(new Error('افتح الصفحة من رابط الموقع وليس من ملف محلي.'));
+ if(!aiPromise)aiPromise=(async()=>{
+  const [{initializeApp},AI]=await Promise.all([import(AI_SDK+'firebase-app.js'),import(AI_SDK+'firebase-ai.js')]);
+  const app=initializeApp(FB,'bayan-ai');
+  if(APPCHECK_SITE_KEY){const AC=await import(AI_SDK+'firebase-app-check.js');const ac=AC.initializeAppCheck(app,{provider:new AC.ReCaptchaEnterpriseProvider(APPCHECK_SITE_KEY),isTokenAutoRefreshEnabled:true});AC.getToken(ac).catch(()=>{})}
+  return {ai:AI.getAI(app,{backend:new AI.GoogleAIBackend()}),getGenerativeModel:AI.getGenerativeModel}})().catch(e=>{aiPromise=null;throw e});
+ return aiPromise}
+async function aiEvaluate(prompt,b64,mime,timeoutMs){
+ const k=await aiInit();let lastErr=null;
+ for(let i=0;i<AI_MODELS.length;i++){
+  try{
+   const model=k.getGenerativeModel(k.ai,{model:AI_MODELS[i],generationConfig:{responseMimeType:'application/json',temperature:0.25,maxOutputTokens:12000}});
+   const res=await Promise.race([model.generateContent([{inlineData:{data:b64,mimeType:mime}},{text:prompt}]),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),timeoutMs))]);
+   let t=res.response.text().trim().replace(/^```(json)?/,'').replace(/```$/,'');
+   return JSON.parse(t);
+  }catch(e){lastErr=e;const m=String((e&&(e.message||e.code))||e);
+   if(/not.?found|404|unsupported|is not supported/i.test(m))continue;
+   if(/JSON|Unexpected token|Unterminated/i.test(m)&&i<AI_MODELS.length-1)continue;
+   break}}
+ throw lastErr||new Error('ai')}
+
+/* =================== معالجة الصوت =================== */
+async function decodeAudio(buf){
+ const OAC=window.OfflineAudioContext||window.webkitOfflineAudioContext;
+ const ctx=new OAC(1,16000,16000);
+ const ab=await new Promise((res,rej)=>{const p=ctx.decodeAudioData(buf,res,rej);if(p&&p.then)p.then(res,rej)});
+ const n=ab.length,ch=ab.numberOfChannels;let out;
+ if(ch===1)out=new Float32Array(ab.getChannelData(0));
+ else{out=new Float32Array(n);for(let c=0;c<ch;c++){const d=ab.getChannelData(c);for(let i=0;i<n;i++)out[i]+=d[i]/ch}}
+ if(ab.sampleRate!==16000){ // احتياط: إعادة تشكيل بسيطة
+  const r=ab.sampleRate/16000,m=Math.floor(n/r),o=new Float32Array(m);for(let i=0;i<m;i++)o[i]=out[Math.floor(i*r)];out=o}
+ return out}
+
+// تحليل صوتي موضوعي: الصمت والوقفات وتنوّع النبرة ومستوى الصوت
+function analyze(pcm){
+ const SR=16000,F=480,nF=Math.floor(pcm.length/F),db=new Float32Array(nF);
+ for(let f=0;f<nF;f++){let s=0;const o=f*F;for(let i=0;i<F;i++){const v=pcm[o+i];s+=v*v}db[f]=10*Math.log10(s/F+1e-10)}
+ const sorted=Array.from(db).sort((a,b)=>a-b),q=p=>sorted[Math.min(sorted.length-1,Math.floor(p*sorted.length))];
+ const floor=q(.1),top=q(.95),thr=Math.max(floor+6,floor+(top-floor)*.3);
+ const voiced=new Uint8Array(nF);for(let f=0;f<nF;f++)voiced[f]=db[f]>thr?1:0;
+ // سدّ الفجوات القصيرة جدًا (أقل من 0.15 ث)
+ let first=voiced.indexOf(1),last=voiced.lastIndexOf(1);
+ if(first<0)return {empty:true,dur:pcm.length/SR};
+ const pauses=[];let run=0;
+ for(let f=first;f<=last;f++){if(!voiced[f])run++;else{if(run*F/SR>=0.35)pauses.push(run*F/SR);run=0}}
+ let vCount=0;for(let f=first;f<=last;f++)vCount+=voiced[f];
+ const span=(last-first+1)*F/SR, speech=vCount*F/SR;
+ // مستوى الصوت
+ const vdb=[];for(let f=first;f<=last;f++)if(voiced[f])vdb.push(db[f]);
+ const mean=vdb.reduce((a,b)=>a+b,0)/vdb.length, loudStd=Math.sqrt(vdb.reduce((a,b)=>a+(b-mean)*(b-mean),0)/vdb.length);
+ // النبرة: ارتباط ذاتي على 8 كيلوهرتز
+ const vIdx=[];for(let f=first;f<=last;f++)if(voiced[f]&&db[f]>thr+3)vIdx.push(f);
+ const step=Math.max(1,Math.floor(vIdx.length/5000)),pitches=[];
+ const W=320,minL=20,maxL=106,buf=new Float32Array(W+maxL);
+ for(let k=0;k<vIdx.length;k+=step){
+  const o=vIdx[k]*F;if(o+2*(W+maxL)>=pcm.length)continue;
+  let m=0;for(let i=0;i<W+maxL;i++){buf[i]=pcm[o+2*i];m+=buf[i]}m/=(W+maxL);for(let i=0;i<W+maxL;i++)buf[i]-=m;
+  let e0=0;for(let i=0;i<W;i++)e0+=buf[i]*buf[i];if(e0<=0)continue;
+  let best=0,bl=0;
+  for(let L=minL;L<=maxL;L++){let c=0,e1=0;for(let i=0;i<W;i++){c+=buf[i]*buf[i+L];e1+=buf[i+L]*buf[i+L]}const r=c/Math.sqrt(e0*e1+1e-12);if(r>best){best=r;bl=L}}
+  if(best>0.55&&bl>minL&&bl<maxL)pitches.push(8000/bl)}
+ let pitchMed=0,pitchSt=0;
+ if(pitches.length>20){const ps=pitches.slice().sort((a,b)=>a-b);pitchMed=ps[Math.floor(ps.length/2)];
+  const st=pitches.map(p=>12*Math.log2(p/pitchMed)).filter(v=>Math.abs(v)<12);const sm=st.reduce((a,b)=>a+b,0)/st.length;
+  pitchSt=Math.sqrt(st.reduce((a,b)=>a+(b-sm)*(b-sm),0)/st.length)}
+ let peak=0;for(let i=0;i<pcm.length;i+=4){const a=Math.abs(pcm[i]);if(a>peak)peak=a}
+ const longP=pauses.filter(p=>p>=2).length;
+ return {dur:pcm.length/SR,span,speech,speakRatio:speech/span,pauses:pauses.length,longPauses:longP,
+  avgPause:pauses.length?pauses.reduce((a,b)=>a+b,0)/pauses.length:0,pausesPerMin:pauses.length/(span/60),
+  loudStd,loudMean:mean,pitchMed,pitchSt,quiet:mean<-42,clipped:peak>0.995,firstSec:first*F/SR,lastSec:(last+1)*F/SR}}
+
+function trimPCM(pcm,st){const a=Math.max(0,Math.floor((st.firstSec-0.4)*16000)),b=Math.min(pcm.length,Math.ceil((st.lastSec+0.4)*16000));return pcm.subarray(a,b)}
+
+async function encodeMP3(pcm,kbps,onProg){
+ const enc=new lamejs.Mp3Encoder(1,16000,kbps),blk=1152*20,out=[];
+ const i16=new Int16Array(blk);
+ for(let o=0;o<pcm.length;o+=blk){
+  const n=Math.min(blk,pcm.length-o);
+  for(let i=0;i<n;i++){const s=clamp(pcm[o+i],-1,1);i16[i]=s<0?s*0x8000:s*0x7FFF}
+  const b=enc.encodeBuffer(n===blk?i16:i16.subarray(0,n));if(b.length)out.push(new Uint8Array(b));
+  if((o/blk)%40===0){onProg&&onProg(o/pcm.length);await new Promise(r=>setTimeout(r,0))}}
+ const e=enc.flush();if(e.length)out.push(new Uint8Array(e));
+ return new Blob(out,{type:'audio/mpeg'})}
+const blobToB64=b=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]);r.onerror=rej;r.readAsDataURL(b)});
+
+/* =================== التعليمات المرسلة للنموذج =================== */
+function buildPrompt(meta,st){
+ const longTalk=st.span>360;
+ const pitchTxt=st.pitchSt?`انحراف طبقة الصوت المعياري ≈ ${st.pitchSt.toFixed(1)} نصف نغمة (أقل من 1.8 يدل على رتابة، 1.8–3 متوسط، أكثر من 3 تلوين حيوي)، متوسط الطبقة ≈ ${Math.round(st.pitchMed)} هرتز`:'تعذّر قياس طبقة الصوت آليًا';
+ return `أنت خبير محكّم في فن الإلقاء والخطابة العربية، متخصص في العربية الفصحى واللهجة السعودية العامة بلهجاتها المحلية (النجدية والحجازية والجنوبية والشرقية والشمالية). استمع بعناية إلى التسجيل الصوتي المرفق وقيّم المتحدث تقييمًا مهنيًا دقيقًا منصفًا غير مجامل.
+
+معلومات من المستخدم:
+- نوع الكلام: ${meta.kind}
+${meta.topic?`- الموضوع أو الهدف أو الجمهور: ${meta.topic}\n`:''}- مدة الكلام الفعلية: ${durWords(st.span)}
+
+قياسات صوتية آلية (استأنس بها مع ما تسمعه بنفسك، ولا تعتمد عليها وحدها):
+- نسبة زمن الكلام إلى الصمت: ${Math.round(st.speakRatio*100)}٪
+- عدد الوقفات (≥0.35 ث): ${st.pauses}، منها وقفات طويلة (≥2 ث): ${st.longPauses}، متوسط الوقفة ${st.avgPause.toFixed(2)} ث
+- تفاوت مستوى ارتفاع الصوت: ${st.loudStd.toFixed(1)} ديسبل
+- ${pitchTxt}
+
+قواعد التقييم:
+1. اللهجة السعودية ليست خطأ: إن تكلّم بالعامية فقيّم سلامة تعبيره ووضوحه ومناسبة المستوى اللغوي للمقام (فالمحاضرة الرسمية والخطبة يناسبهما الفصحى أو البيضاء أكثر، والتعليق والمحادثة تناسبهما العامية). إن تكلّم بالفصحى فدقّق في النحو والصرف وضبط أواخر الكلمات الظاهرة واختيار المفردات.
+2. راعِ طول الكلام: الكلمة القصيرة (أقل من دقيقة) تُقاس بوضوح الفكرة وإحكامها وقوة الافتتاح والختام دون اشتراط مقدمة وعرض وخاتمة مطوّلة؛ والكلام الطويل يُقاس بالتنظيم وتسلسل المحاور والانتقالات والتلخيص والمحافظة على انتباه السامع.
+3. صحة الطرح: تحقّق من صحة المعلومات والحقائق والأرقام والاستشهادات (الآيات والأحاديث والأقوال والأمثال) ومنطق الاستدلال. نبّه على أي خطأ واضح، ولا تخترع أخطاء.
+4. نبرة الصوت: قيّم التلوين الصوتي (رفع وخفض في مواضعه)، والحماس والثقة، ومناسبة النبرة للمعنى والمقام، وتجنّب الرتابة أو الصراخ.
+5. السرعة والوقفات: السرعة المريحة في العربية تقارب 100–140 كلمة في الدقيقة؛ والوقفات الجيدة تأتي بعد الأفكار وقبل المعاني المهمة، أما الوقفات المترددة وسط الجملة فعيب.
+6. الطلاقة: لاحظ الحشو مثل (يعني، اممم، ااا، طيب، زي ما قلت، الشي هذا، كذا، والله) والتأتأة وإعادة الكلمات وتصحيح الجمل أثناء الكلام، وعدّ أبرز كلمات الحشو.
+7. التأثير: الافتتاح الجاذب، والأمثلة والقصص والشواهد، ومخاطبة السامع، وقوة الختام، ووضوح الرسالة.
+8. كن دقيقًا في الدرجات: 90 فأكثر لمتحدث متمكن جدًا يُحتذى به، و75–89 جيد إلى ممتاز، و60–74 متوسط، وأقل من ذلك ضعيف. اذكر أمثلة من كلام المتحدث نفسه.
+9. إذا لم يكن في التسجيل كلام مفهوم، أو كان الكلام بغير العربية، أو كان موسيقى أو ضجيجًا فقط، فاجعل valid=false واذكر السبب.
+
+أعد JSON فقط بهذا الشكل (كل النصوص بالعربية):
+{
+"valid": true,
+"invalid_reason": "",
+"speech_type": "نوع الكلام كما سمعته",
+"register": "المستوى اللغوي: فصحى / عامية سعودية (حدّد اللهجة إن أمكن) / مزيج",
+"topic": "موضوع الكلام في سطر",
+"summary": "ملخص المضمون في 2–4 جمل",
+"transcript": ${longTalk?'""  (اتركه فارغًا لأن الكلام طويل)':'"تفريغ نصي كامل للكلام كما قيل بلهجته، مع علامات ترقيم"'},
+"word_count": 0,
+"criteria": {
+ "content":   {"score": 0, "comment": "صحة الطرح والمحتوى — الدرجة من 20"},
+ "language":  {"score": 0, "comment": "سلامة اللغة والأسلوب — من 15"},
+ "coherence": {"score": 0, "comment": "الترابط والتنظيم — من 15"},
+ "clarity":   {"score": 0, "comment": "وضوح النطق ومخارج الحروف — من 10"},
+ "tone":      {"score": 0, "comment": "نبرة الصوت والتلوين — من 10"},
+ "pace":      {"score": 0, "comment": "سرعة الإلقاء والوقفات — من 10"},
+ "fluency":   {"score": 0, "comment": "الطلاقة وقلة الحشو — من 10"},
+ "impact":    {"score": 0, "comment": "التأثير والإقناع — من 10"}
+},
+"verdict": "حكم عام في جملتين",
+"strengths": ["3–5 نقاط قوة محددة"],
+"improvements": [{"point":"ما يحتاج تحسينًا","example":"مثال من كلامه (اقتباس قصير)","suggestion":"كيف يحسّنه عمليًا"}],
+"language_notes": [{"said":"ما قاله","better":"الأصح أو الأجود","why":"السبب باختصار"}],
+"factual_notes": [{"claim":"المعلومة كما قالها","note":"التصحيح أو التنبيه"}],
+"fillers": [{"word":"كلمة الحشو","count":0}],
+"best_quote": "أجمل عبارة قالها المتحدث (اقتباس حرفي قصير)",
+"better_opening": "صياغة مقترحة لافتتاح أقوى بأسلوبه نفسه",
+"better_closing": "صياغة مقترحة لختام أقوى",
+"tips": ["3–5 تمارين أو نصائح عملية للمرة القادمة"]
+}
+"comment" لكل معيار: جملة أو جملتان محددتان. language_notes حتى 8 عناصر، factual_notes فقط عند وجود ملاحظة حقيقية، improvements من 2 إلى 5. "word_count": العدد التقريبي لكلمات المتحدث في التسجيل كله.`}
+
+/* =================== الواجهة =================== */
+const ICON={
+ mic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v4M8 21h8"/></svg>',
+ up:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>'};
+function render(){({home:renderHome,rec:renderRec,proc:renderProc,result:renderResult}[view]||renderHome)();window.scrollTo(0,0)}
+
+function renderHome(){
+ const h=store.hist;
+ $('#app').innerHTML=`
+ <section class="card hero">
+  <h2>اسمعك… وأقيّمك من ١٠٠</h2>
+  <p>سجّل كلمتك أو محاضرتك أو تعليقك مباشرة، أو ارفع تسجيلًا جاهزًا (صوت أو فيديو)، وستحصل على تقييم مفصّل في المحتوى واللغة والترابط ونبرة الصوت والإلقاء.</p>
+  <div class="big-actions">
+   <button class="bigbtn gold" id="bRec">${ICON.mic}تسجيل مباشر<small>تحدّث الآن</small></button>
+   <button class="bigbtn" id="bUp">${ICON.up}رفع تسجيل<small>صوت أو فيديو حتى ${toAr(MAX_MIN)} دقيقة</small></button>
+  </div>
+ </section>
+ <section class="card">
+  <h2>إعدادات التقييم</h2>
+  <label class="f">نوع الكلام</label>
+  <div class="chips" id="kinds">${KINDS.map(k=>`<button class="chip" aria-pressed="${k===store.kind}" data-k="${esc(k)}">${esc(k)}</button>`).join('')}</div>
+  <label class="f" for="nm">اسم المتحدث <span class="muted small">(اختياري — مفيد لتقييم المتدربين)</span></label>
+  <input type="text" id="nm" value="${esc(store.name)}" placeholder="مثال: محمد العتيبي">
+  <label class="f" for="tp">الموضوع أو الهدف أو الجمهور <span class="muted small">(اختياري)</span></label>
+  <input type="text" id="tp" placeholder="مثال: كلمة ترحيبية لمتدربين جدد عن السلامة في الورشة">
+  <div class="hint">💡 للحصول على أدق تقييم: تحدّث قريبًا من الجوال في مكان هادئ، ولا تقل مدة الكلام عن ${toAr(15)} ثانية.</div>
+ </section>
+ <section class="card">
+  <h2>معايير التقييم</h2>
+  <div class="weights">${CRIT.map(c=>`<span>${c[1]}</span><span>${toAr(c[2])}</span>`).join('')}<span><b>المجموع</b></span><span>١٠٠</span></div>
+ </section>
+ ${h.length?`<section class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">التقييمات السابقة</h2><button class="btn ghost small noprint" id="bClr" style="padding:5px 12px">مسح السجل</button></div>
+  <div style="margin-top:8px">${h.map((r,i)=>{const [lv,c,bg]=level(r.total);return `<button class="hist-item" data-i="${i}"><span class="sc" style="background:${bg};color:${c}">${toAr(r.total)}</span><span class="tt"><b>${esc(r.name||r.ai.topic||r.meta.kind)}</b><span class="muted small">${esc(r.meta.kind)} · ${durWords(r.st.span)} · ${new Date(r.at).toLocaleDateString('ar-SA-u-ca-gregory',{day:'numeric',month:'short'})}</span></span><span class="muted small">${lv}</span></button>`}).join('')}</div></section>`:''}`;
+ $('#kinds').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;store.kind=b.dataset.k;save();document.querySelectorAll('#kinds .chip').forEach(x=>x.setAttribute('aria-pressed',x===b))};
+ $('#nm').oninput=e=>{store.name=e.target.value.trim();save()};
+ $('#bRec').onclick=()=>startRec();
+ $('#bUp').onclick=()=>$('#fileIn').click();
+ const bc=$('#bClr');if(bc)bc.onclick=()=>{if(confirm('هل تريد مسح كل التقييمات السابقة؟')){store.hist=[];save();render()}};
+ document.querySelectorAll('.hist-item').forEach(b=>b.onclick=()=>{job={result:store.hist[+b.dataset.i],fromHist:true};view='result';render()});
+}
+function curMeta(){const tp=$('#tp');return {kind:store.kind,name:store.name,topic:tp?tp.value.trim():(job&&job.meta?job.meta.topic:'')}}
+
+/* ---------- التسجيل المباشر ---------- */
+let REC=null;
+async function startRec(){
+ const meta=curMeta();
+ if(!navigator.mediaDevices||!window.MediaRecorder){alert('المتصفح لا يدعم التسجيل. جرّب Chrome أو Safari حديثًا، أو استخدم «رفع تسجيل».');return}
+ let stream;
+ try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:true,autoGainControl:false,channelCount:1}})}
+ catch(e){alert('لم يُسمح باستخدام المايكروفون. اسمح للموقع بالوصول إلى المايكروفون من إعدادات المتصفح ثم حاول مجددًا.');return}
+ const mime=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus'].find(t=>MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t))||'';
+ const mr=new MediaRecorder(stream,mime?{mimeType:mime,audioBitsPerSecond:64000}:undefined);
+ const AC=window.AudioContext||window.webkitAudioContext,ac=new AC(),src=ac.createMediaStreamSource(stream),an=ac.createAnalyser();an.fftSize=1024;src.connect(an);
+ const chunks=[];
+ REC={stream,mr,ac,an,chunks,t0:Date.now(),acc:0,paused:false,meta,lv:[],quietSec:0};
+ mr.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+ mr.start(1000);
+ try{REC.wake=await navigator.wakeLock.request('screen')}catch(e){}
+ view='rec';render();loopViz();
+}
+function recElapsed(){if(!REC)return 0;return REC.acc+(REC.paused?0:(Date.now()-REC.t0)/1000)}
+function renderRec(){
+ $('#app').innerHTML=`<section class="card">
+  <div class="rec-state" id="rs"><span class="rec-dot"></span>جارٍ التسجيل… تحدّث بشكل طبيعي</div>
+  <div class="rec-timer" id="rt">0:00</div>
+  <canvas class="viz" id="viz"></canvas>
+  <div class="row center">
+   <button class="btn ghost" id="bPause">إيقاف مؤقت</button>
+   <button class="btn" id="bStop">إنهاء وتقييم</button>
+  </div>
+  <div class="row center" style="margin-top:10px"><button class="btn ghost small" id="bCancel" style="padding:5px 14px">إلغاء</button></div>
+  <div class="hint" id="rh">ابدأ بافتتاح واضح، ونوّع نبرتك، واختم بخلاصة. الحد الأقصى ${toAr(MAX_MIN)} دقيقة.</div>
+ </section>`;
+ $('#bPause').onclick=()=>{if(!REC)return;if(REC.paused){REC.mr.resume();REC.t0=Date.now();REC.paused=false;$('#bPause').textContent='إيقاف مؤقت';$('#rs').innerHTML='<span class="rec-dot"></span>جارٍ التسجيل…'}else{REC.mr.pause();REC.acc+=(Date.now()-REC.t0)/1000;REC.paused=true;$('#bPause').textContent='استئناف';$('#rs').textContent='متوقف مؤقتًا'}};
+ $('#bStop').onclick=()=>stopRec(true);
+ $('#bCancel').onclick=()=>{if(confirm('إلغاء التسجيل الحالي؟'))stopRec(false)};
+}
+function loopViz(){
+ if(!REC||view!=='rec')return;
+ const cv=$('#viz');if(cv){
+  const dpr=window.devicePixelRatio||1,W=cv.clientWidth,H=cv.clientHeight;if(cv.width!==W*dpr){cv.width=W*dpr;cv.height=H*dpr}
+  const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,W,H);
+  const d=new Float32Array(REC.an.fftSize);REC.an.getFloatTimeDomainData(d);let s=0;for(const v of d)s+=v*v;const rms=Math.sqrt(s/d.length);
+  if(!REC.paused){REC.lv.push(rms);if(REC.lv.length>120)REC.lv.shift()}
+  const n=60,bw=W/n,col=getComputedStyle(document.documentElement).getPropertyValue('--acc').trim()||'#0B4D3A';
+  for(let i=0;i<n;i++){const v=REC.lv[REC.lv.length-n+i]||0;const h=Math.max(3,Math.min(H,Math.sqrt(v)*H*2.6));x.fillStyle=col;x.globalAlpha=.35+.65*(i/n);const r=Math.min(bw*.35,4);x.beginPath();x.roundRect?x.roundRect(W-(i+1)*bw+bw*.2,(H-h)/2,bw*.6,h,r):x.rect(W-(i+1)*bw+bw*.2,(H-h)/2,bw*.6,h);x.fill()}
+  x.globalAlpha=1;
+  const el=recElapsed();$('#rt').textContent=fmtDur(el);
+  // تنبيه إن كان الصوت منخفضًا جدًا
+  const recent=REC.lv.slice(-60),mx=Math.max(0,...recent);
+  const rh=$('#rh');if(rh&&el>4&&!REC.paused){if(mx<0.012)rh.textContent='🔈 الصوت منخفض جدًا — اقترب من المايكروفون أو ارفع صوتك.';else if(el>MAX_MIN*60-60)rh.textContent='⏳ اقتربت من الحد الأقصى ('+toAr(MAX_MIN)+' دقيقة).';}
+  if(el>=MAX_MIN*60){stopRec(true);return}
+ }
+ requestAnimationFrame(loopViz);
+}
+function stopRec(go){
+ const R=REC;if(!R)return;REC=null;
+ const dur=R.acc+(R.paused?0:(Date.now()-R.t0)/1000);
+ R.mr.onstop=()=>{R.stream.getTracks().forEach(t=>t.stop());try{R.ac.close()}catch(e){}try{R.wake&&R.wake.release()}catch(e){}
+  if(!go){view='home';render();return}
+  if(dur<MIN_SEC){alert('التسجيل قصير جدًا. تحدّث '+toAr(MIN_SEC)+' ثوانٍ على الأقل.');view='home';render();return}
+  const blob=new Blob(R.chunks,{type:R.mr.mimeType||'audio/webm'});
+  runJob(blob,R.meta,'تسجيل مباشر')};
+ try{R.mr.stop()}catch(e){R.mr.onstop()}
+}
+
+/* ---------- رفع ملف ---------- */
+$('#fileIn').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+ if(f.size>300*1024*1024){alert('الملف كبير جدًا (أكثر من 300 ميجابايت). اقتطع الجزء المطلوب أو ارفع ملفًا صوتيًا بدل الفيديو.');return}
+ runJob(f,curMeta(),f.name)};
+
+/* ---------- المعالجة ---------- */
+const STEPS=['قراءة الصوت وتجهيزه','تحليل النبرة والوقفات ومستوى الصوت','ضغط التسجيل وإرساله','الاستماع والتقييم بالذكاء الاصطناعي'];
+let PROC={step:0,prog:0,err:'',note:''};
+function renderProc(){
+ $('#app').innerHTML=`<section class="card">
+  <h2>جارٍ تقييم الإلقاء…</h2>
+  <ul class="steps">${STEPS.map((s,i)=>`<li class="${i<PROC.step?'done':i===PROC.step&&!PROC.err?'on':''}"><span class="ic">${i<PROC.step?'✓':''}</span>${s}</li>`).join('')}</ul>
+  <div class="bar"><i id="pb" style="width:${Math.round(PROC.prog*100)}%"></i></div>
+  <p class="muted small" id="pn">${esc(PROC.note)}</p>
+  ${PROC.err?`<div class="err">${esc(PROC.err)}</div><div class="row" style="margin-top:12px">${job&&job.b64?'<button class="btn" id="bRetry">إعادة المحاولة</button>':''}<button class="btn ghost" id="bBack">العودة للرئيسية</button></div>`:''}
+ </section>`;
+ const r=$('#bRetry');if(r)r.onclick=()=>runAI();
+ const b=$('#bBack');if(b)b.onclick=()=>{view='home';render()};
+}
+function setStep(i,prog,note){PROC.step=i;PROC.prog=prog;if(note!=null)PROC.note=note;if(view==='proc')renderProc()}
+function setProg(p){PROC.prog=p;const pb=$('#pb');if(pb)pb.style.width=Math.round(p*100)+'%'}
+
+async function runJob(blob,meta,srcName){
+ job={meta,srcName,audioURL:URL.createObjectURL(blob)};
+ PROC={step:0,prog:.03,err:'',note:''};view='proc';render();
+ try{
+  const buf=await blob.arrayBuffer();
+  let pcm;try{pcm=await decodeAudio(buf)}catch(e){throw new Error('تعذّرت قراءة الملف الصوتي. جرّب صيغة أخرى مثل MP3 أو M4A.')}
+  const totalSec=pcm.length/16000;
+  if(totalSec>MAX_MIN*60+30)throw new Error(`مدة التسجيل ${durWords(totalSec)}، والحد الأقصى ${toAr(MAX_MIN)} دقيقة. اقتطع الجزء الذي تريد تقييمه.`);
+  setStep(1,.15,'المدة: '+durWords(totalSec));await new Promise(r=>setTimeout(r,30));
+  const st=analyze(pcm);
+  if(st.empty||st.speech<3)throw new Error('لم أسمع كلامًا واضحًا في التسجيل. تأكد من أن المايكروفون يعمل وأن الصوت مسموع.');
+  if(st.span<MIN_SEC)throw new Error('الكلام قصير جدًا للتقييم. تحدّث '+toAr(MIN_SEC)+' ثوانٍ على الأقل.');
+  job.st=st;
+  setStep(2,.3,'');
+  const clip=trimPCM(pcm,st);pcm=null;
+  const kbps=st.span<=600?48:st.span<=2400?32:24;
+  const mp3=await encodeMP3(clip,kbps,p=>setProg(.3+p*.3));
+  job.b64=await blobToB64(mp3);job.mime='audio/mpeg';
+  await runAI();
+ }catch(e){console.error(e);PROC.err=e.message||'حدث خطأ غير متوقع.';renderProc()}
+}
+async function runAI(){
+ const st=job.st;PROC.err='';
+ const est=Math.round(25+st.span/60*4);
+ setStep(3,.62,`يستمع الذكاء الاصطناعي للتسجيل كاملًا… قد يستغرق ذلك قرابة ${est<60?toAr(est)+' ثانية':toAr(Math.ceil(est/60))+' دقائق'}.`);
+ const t0=Date.now(),tick=setInterval(()=>{const p=Math.min(.97,.62+.35*(1-Math.exp(-(Date.now()-t0)/1000/est)));setProg(p)},400);
+ try{
+  let ai;
+  try{ai=await aiEvaluate(buildPrompt(job.meta,st),job.b64,job.mime,Math.max(120000,est*4000))}
+  catch(e){const m=String(e&&(e.message||e.code)||e);
+   if(/timeout/i.test(m))throw new Error('استغرق التقييم وقتًا أطول من المتوقع. اضغط «إعادة المحاولة».');
+   if(/quota|429|resource.?exhausted/i.test(m))throw new Error('الخدمة مشغولة حاليًا (تجاوز الحد المسموح). انتظر دقيقة ثم أعد المحاولة.');
+   if(/too large|size|payload|413/i.test(m))throw new Error('التسجيل كبير جدًا على خدمة التقييم. اقتطع جزءًا أقصر.');
+   if(/app.?check|permission|403|401|unauthenticated/i.test(m))throw new Error('تعذّر الاتصال بخدمة التقييم (التحقق من الموقع). افتح الصفحة من رابطها الرسمي وأعد المحاولة.');
+   if(/fetch|network|Failed to load|import/i.test(m))throw new Error('تعذّر الاتصال بالإنترنت أو بخدمة التقييم. تحقق من الاتصال وأعد المحاولة.');
+   throw new Error(m.startsWith('افتح')?m:'تعذّر الحصول على التقييم: '+m.slice(0,140))}
+  clearInterval(tick);
+  if(!ai||ai.valid===false){PROC.err='لم يتمكن المقيّم من تقييم التسجيل: '+(aStr(ai&&ai.invalid_reason)||'لا يوجد كلام عربي واضح.');renderProc();return}
+  const res=finalize(ai,st,job.meta);
+  store.hist.unshift(res);store.hist=store.hist.slice(0,40);save();
+  job.result=res;view='result';render();
+ }catch(e){clearInterval(tick);PROC.err=e.message;renderProc()}
+}
+function finalize(ai,st,meta){
+ const c={};let total=0;
+ for(const [k,,w] of CRIT){const o=(ai.criteria||{})[k]||{};let s=Number(o.score);if(!isFinite(s))s=0;
+  if(s>w)s=s<=10?s/10*w:s/100*w; // إن أعطى النموذج الدرجة من 10 أو من 100
+  s=clamp(Math.round(s*2)/2,0,w);c[k]={score:s,comment:aStr(o.comment)};total+=s}
+ const wc=Number(ai.word_count)||0;
+ return {id:Date.now(),at:new Date().toISOString(),meta,name:meta.name,st,total:Math.round(total),crit:c,
+  wpm:wc&&st.span?Math.round(wc/(st.span/60)):0,
+  ai:{speech_type:aStr(ai.speech_type),register:aStr(ai.register),topic:aStr(ai.topic),summary:aStr(ai.summary),transcript:aStr(ai.transcript),word_count:wc,verdict:aStr(ai.verdict),
+   strengths:arr(ai.strengths).map(aStr).filter(Boolean),
+   improvements:arr(ai.improvements).filter(x=>x&&typeof x==='object').map(x=>({point:aStr(x.point),example:aStr(x.example),suggestion:aStr(x.suggestion)})).filter(x=>x.point),
+   language_notes:arr(ai.language_notes).filter(x=>x&&typeof x==='object').map(x=>({said:aStr(x.said),better:aStr(x.better),why:aStr(x.why)})).filter(x=>x.said||x.better),
+   factual_notes:arr(ai.factual_notes).filter(x=>x&&typeof x==='object').map(x=>({claim:aStr(x.claim),note:aStr(x.note)})).filter(x=>x.note),
+   fillers:arr(ai.fillers).filter(x=>x&&aStr(x.word)).map(x=>({word:aStr(x.word),count:Math.max(0,Math.round(Number(x.count)||0))})).sort((a,b)=>b.count-a.count).slice(0,8),
+   best_quote:aStr(ai.best_quote),better_opening:aStr(ai.better_opening),better_closing:aStr(ai.better_closing),
+   tips:arr(ai.tips).map(aStr).filter(Boolean)}}}
+
+/* ---------- النتيجة ---------- */
+function statLabel(v,arr){for(const [lim,txt,col] of arr)if(v<lim)return `<em style="color:${col}">${txt}</em>`;return ''}
+function renderResult(){
+ const r=job.result,a=r.ai,st=r.st,[lv,lc,lbg]=level(r.total),C=2*Math.PI*70,off=C*(1-r.total/100);
+ const wpmL=r.wpm?statLabel(r.wpm,[[80,'بطيئة','#C2410C'],[100,'هادئة','#A16207'],[145,'مريحة ومناسبة','#15803D'],[170,'سريعة قليلًا','#A16207'],[1e9,'سريعة جدًا','#C2410C']]):'';
+ const pitL=st.pitchSt?statLabel(st.pitchSt,[[1.8,'رتيبة نسبيًا','#C2410C'],[3,'متوسطة التنوّع','#A16207'],[99,'حيوية ومتنوعة','#15803D']]):'';
+ const ldL=statLabel(st.loudStd,[[3.5,'ثابت قليل التنويع','#A16207'],[9,'متوازن','#15803D'],[99,'متذبذب','#C2410C']]);
+ const ppm=st.longPauses/(st.span/60);
+ const lpL=statLabel(ppm,[[0.6,'قليلة','#15803D'],[1.5,'متوسطة','#A16207'],[99,'كثيرة','#C2410C']]);
+ $('#app').innerHTML=`
+ <section class="card">
+  <div class="score-wrap">
+   <div class="gauge"><svg viewBox="0 0 160 160"><circle cx="80" cy="80" r="70" fill="none" stroke="var(--line)" stroke-width="14"/><circle id="garc" cx="80" cy="80" r="70" fill="none" stroke="${lc}" stroke-width="14" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C}" style="transition:stroke-dashoffset 1.2s ease"/></svg>
+    <div class="num"><b id="gnum" style="color:${lc}">٠</b><span>من ١٠٠</span></div></div>
+   <div class="score-info">
+    <span class="level" style="background:${lbg};color:${lc}">${lv}</span>
+    ${r.name?`<div><b>${esc(r.name)}</b></div>`:''}
+    <p style="margin:4px 0">${esc(a.verdict)}</p>
+    <div class="meta"><span>${esc(r.meta.kind)}</span><span>⏱ ${durWords(st.span)}</span>${a.register?`<span>${esc(a.register)}</span>`:''}${a.word_count?`<span>≈ ${toAr(a.word_count)} كلمة</span>`:''}</div>
+   </div>
+  </div>
+  ${job.audioURL&&!job.fromHist?`<audio controls src="${job.audioURL}" class="noprint"></audio>`:''}
+ </section>
+ ${a.topic||a.summary?`<section class="card"><h2>المضمون</h2>${a.topic?`<p style="margin:0 0 6px"><b>الموضوع:</b> ${esc(a.topic)}</p>`:''}${a.summary?`<p style="margin:0">${esc(a.summary)}</p>`:''}
+  ${a.transcript?`<details class="tr" style="margin-top:10px"><summary>النص المفرّغ</summary><div class="trtext">${esc(a.transcript)}</div></details>`:''}</section>`:''}
+ <section class="card"><h2>تفصيل الدرجة</h2>
+  ${CRIT.map(([k,lab,w])=>{const o=r.crit[k],p=o.score/w;return `<div class="crit"><div class="crit-h"><span>${lab}</span><b style="color:${pctColor(p)}">${toAr(o.score)} / ${toAr(w)}</b></div><div class="bar"><i style="width:${p*100}%;background:${pctColor(p)}"></i></div>${o.comment?`<p>${esc(o.comment)}</p>`:''}</div>`}).join('')}
+ </section>
+ <section class="card"><h2>قياسات الصوت والإلقاء</h2>
+  <div class="stats">
+   ${r.wpm?`<div class="stat"><small>سرعة الكلام</small><b>${toAr(r.wpm)} <span class="small">كلمة/دقيقة</span></b>${wpmL}</div>`:''}
+   ${st.pitchSt?`<div class="stat"><small>تنوّع نبرة الصوت</small><b>${toAr(st.pitchSt.toFixed(1))} <span class="small">نصف نغمة</span></b>${pitL}</div>`:''}
+   <div class="stat"><small>تنويع ارتفاع الصوت</small><b>${toAr(st.loudStd.toFixed(1))} <span class="small">ديسبل</span></b>${ldL}</div>
+   <div class="stat"><small>زمن الكلام الفعلي</small><b>${toAr(Math.round(st.speakRatio*100))}٪</b><em class="muted">والباقي وقفات</em></div>
+   <div class="stat"><small>الوقفات الطويلة (+٢ ث)</small><b>${toAr(st.longPauses)}</b>${lpL}</div>
+  </div>
+  ${st.quiet?'<p class="small" style="color:var(--warn);margin:10px 0 0">⚠️ مستوى التسجيل منخفض؛ قد يقل ذلك من دقة تقييم النبرة.</p>':''}
+ </section>
+ ${a.best_quote?`<section class="card"><h2>أجمل ما قلت</h2><p class="quote">${esc(a.best_quote)}</p></section>`:''}
+ ${a.strengths.length?`<section class="card"><h2>نقاط القوة</h2><ul class="list">${a.strengths.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></section>`:''}
+ ${a.improvements.length?`<section class="card"><h2>ما يحتاج إلى تطوير</h2>${a.improvements.map(x=>`<div class="imp"><b>${esc(x.point)}</b>${x.example?`<div class="ex">قلت: «${esc(x.example)}»</div>`:''}${x.suggestion?`<div class="sg">✦ ${esc(x.suggestion)}</div>`:''}</div>`).join('')}</section>`:''}
+ ${a.fillers.length?`<section class="card"><h2>كلمات الحشو والتكرار</h2><div>${a.fillers.map(f=>`<span class="fill">«${esc(f.word)}»${f.count?` × ${toAr(f.count)}`:''}</span>`).join('')}</div></section>`:''}
+ ${a.language_notes.length?`<section class="card"><h2>ملاحظات لغوية</h2><table class="ln"><thead><tr><th>قلت</th><th>الأفضل</th><th>السبب</th></tr></thead><tbody>${a.language_notes.map(n=>`<tr><td class="said">${esc(n.said)}</td><td class="better">${esc(n.better)}</td><td class="muted">${esc(n.why)}</td></tr>`).join('')}</tbody></table></section>`:''}
+ ${a.factual_notes.length?`<section class="card"><h2>ملاحظات على صحة المعلومات</h2>${a.factual_notes.map(n=>`<div class="imp" style="border-color:var(--bad)">${n.claim?`<div class="ex">«${esc(n.claim)}»</div>`:''}<div class="sg">${esc(n.note)}</div></div>`).join('')}</section>`:''}
+ ${a.better_opening||a.better_closing?`<section class="card"><h2>صياغة مقترحة</h2>${a.better_opening?`<h3>افتتاح أقوى</h3><p class="quote" style="margin-bottom:12px">${esc(a.better_opening)}</p>`:''}${a.better_closing?`<h3>ختام أقوى</h3><p class="quote">${esc(a.better_closing)}</p>`:''}</section>`:''}
+ ${a.tips.length?`<section class="card"><h2>تمارين للمرة القادمة</h2><ul class="list">${a.tips.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></section>`:''}
+ <div class="row center noprint" style="margin:6px 0 4px">
+  <button class="btn" id="bNew">${ICON.mic.replace('<svg','<svg width="20" height="20"')}تقييم جديد</button>
+  <button class="btn ghost" id="bPrint">طباعة / حفظ PDF</button>
+  <button class="btn ghost" id="bShare">مشاركة النتيجة</button>
+ </div>
+ <p class="muted small" style="text-align:center">التقييم آلي بالذكاء الاصطناعي للاسترشاد والتدريب، وقد يختلف قليلًا بين محاولة وأخرى.</p>`;
+ requestAnimationFrame(()=>{setTimeout(()=>{const g=$('#garc');if(g)g.style.strokeDashoffset=off;
+  const t0=performance.now(),gn=$('#gnum');(function an(t){const p=Math.min(1,(t-t0)/1200);gn.textContent=toAr(Math.round(r.total*(1-Math.pow(1-p,3))));if(p<1)requestAnimationFrame(an)})(t0)},60)});
+ $('#bNew').onclick=()=>{view='home';render()};
+ $('#bPrint').onclick=()=>{document.querySelectorAll('details.tr').forEach(d=>d.open=true);window.print()};
+ $('#bShare').onclick=async()=>{
+  const txt=`🎤 نتيجتي في «بيان» لتقييم الإلقاء: ${r.total}/100 (${lv})\n`+CRIT.map(([k,l,w])=>`• ${l}: ${r.crit[k].score}/${w}`).join('\n')+`\n${location.href}`;
+  try{if(navigator.share){await navigator.share({title:'نتيجة بيان',text:txt});return}}catch(e){return}
+  try{await navigator.clipboard.writeText(txt);alert('نُسخت النتيجة، يمكنك لصقها في أي محادثة.')}catch(e){prompt('انسخ النتيجة:',txt)}};
+}
+
+/* =================== تشغيل =================== */
+window.addEventListener('beforeunload',e=>{if(REC||view==='proc'&&!PROC.err){e.preventDefault();e.returnValue=''}});
+if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
+render();
+</script>
+</body>
+</html>
