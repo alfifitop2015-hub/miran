@@ -1776,7 +1776,7 @@ const gnotes = raw => GNOTES.filter(([r]) => r.test(raw)).map(x => x[1]);
    Firebase AI Logic (Gemini) على مشروع مِران نفسه. إذا لم يكن مفعّلاً أو تعذّر الوصول إليه،
    يرجع التطبيق إلى المطابقة المحلية بالكلمات المرتبطة بالسؤال. */
 const AI_SDK = 'https://www.gstatic.com/firebasejs/12.19.0/';
-const AI_MODELS = ['gemini-3.8-flash', 'gemini-flash-latest', 'gemini-2.5-flash'];
+const AI_MODELS = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-flash-latest', 'gemini-3.5-flash-lite'];
 const APPCHECK_SITE_KEY = '6LfGiOstAAAAAESfhLqvBOgqQsv6KE9K5QXQl-CE';   // مفتاح الموقع المسجّل في App Check (Fraud Defense)
 let aiPromise = null, aiDown = false, aiFails = 0, aiModelIdx = 0, AIOK = false, aiThink = true;
 const str = v => typeof v === 'string' ? v.trim() : '';
@@ -1810,6 +1810,7 @@ async function aiAsk(prompt){
       const m = String((e && (e.message || e.code)) || e);
       if (aiThink && /thinking/i.test(m)){ aiThink = false; continue; }   // النموذج لا يقبل إعداد التفكير: نعيد بدونه
       if (/not.?found|404|unsupported|is not supported/i.test(m)){ aiModelIdx++; continue; }
+      if (/quota|429|resource.?exhausted/i.test(m) && aiModelIdx < AI_MODELS.length - 1){ aiModelIdx++; continue; }   // نموذج مزدحم: ننتقل للتالي
       if (/api.?not.?enabled|permission|403|401|app.?check|unauthenticated|billing|quota/i.test(m) || ++aiFails >= 2) aiDown = true;
       return null;
     }

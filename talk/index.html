@@ -1457,7 +1457,7 @@ function gnotes(raw){const t=tnorm(raw);return GNOTES.filter(([r])=>r.test(t)).m
    تطبيق Firebase مستقل باسم miran-ai على مشروع مِران نفسه، محمي بـ App Check.
    إذا تعذّر الوصول للذكاء الاصطناعي يرجع التطبيق إلى المطابقة المحلية. */
 const AI_SDK='https://www.gstatic.com/firebasejs/12.19.0/';
-const AI_MODELS=['gemini-3.8-flash','gemini-flash-latest','gemini-2.5-flash'];
+const AI_MODELS=['gemini-3.8-flash','gemini-3.6-flash','gemini-3.5-flash','gemini-flash-latest','gemini-3.5-flash-lite'];
 const APPCHECK_SITE_KEY='6LfGiOstAAAAAESfhLqvBOgqQsv6KE9K5QXQl-CE';
 let aiPromise=null,aiDown=false,aiFails=0,aiModelIdx=0,AIOK=false,aiNoThink=true;
 const aStr=v=>typeof v==='string'?v.trim():'';
@@ -1468,12 +1468,13 @@ function aiInit(){if(!FB||location.protocol==='file:'){aiDown=true;return Promis
   return {ai:AI.getAI(app,{backend:new AI.GoogleAIBackend()}),getGenerativeModel:AI.getGenerativeModel}})().catch(()=>{aiDown=true;return null});
  return aiPromise}
 async function aiAsk(prompt,opt){opt=opt||{};if(aiDown)return null;const k=await aiInit();if(!k)return null;
- while(aiModelIdx<AI_MODELS.length){try{const model=k.getGenerativeModel(k.ai,{model:AI_MODELS[aiModelIdx],generationConfig:{responseMimeType:'application/json',temperature:opt.temp??0.2,maxOutputTokens:opt.max||400,...(aiNoThink?{thinkingConfig:{thinkingBudget:0}}:{})}});
+ while(aiModelIdx<AI_MODELS.length){try{const model=k.getGenerativeModel(k.ai,{model:AI_MODELS[aiModelIdx],generationConfig:{responseMimeType:'application/json',temperature:opt.temp??0.2,maxOutputTokens:opt.max||400,...(aiNoThink?{thinkingConfig:/^gemini-2\./.test(AI_MODELS[aiModelIdx])?{thinkingBudget:0}:{thinkingLevel:'MINIMAL'}}:{})}});
   const res=await Promise.race([model.generateContent(prompt),new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),opt.timeout||9000))]);
   const out=JSON.parse(res.response.text());aiFails=0;AIOK=true;return out&&typeof out==='object'?out:null}
  catch(e){const m=String((e&&(e.message||e.code))||e);
-  if(aiNoThink&&/thinking|budget|invalid.?argument|400/i.test(m)){aiNoThink=false;continue}
+  if(aiNoThink&&/thinking|budget|level|invalid.?argument|400/i.test(m)){aiNoThink=false;continue}
   if(/not.?found|404|unsupported|is not supported/i.test(m)){aiModelIdx++;continue}
+  if(/quota|429|resource.?exhausted/i.test(m)&&aiModelIdx<AI_MODELS.length-1){aiModelIdx++;continue}
   if(/api.?not.?enabled|permission|403|401|app.?check|unauthenticated|billing|quota/i.test(m)||++aiFails>=2)aiDown=true;return null}}
  aiDown=true;return null}
 const aiLevel=()=>{const p=cur();return p?`The learner is a Saudi school student in ${['','grade 1','grade 2','grade 3','grade 4','grade 5','grade 6','grade 7','grade 8','grade 9','grade 10','grade 11','grade 12'][p.grade]||'school'}; keep your English simple for that level.`:''};
