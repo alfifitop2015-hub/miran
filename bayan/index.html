@@ -692,7 +692,7 @@ async function runJob(blob,meta,srcName){
 }
 /* ---------- العمل في الخلفية: حفظ المهمة واستئنافها تلقائيًا + تنبيه عند الجاهزية ---------- */
 let WAKE=null,HIDDEN=false,AIBUSY=false;
-function idb(){return new Promise((res,rej)=>{const r=indexedDB.open('bayan',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+let IDB=null;function idb(){if(IDB)return IDB;IDB=new Promise((res,rej)=>{if(!window.indexedDB){rej(new Error('noidb'));return}const r=indexedDB.open('bayan',1);r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains('kv'))r.result.createObjectStore('kv')};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);r.onblocked=()=>rej(new Error('blocked'));setTimeout(()=>rej(new Error('idb timeout')),3000)});IDB.catch(()=>{IDB=null});return IDB}
 async function kv(op,k,v){try{const db=await idb();return await new Promise((res,rej)=>{const tx=db.transaction('kv',op==='get'?'readonly':'readwrite'),os=tx.objectStore('kv');const q=op==='get'?os.get(k):op==='set'?os.put(v,k):os.delete(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}catch(e){return null}}
 const PEND_KEYS=['meta','st','fullB64','b64','mime','sampleB64','sampleSpan','sampled','sizeNote','cut','srcName'];
 async function savePending(){if(!job)return;const o={at:Date.now()};PEND_KEYS.forEach(k=>o[k]=job[k]);await kv('set','pending',o)}
@@ -1180,15 +1180,19 @@ function renderArenaResult(){
 }
 
 /* =================== تشغيل =================== */
+try{render()}catch(e){console.error(e)}
 window.addEventListener('beforeunload',e=>{if(REC||(view==='arenaRun'&&A)){e.preventDefault();e.returnValue=''}});
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 // تسخين الاتصال بخدمة التقييم مبكرًا (تحميل المكتبة ورمز التحقق) لتوفير ثوانٍ عند أول طلب
-if(location.protocol==='https:')(window.requestIdleCallback||setTimeout)(()=>aiInit().catch(()=>{}),1500);
-(async()=>{
- const pd=await kv('get','pending');
- if(pd&&pd.b64&&Date.now()-pd.at<48*3600*1000){
-  job=Object.assign({},pd);STEPS[0]='تجهيز الصوت';PROC={step:3,prog:.62,err:'',note:'↻ أكمل تقييم تسجيلك السابق من حيث توقف…'};view='proc';render();runAI();return}
- render()})();
+if(location.protocol==='https:')setTimeout(()=>{try{aiInit().catch(()=>{})}catch(e){}},1500);
+// ابحث عن تقييم محفوظ لم يكتمل (بمهلة قصيرة حتى لا تتعلق البداية)
+(async()=>{try{
+ const pd=await Promise.race([kv('get','pending'),sleep(2500).then(()=>null)]);
+ if(pd&&pd.b64&&pd.st&&Date.now()-pd.at<48*3600*1000&&view==='home'){
+  job=Object.assign({},pd);STEPS[0]='تجهيز الصوت';PROC={step:3,prog:.62,err:'',note:'↻ أكمل تقييم تسجيلك السابق من حيث توقف…'};view='proc';render();runAI()}
+ }catch(e){console.error(e);try{dropPending()}catch(_){}view='home';try{render()}catch(_){}}})();
+// حماية: إن حدث خطأ وبقيت الصفحة فارغة نعرض الرئيسية
+window.addEventListener('error',()=>{setTimeout(()=>{const a=$('#app');if(a&&!a.children.length){view='home';try{render()}catch(e){}}},50)});
 </script>
 </body>
 </html>
