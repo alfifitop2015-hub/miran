@@ -130,6 +130,43 @@ audio{width:100%;margin-top:6px}
 footer.credit{text-align:center;color:var(--muted);font-size:12.5px;padding:18px 10px 8px}
 .weights{display:grid;grid-template-columns:1fr auto;gap:2px 12px;font-size:14px}
 .weights span:nth-child(even){font-weight:700;color:var(--green)}
+
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:5px;margin-bottom:14px;box-shadow:var(--sh)}
+.tabs button{border:none;background:transparent;border-radius:12px;padding:10px 6px;font-weight:700;font-size:15.5px;color:var(--muted)}
+.tabs button[aria-pressed="true"]{background:var(--acc);color:var(--onacc)}
+.modes{display:grid;gap:8px}
+.mode{display:flex;gap:12px;align-items:flex-start;text-align:start;border:1.5px solid var(--line);background:transparent;border-radius:14px;padding:10px 12px}
+.mode .mi{font-size:26px;line-height:1.2}
+.mode b{display:block;font-size:16px}
+.mode small{display:block;color:var(--muted);font-size:13.5px;line-height:1.6}
+.mode[aria-pressed="true"]{border-color:var(--acc);background:var(--goldbg);box-shadow:inset 0 0 0 1px var(--acc)}
+.toggle{display:flex;gap:8px;align-items:center;margin-top:12px;font-weight:600;font-size:14.5px;flex-wrap:wrap}
+.toggle input{width:20px;height:20px;accent-color:var(--acc)}
+.arena-top{padding:12px 16px}
+.pill{background:var(--goldbg);color:var(--ink);border-radius:999px;padding:3px 12px;font-weight:700;font-size:13.5px;white-space:nowrap}
+.dotsbar{display:flex;gap:5px;margin-top:10px}
+.dotsbar i{flex:1;height:6px;border-radius:9px;background:var(--line)}
+.dotsbar i.d{background:var(--acc)}.dotsbar i.c{background:var(--gold)}
+.chat{max-height:42vh;overflow:auto;display:flex;flex-direction:column;gap:8px;padding:14px}
+.msg{display:flex}
+.msg span{max-width:86%;padding:8px 13px;border-radius:16px;font-size:15px;line-height:1.75}
+.msg.ai{justify-content:flex-start}
+.msg.ai span{background:var(--paper);border:1px solid var(--line);border-start-start-radius:5px}
+.msg.ai.q span{background:var(--goldbg);border-color:transparent;font-weight:600}
+.msg.me{justify-content:flex-end}
+.msg.me span{background:var(--acc);color:var(--onacc);border-start-end-radius:5px}
+.stage-c{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.qbig{font-size:17px;font-weight:600;margin:0;line-height:1.8}
+.avatar{width:74px;height:74px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#0B4D3A,#14785C);color:#fff;box-shadow:0 0 0 0 rgba(201,150,43,.5)}
+.avatar svg{width:38px;height:38px}
+.avatar.talk{animation:talk 1.2s infinite}
+.avatar.think{animation:think 1.6s ease-in-out infinite}
+@keyframes talk{0%{box-shadow:0 0 0 0 rgba(201,150,43,.55)}100%{box-shadow:0 0 0 22px rgba(201,150,43,0)}}
+@keyframes think{50%{transform:scale(.93);opacity:.8}}
+.dots{display:flex;gap:5px}.dots i{width:8px;height:8px;border-radius:50%;background:var(--acc);animation:blink 1.2s infinite}.dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}
+.prepN{font-family:var(--fd);font-size:64px;line-height:1;color:var(--gold)}
+.turn{padding:12px 0;border-top:1px solid var(--line)}.turn:first-of-type{border-top:none}
+.tq{margin:6px 0;font-weight:600;font-size:15px}
 @media (max-width:420px){.big-actions{grid-template-columns:1fr}.rec-timer{font-size:46px}}
 @media print{
   body{background:#fff;color:#000}
@@ -182,7 +219,7 @@ function pctColor(p){return p>=.85?'#15803D':p>=.7?'#4D7C0F':p>=.55?'#C9962B':p>
 
 /* =================== الحالة والتخزين =================== */
 const LS='bayan.v1';
-let store={hist:[],kind:KINDS[0],name:''};
+let store={hist:[],kind:KINDS[0],name:'',tab:'eval',amode:'interview',alevel:'mid',arounds:5,actx:'',voice:true};
 try{Object.assign(store,JSON.parse(localStorage.getItem(LS)||'{}'))}catch(e){}
 const save=()=>{try{localStorage.setItem(LS,JSON.stringify(store))}catch(e){}};
 let job=null;   // آخر تسجيل قيد المعالجة (للإعادة)
@@ -202,20 +239,20 @@ function aiInit(){
   if(APPCHECK_SITE_KEY){const AC=await import(AI_SDK+'firebase-app-check.js');const ac=AC.initializeAppCheck(app,{provider:new AC.ReCaptchaEnterpriseProvider(APPCHECK_SITE_KEY),isTokenAutoRefreshEnabled:true});AC.getToken(ac).catch(()=>{})}
   return {ai:AI.getAI(app,{backend:new AI.GoogleAIBackend()}),getGenerativeModel:AI.getGenerativeModel}})().catch(e=>{aiPromise=null;throw e});
  return aiPromise}
-// الإرسال بالبث (stream) حتى لا ينقطع الاتصال في التسجيلات الطويلة، مع مهلة كافية
-async function aiEvaluate(prompt,b64,mime,timeoutMs,span,onText){
- const k=await aiInit();let lastErr=null,think=true;
+// استدعاء عام يعيد JSON — بالبث حتى لا ينقطع الاتصال، مع مهلة كافية
+async function aiJSON(parts,o){o=o||{};
+ const k=await aiInit();let lastErr=null,think=o.budget!=null;
  for(let i=0;i<AI_MODELS.length;){
   try{
-   const gc={responseMimeType:'application/json',temperature:0.25,maxOutputTokens:12000};
-   if(think)gc.thinkingConfig={thinkingBudget:span>480?0:1024};
-   const model=k.getGenerativeModel(k.ai,{model:AI_MODELS[i],generationConfig:gc},{timeout:timeoutMs});
+   const gc={responseMimeType:'application/json',temperature:o.temp??0.25,maxOutputTokens:o.max||12000};
+   if(think)gc.thinkingConfig={thinkingBudget:o.budget};
+   const model=k.getGenerativeModel(k.ai,{model:AI_MODELS[i],generationConfig:gc},{timeout:o.timeout||120000});
    const run=(async()=>{
-    const r=await model.generateContentStream([{inlineData:{data:b64,mimeType:mime}},{text:prompt}]);
-    let t='';for await(const ch of r.stream){try{t+=ch.text()}catch(e){}onText&&onText(t.length)}
+    const r=await model.generateContentStream(parts);
+    let t='';for await(const ch of r.stream){try{t+=ch.text()}catch(e){}o.onText&&o.onText(t.length)}
     if(!t.trim()){try{t=(await r.response).text()}catch(e){}}
     return t})();
-   const t=await Promise.race([run,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),timeoutMs+20000))]);
+   const t=await Promise.race([run,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),(o.timeout||120000)+20000))]);
    return JSON.parse(String(t).trim().replace(/^```(json)?/,'').replace(/```$/,''));
   }catch(e){lastErr=e;const m=String((e&&(e.message||e.code))||e);
    if(think&&/thinking|budget|invalid.?argument/i.test(m)){think=false;continue}
@@ -223,6 +260,8 @@ async function aiEvaluate(prompt,b64,mime,timeoutMs,span,onText){
    if(/JSON|Unexpected (token|end)|Unterminated|Expected/i.test(m)&&i<AI_MODELS.length-1){i++;continue}
    break}}
  throw lastErr||new Error('ai')}
+async function aiEvaluate(prompt,b64,mime,timeoutMs,span,onText){
+ return aiJSON([{inlineData:{data:b64,mimeType:mime}},{text:prompt}],{timeout:timeoutMs,budget:span>480?0:1024,onText})}
 
 /* =================== معالجة الصوت =================== */
 async function decodeAudio(buf){
@@ -447,12 +486,22 @@ ${meta.topic?`- الموضوع أو الهدف أو الجمهور: ${meta.topic
 /* =================== الواجهة =================== */
 const ICON={
  mic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v4M8 21h8"/></svg>',
+ bot:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/><path d="M9 10h.01M15 10h.01M9.5 13c1.5 1 3.5 1 5 0"/></svg>',
  up:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>'};
-function render(){({home:renderHome,rec:renderRec,proc:renderProc,result:renderResult}[view]||renderHome)();window.scrollTo(0,0)}
+function render(){({home:renderHome,rec:renderRec,proc:renderProc,result:renderResult,arenaRun:renderArenaRun,arenaResult:renderArenaResult}[view]||renderHome)();window.scrollTo(0,0)}
 
 function renderHome(){
- const h=store.hist;
- $('#app').innerHTML=`
+ const h=store.hist,tabs=`<div class="tabs noprint"><button data-t="eval" aria-pressed="${store.tab!=='arena'}">🎙️ قيّم كلمتك</button><button data-t="arena" aria-pressed="${store.tab==='arena'}">⚔️ ساحة المواجهة</button></div>`;
+ const histHTML=h.length?`<section class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">التقييمات السابقة</h2><button class="btn ghost small noprint" id="bClr" style="padding:5px 12px">مسح السجل</button></div>
+  <div style="margin-top:8px">${h.map((r,i)=>{const [lv,c,bg]=level(r.total),dt=new Date(r.at).toLocaleDateString('ar-SA-u-ca-gregory',{day:'numeric',month:'short'});
+   return r.type==='arena'?`<button class="hist-item" data-i="${i}"><span class="sc" style="background:${bg};color:${c}">${toAr(r.total)}</span><span class="tt"><b>${r.ic} ${esc(r.name?r.name+' · ':'')}${esc(r.modeName)}</b><span class="muted small">ساحة المواجهة · ${toAr(r.turns.length)} جولات · ${dt}</span></span><span class="muted small">${lv}</span></button>`
+   :`<button class="hist-item" data-i="${i}"><span class="sc" style="background:${bg};color:${c}">${toAr(r.total)}</span><span class="tt"><b>${esc(r.name||r.ai.topic||r.meta.kind)}</b><span class="muted small">${esc(r.meta.kind)} · ${durWords(r.st.span)} · ${dt}</span></span><span class="muted small">${lv}</span></button>`}).join('')}</div></section>`:'';
+ const bindCommon=()=>{
+  document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{store.tab=b.dataset.t;save();render()});
+  const bc=$('#bClr');if(bc)bc.onclick=()=>{if(confirm('هل تريد مسح كل التقييمات السابقة؟')){store.hist=[];save();render()}};
+  document.querySelectorAll('.hist-item').forEach(b=>b.onclick=()=>{const r=store.hist[+b.dataset.i];job={result:r,fromHist:true};view=r.type==='arena'?'arenaResult':'result';render()})};
+ if(store.tab==='arena'){$('#app').innerHTML=tabs+renderArenaHome()+histHTML;bindArenaHome();bindCommon();return}
+ $('#app').innerHTML=tabs+`
  <section class="card hero">
   <h2>اسمعك… وأقيّمك من ١٠٠</h2>
   <p>سجّل كلمتك أو محاضرتك أو تعليقك مباشرة، أو ارفع تسجيلًا جاهزًا (صوت أو فيديو)، وستحصل على تقييم مفصّل في المحتوى واللغة والترابط ونبرة الصوت والإلقاء.</p>
@@ -475,14 +524,12 @@ function renderHome(){
   <h2>معايير التقييم</h2>
   <div class="weights">${CRIT.map(c=>`<span>${c[1]}</span><span>${toAr(c[2])}</span>`).join('')}<span><b>المجموع</b></span><span>١٠٠</span></div>
  </section>
- ${h.length?`<section class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">التقييمات السابقة</h2><button class="btn ghost small noprint" id="bClr" style="padding:5px 12px">مسح السجل</button></div>
-  <div style="margin-top:8px">${h.map((r,i)=>{const [lv,c,bg]=level(r.total);return `<button class="hist-item" data-i="${i}"><span class="sc" style="background:${bg};color:${c}">${toAr(r.total)}</span><span class="tt"><b>${esc(r.name||r.ai.topic||r.meta.kind)}</b><span class="muted small">${esc(r.meta.kind)} · ${durWords(r.st.span)} · ${new Date(r.at).toLocaleDateString('ar-SA-u-ca-gregory',{day:'numeric',month:'short'})}</span></span><span class="muted small">${lv}</span></button>`}).join('')}</div></section>`:''}`;
+ ${histHTML}`;
  $('#kinds').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;store.kind=b.dataset.k;save();document.querySelectorAll('#kinds .chip').forEach(x=>x.setAttribute('aria-pressed',x===b))};
  $('#nm').oninput=e=>{store.name=e.target.value.trim();save()};
  $('#bRec').onclick=()=>startRec();
  $('#bUp').onclick=()=>$('#fileIn').click();
- const bc=$('#bClr');if(bc)bc.onclick=()=>{if(confirm('هل تريد مسح كل التقييمات السابقة؟')){store.hist=[];save();render()}};
- document.querySelectorAll('.hist-item').forEach(b=>b.onclick=()=>{job={result:store.hist[+b.dataset.i],fromHist:true};view='result';render()});
+ bindCommon();
 }
 function curMeta(){const tp=$('#tp');return {kind:store.kind,name:store.name,topic:tp?tp.value.trim():(job&&job.meta?job.meta.topic:'')}}
 
@@ -722,8 +769,318 @@ function renderResult(){
   try{await navigator.clipboard.writeText(txt);alert('نُسخت النتيجة، يمكنك لصقها في أي محادثة.')}catch(e){prompt('انسخ النتيجة:',txt)}};
 }
 
+/* =================== ساحة المواجهة: محاور صوتي بالذكاء الاصطناعي =================== */
+const MODES=[
+ {id:'interview',ic:'🎤',name:'المقابلة الشخصية',desc:'مقابلة وظيفة أو قبول: أسئلة متتابعة تتعمّق في إجاباتك وتطلب الأمثلة والأدلة.',ctx:'الوظيفة أو الجهة',ph:'مثال: فني كهرباء في شركة صناعية',
+  brief:'مقابلة شخصية احترافية (وظيفة أو قبول). اسأل أسئلة مقابلات حقيقية: عرّف بنفسك، نقاط القوة والضعف، مواقف سابقة (اطلب مثالًا محددًا)، لماذا نختارك، تصرّفك في مشكلة، طموحك. تعمّق في إجاباته واطلب الدليل عند العموميات.'},
+ {id:'debate',ic:'⚔️',name:'دافع عن رأيك',desc:'أطرح قضية وأحدد موقفك منها، ثم أعارضك بحجج مضادة وعليك تفنيدها.',ctx:'مجال القضية',ph:'مثال: التعليم، التقنية، العمل',
+  brief:'مناظرة: اطرح قضية جدلية مجتمعية أو تعليمية أو تقنية أو مهنية مناسبة (ليست سياسية ولا طائفية ولا دينية خلافية)، وحدّد للمشارك موقفه (مؤيد أو معارض) صراحة. في الجولات التالية قم بدور الخصم: قدّم حجة مضادة قوية أو اعتراضًا على حجته أو مثالًا ينقضها، واطلب منه الرد.'},
+ {id:'impromptu',ic:'⚡',name:'الكلمة المرتجلة',desc:'موضوع مفاجئ، وقت قصير للتحضير، ثم كلمة قصيرة تليها أسئلة الجمهور.',ctx:'المناسبة أو الجمهور',ph:'مثال: طابور صباحي، حفل تخرج',
+  brief:'ارتجال: في السؤال الأول اطلب منه إلقاء كلمة قصيرة مرتجلة عن موضوع محدد ومفاجئ ومناسبة محددة (مثل: كلمة في حفل، طابور صباحي، اجتماع، تهنئة، تحفيز فريق). في الجولات التالية قم بدور الجمهور: اسأله سؤالًا عن كلمته، أو اطلب منه اختصارها في جملة، أو تحويلها لجمهور مختلف، أو ارتجال كلمة أخرى قصيرة جدًا.'},
+ {id:'hotseat',ic:'🔥',name:'الكرسي الساخن',desc:'أسئلة محرجة وضاغطة واعتراضات حادة لاختبار ثباتك وهدوئك.',ctx:'صفتك أو دورك',ph:'مثال: مدير مشروع تأخر تسليمه',
+  brief:'الكرسي الساخن: أنت محاور صحفي ذكي وضاغط (بأدب ودون إهانة). ضع المشارك في دور أو موقف (يحدده هو أو تقترحه أنت) واسأله أسئلة محرجة ومباشرة، شكّك في إجاباته، كرّر السؤال إن تهرّب، استخدم المقاطعة اللفظية مثل «لكن هذا لا يجيب عن سؤالي»، واطلب أرقامًا وأدلة.'},
+ {id:'comment',ic:'📰',name:'علّق على الموقف',desc:'موقف واقعي قصير، وعليك التعليق برأي واضح ثم الدفاع عنه أمام الاعتراضات.',ctx:'المجال',ph:'مثال: السلامة في بيئة العمل',
+  brief:'التعليق: اعرض موقفًا افتراضيًا واقعيًا قصيرًا (2–3 جمل، من الحياة اليومية أو العمل أو المجتمع، لا تنسبه لأشخاص أو جهات حقيقية ولا تختلق أخبارًا حقيقية) واطلب تعليقه ورأيه. في الجولات التالية: اعترض على رأيه، أو أضف معلومة جديدة تغيّر الموقف، أو اطلب حلًا عمليًا.'}];
+const LEVELS=[['calm','هادئ','محاور ودود يشجّع ويعطي فرصة'],['mid','متوسط','أسئلة متابعة جادة واعتراضات معقولة'],['hard','ضاغط','اعتراضات حادة وتشكيك ومهلة أقصر']];
+const THEMES=['العمل والمهنة','التعليم والتدريب','التقنية والذكاء الاصطناعي','الشباب والطموح','الصحة ونمط الحياة','السلامة في العمل','المسؤولية الاجتماعية','الرياضة','القراءة والمعرفة','الإعلام ووسائل التواصل','الأسرة والتربية','الاقتصاد الشخصي والادخار','البيئة والاستدامة','السفر والسياحة في المملكة','ريادة الأعمال','القيادة والعمل الجماعي','الوقت والإنتاجية','الخدمة التطوعية'];
+const ACRIT=[
+ ['argument','قوة الحجة والإقناع',20],
+ ['impromptu','الارتجال وسرعة البديهة',15],
+ ['composure','الثبات تحت الضغط والمواجهة',15],
+ ['relevance','الإجابة في صلب السؤال',10],
+ ['structure','الترابط والتنظيم',10],
+ ['language','سلامة اللغة والأسلوب',10],
+ ['voice','نبرة الصوت والثقة',10],
+ ['fluency','الطلاقة وقلة الحشو',10]];
+let A=null; // جلسة المواجهة الحالية
+
+/* ---------- صوت المحاور ---------- */
+let VOICE=null;
+function pickVoice(){try{const vs=speechSynthesis.getVoices();VOICE=vs.find(v=>/^ar[-_]SA/i.test(v.lang))||vs.find(v=>/^ar/i.test(v.lang))||null}catch(e){}}
+if(window.speechSynthesis){pickVoice();speechSynthesis.onvoiceschanged=pickVoice}
+function ttsUnlock(){try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u)}catch(e){}}
+function ttsStop(){try{speechSynthesis.cancel()}catch(e){}}
+function say(text){
+ return new Promise(res=>{
+  if(!text||!store.voice||!window.speechSynthesis){setTimeout(res,store.voice?0:400);return}
+  ttsStop();
+  const parts=String(text).split(/(?<=[.!؟?…:])\s+/).reduce((a,s)=>{if(a.length&&(a[a.length-1]+' '+s).length<180)a[a.length-1]+=' '+s;else a.push(s);return a},[]).filter(x=>x.trim());
+  let i=0,done=false;const fin=()=>{if(!done){done=true;clearTimeout(guard);res()}};
+  const guard=setTimeout(fin,String(text).length*110+4000);
+  A&&(A.ttsFin=fin);
+  const next=()=>{if(done)return;if(i>=parts.length){fin();return}
+   const u=new SpeechSynthesisUtterance(parts[i++]);u.lang=VOICE?VOICE.lang:'ar-SA';if(VOICE)u.voice=VOICE;u.rate=1;u.pitch=1;
+   u.onend=next;u.onerror=next;speechSynthesis.speak(u)};
+  next()})}
+
+/* ---------- الشاشة الرئيسية للمواجهة ---------- */
+function renderArenaHome(){
+ const m=MODES.find(x=>x.id===store.amode)||MODES[0];
+ return `
+ <section class="card hero">
+  <h2>ساحة المواجهة</h2>
+  <p>أنا المحاور: أطرح عليك سؤالًا أو قضية أو موقفًا بصوتي، وتجيب أنت بصوتك خلال وقت محدد، ثم أتابعك بأسئلة واعتراضات مبنية على كلامك. في النهاية تحصل على تقييم من ١٠٠ لقوة حجتك وارتجالك وثباتك.</p>
+ </section>
+ <section class="card">
+  <h2>اختر التحدي</h2>
+  <div class="modes" id="modes">${MODES.map(x=>`<button class="mode" aria-pressed="${x.id===m.id}" data-m="${x.id}"><span class="mi">${x.ic}</span><span><b>${x.name}</b><small>${x.desc}</small></span></button>`).join('')}</div>
+  <label class="f">مستوى الضغط</label>
+  <div class="chips" id="lvls">${LEVELS.map(l=>`<button class="chip" aria-pressed="${l[0]===store.alevel}" data-l="${l[0]}" title="${l[2]}">${l[1]}</button>`).join('')}</div>
+  <p class="muted small" style="margin:4px 0 0" id="lvlDesc">${(LEVELS.find(l=>l[0]===store.alevel)||LEVELS[1])[2]}</p>
+  <label class="f">عدد الجولات</label>
+  <div class="chips" id="rnds">${[3,5,7].map(n=>`<button class="chip" aria-pressed="${n===store.arounds}" data-r="${n}">${toAr(n)} جولات</button>`).join('')}</div>
+  <label class="f" for="actx" id="actxL">${m.ctx} <span class="muted small">(اختياري)</span></label>
+  <input type="text" id="actx" value="${esc(store.actx||'')}" placeholder="${esc(m.ph)}">
+  <label class="f" for="anm">اسم المشارك <span class="muted small">(اختياري)</span></label>
+  <input type="text" id="anm" value="${esc(store.name)}" placeholder="مثال: محمد العتيبي">
+  <label class="toggle"><input type="checkbox" id="avoice" ${store.voice?'checked':''}> صوت المحاور مسموع ${VOICE?'':'<span class="muted small">(قد لا يتوفر صوت عربي في هذا المتصفح، وستظهر الأسئلة مكتوبة)</span>'}</label>
+  <button class="btn" id="aStart" style="width:100%;margin-top:14px;padding:14px;font-size:17px">${ICON.mic.replace('<svg','<svg width="22" height="22"')}ابدأ المواجهة</button>
+  <div class="hint">🎧 استخدم سماعة إن أمكن، وتحدّث في مكان هادئ. يبدأ التسجيل تلقائيًا بعد انتهاء المحاور من السؤال، والمهلة تظهر أمامك.</div>
+ </section>`}
+function bindArenaHome(){
+ $('#modes').onclick=e=>{const b=e.target.closest('.mode');if(!b)return;store.amode=b.dataset.m;save();const m=MODES.find(x=>x.id===store.amode);
+  document.querySelectorAll('#modes .mode').forEach(x=>x.setAttribute('aria-pressed',x===b));$('#actxL').innerHTML=`${m.ctx} <span class="muted small">(اختياري)</span>`;$('#actx').placeholder=m.ph};
+ $('#lvls').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;store.alevel=b.dataset.l;save();document.querySelectorAll('#lvls .chip').forEach(x=>x.setAttribute('aria-pressed',x===b));$('#lvlDesc').textContent=LEVELS.find(l=>l[0]===store.alevel)[2]};
+ $('#rnds').onclick=e=>{const b=e.target.closest('.chip');if(!b)return;store.arounds=+b.dataset.r;save();document.querySelectorAll('#rnds .chip').forEach(x=>x.setAttribute('aria-pressed',x===b))};
+ $('#actx').oninput=e=>{store.actx=e.target.value.trim();save()};
+ $('#anm').oninput=e=>{store.name=e.target.value.trim();save()};
+ $('#avoice').onchange=e=>{store.voice=e.target.checked;save()};
+ $('#aStart').onclick=()=>arenaStart();
+}
+
+/* ---------- تشغيل الجلسة ---------- */
+const ansLimit=i=>{const base=A.mode.id==='impromptu'&&i===0?90:A.mode.id==='hotseat'?50:70;return A.level==='hard'?Math.round(base*.8):A.level==='calm'?base+15:base};
+const prepSec=i=>A.mode.id==='impromptu'&&i===0?(A.level==='hard'?10:20):A.mode.id==='debate'&&i===0?15:A.mode.id==='comment'&&i===0?10:0;
+async function arenaStart(){
+ if(!navigator.mediaDevices||!window.MediaRecorder){alert('المتصفح لا يدعم التسجيل. جرّب Chrome أو Safari حديثًا.');return}
+ ttsUnlock();
+ let stream;
+ try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:false,channelCount:1}})}
+ catch(e){alert('لم يُسمح باستخدام المايكروفون. اسمح للموقع بالوصول إلى المايكروفون ثم حاول مجددًا.');return}
+ const AC=window.AudioContext||window.webkitAudioContext,ac=new AC(),an=ac.createAnalyser();an.fftSize=1024;ac.createMediaStreamSource(stream).connect(an);
+ A={mode:MODES.find(x=>x.id===store.amode)||MODES[0],level:store.alevel,rounds:store.arounds,ctx:store.actx||'',name:store.name,theme:THEMES[Math.floor(Math.random()*THEMES.length)],
+  stream,ac,an,log:[],turns:[],i:0,phase:'thinking',msg:'المحاور يحضّر التحدي…',retries:0,t0:Date.now(),lv:[]};
+ keepAwake();view='arenaRun';render();
+ await arenaStep(arenaOpen);
+}
+async function arenaStep(fn){if(!A)return;A.err='';A.retry=fn;try{await fn()}catch(e){console.error(e);if(!A)return;const m=String(e&&(e.message||e.code)||e);A.phase='error';A.err=aiErrMsg(m);A.detail=m.slice(0,140);drawArena()}}
+function lvlTxt(){return {calm:'هادئ: كن ودودًا ومشجعًا، وأسئلة المتابعة لطيفة.',mid:'متوسط: كن جادًا ومهنيًا، وتابع بأسئلة تعمّق واعتراضات معقولة.',hard:'ضاغط: كن حادًا وصارمًا بأدب، شكّك واعترض واطلب الدليل ولا تقبل العموميات.'}[A.level]}
+function sysTxt(){return `أنت «المحاور» في تطبيق «بيان» لتدريب المتحدثين العرب على قوة المواجهة والحجة والارتجال. تتحدث بلغة عربية بيضاء واضحة قريبة من السعوديين (فصحى مبسطة مع لمسة سعودية مهذبة)، بجمل قصيرة تصلح للنطق الآلي، بلا رموز ولا تعداد ولا أقواس ولا رموز تعبيرية.
+التحدي: ${A.mode.brief}
+مستوى الضغط: ${lvlTxt()}
+عدد الجولات: ${A.rounds}. ${A.ctx?`سياق من المشارك: ${A.ctx}.`:`مجال مقترح للتنويع: ${A.theme}.`}${A.name?` اسم المشارك: ${A.name}.`:''}
+المحتوى مناسب لبيئة تعليمية وتدريبية: لا موضوعات سياسية أو طائفية أو دينية خلافية أو محرجة شخصيًا.`}
+async function arenaOpen(){
+ A.phase='thinking';A.msg='المحاور يحضّر التحدي…';drawArena();
+ const r=await aiJSON([{text:sysTxt()+`
+
+ابدأ الجلسة الآن. أعد JSON فقط:
+{"topic":"عنوان قصير للتحدي","opening":"ترحيب قصير جدًا وتوضيح التحدي في جملة أو جملتين","question":"السؤال أو القضية أو الموقف الأول بوضوح (حتى 45 كلمة)"}`}],{timeout:60000,temp:0.9,max:1200,budget:0});
+ A.topic=aStr(r.topic);const q=aStr(r.question);if(!q)throw new Error('JSON empty');
+ A.turns.push({q});A.log.push({w:'ai',t:aStr(r.opening)},{w:'ai',t:q,q:true});
+ await arenaAsk(aStr(r.opening)+' '+q);
+}
+async function arenaAsk(text){
+ if(!A||A.ended)return;A.phase='speaking';drawArena();
+ await say(text);
+ if(!A||A.phase!=='speaking')return;
+ const p=prepSec(A.i);
+ if(p&&!A.turns[A.i].prepped){A.turns[A.i].prepped=true;A.phase='prep';A.left=p;drawArena();
+  await new Promise(res=>{A.prepFin=res;const t=setInterval(()=>{if(!A||A.phase!=='prep'){clearInterval(t);res();return}A.left--;const el=$('#prepN');if(el)el.textContent=toAr(Math.max(0,A.left));if(A.left<=0){clearInterval(t);res()}},1000)});
+  if(!A)return}
+ arenaRecStart();
+}
+function arenaRecStart(){
+ const mime=['audio/webm;codecs=opus','audio/webm','audio/mp4','audio/ogg;codecs=opus'].find(t=>MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t))||'';
+ const chunks=[],mr=new MediaRecorder(A.stream,mime?{mimeType:mime,audioBitsPerSecond:64000}:undefined);
+ mr.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+ A.rec={mr,chunks,t0:Date.now(),limit:ansLimit(A.i)};A.lv=[];A.phase='rec';drawArena();
+ mr.start(1000);arenaViz();
+}
+function arenaRecStop(){
+ const R=A&&A.rec;if(!R||R.stopping)return;R.stopping=true;
+ R.mr.onstop=()=>{const blob=new Blob(R.chunks,{type:R.mr.mimeType||'audio/webm'});const dur=(Date.now()-R.t0)/1000;A.rec=null;arenaStep(()=>arenaAnswer(blob,dur,R.limit))};
+ try{R.mr.stop()}catch(e){R.mr.onstop()}
+}
+function arenaViz(){
+ if(!A||A.phase!=='rec'||!A.rec)return;
+ const R=A.rec,el=(Date.now()-R.t0)/1000,left=Math.max(0,R.limit-el);
+ const cv=$('#aviz');if(cv){const dpr=window.devicePixelRatio||1,W=cv.clientWidth,H=cv.clientHeight;if(cv.width!==W*dpr){cv.width=W*dpr;cv.height=H*dpr}
+  const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,W,H);
+  const d=new Float32Array(A.an.fftSize);A.an.getFloatTimeDomainData(d);let s=0;for(const v of d)s+=v*v;A.lv.push(Math.sqrt(s/d.length));if(A.lv.length>80)A.lv.shift();
+  const n=50,bw=W/n,col=getComputedStyle(document.documentElement).getPropertyValue('--acc').trim()||'#0B4D3A';
+  for(let i=0;i<n;i++){const v=A.lv[A.lv.length-n+i]||0,h=Math.max(3,Math.min(H,Math.sqrt(v)*H*2.6));x.fillStyle=col;x.globalAlpha=.35+.65*(i/n);x.fillRect(W-(i+1)*bw+bw*.2,(H-h)/2,bw*.6,h)}x.globalAlpha=1}
+ const tl=$('#aleft');if(tl){tl.textContent=fmtDur(Math.ceil(left));tl.style.color=left<=10?'var(--bad)':''}
+ const tb=$('#abar');if(tb){tb.style.width=(left/R.limit*100)+'%';tb.style.background=left<=10?'var(--bad)':''}
+ if(left<=0){arenaRecStop();return}
+ requestAnimationFrame(arenaViz)}
+async function arenaAnswer(blob,dur,limit){
+ A.phase='thinking';A.msg='المحاور يستمع لإجابتك…';drawArena();
+ let pcm;try{pcm=await decodeAudio(await blob.arrayBuffer())}catch(e){throw new Error('decode: تعذّرت قراءة التسجيل')}
+ const st=analyze(pcm);
+ if(st.empty||st.speech<1.2){
+  if(A.retries++<2){const t='لم أسمعك بوضوح. اقترب من المايكروفون وأجب مرة أخرى من فضلك.';A.log.push({w:'ai',t});await arenaAsk(t);return}
+  st.empty=true}
+ A.retries=0;
+ const turn=A.turns[A.i],last=A.i>=A.rounds-1;
+ turn.dur=dur;turn.limit=limit;turn.latency=st.empty?null:st.firstSec;
+ turn.st=st.empty?null:{span:st.span,speakRatio:st.speakRatio,longPauses:st.longPauses,pitchSt:st.pitchSt,loudStd:st.loudStd};
+ let b64=null;
+ if(!st.empty){const mp3=await encodeMP3(trimPCM(pcm,st),48);b64=await blobToB64(mp3)}
+ const hist=A.turns.slice(0,A.i).map((t,k)=>`الجولة ${k+1}\nالمحاور: ${t.q}\nالمشارك: ${t.a||'(لم يُجب)'}`).join('\n\n');
+ const prompt=sysTxt()+`
+
+${hist?`ما سبق من الحوار:\n${hist}\n\n`:''}الجولة الحالية ${A.i+1} من ${A.rounds}.
+سؤالك الحالي: ${turn.q}
+${st.empty?'المشارك لم يقل شيئًا مسموعًا (صمت).':`إجابة المشارك صوتية مرفقة، مدتها ${Math.round(st.span)} ثانية من مهلة ${limit} ثانية، وبدأ الكلام بعد ${st.firstSec.toFixed(1)} ثانية من بدء التسجيل.`}
+${last?'هذه آخر جولة: اجعل "reaction" تعليقًا ختاميًا قصيرًا يشكره ويخبره أن التقييم جاهز، واترك "next" فارغًا.':'اجعل "next" السؤال أو التحدي التالي مبنيًا على كلامه هو: تعمّق في نقطة ضعيفة، أو اطلب مثالًا ودليلًا، أو قدّم اعتراضًا أو حجة مضادة، أو فاجئه بزاوية جديدة؛ ونوّع بين الجولات.'}
+أعد JSON فقط:
+{"transcript":"تفريغ إجابته كما قالها بلهجته","note":"ملاحظة تقييمية مختصرة دقيقة لهذه الإجابة: قوة الحجة، الصلة بالسؤال، التهرب إن وجد، الثبات، اللغة، الأداء الصوتي","scores":{"argument":0,"relevance":0,"delivery":0},"reaction":"ردّك المنطوق على إجابته في جملة أو جملتين بحسب مستوى الضغط (لا تُكثر المديح، ولا تكشف الدرجات)","next":"السؤال التالي (حتى 40 كلمة)"}
+"scores" من 0 إلى 10.`;
+ const parts=b64?[{inlineData:{data:b64,mimeType:'audio/mpeg'}},{text:prompt}]:[{text:prompt}];
+ const r=await aiJSON(parts,{timeout:90000,temp:0.7,max:2500,budget:0});
+ if(!A||A.ended)return;
+ turn.a=st.empty?'':aStr(r.transcript)||'(إجابة غير واضحة)';turn.note=aStr(r.note);
+ const sc=r.scores||{};turn.scores={argument:clamp(+sc.argument||0,0,10),relevance:clamp(+sc.relevance||0,0,10),delivery:clamp(+sc.delivery||0,0,10)};
+ A.log.push({w:'me',t:turn.a||'(صمت)'});
+ const reaction=aStr(r.reaction),next=aStr(r.next);
+ if(reaction)A.log.push({w:'ai',t:reaction});
+ if(!last&&next){A.i++;A.turns.push({q:next});A.log.push({w:'ai',t:next,q:true});await arenaAsk(reaction+' '+next)}
+ else{A.phase='speaking';drawArena();await say(reaction);if(A)arenaStep(arenaFinal)}
+}
+async function arenaFinal(){
+ const done=A.turns.filter(t=>t.a!=null);
+ if(!done.length){arenaQuit();return}
+ A.phase='final';A.msg='المحاور يكتب تقييمك النهائي…';drawArena();ttsStop();
+ const rows=done.map((t,k)=>`الجولة ${k+1}
+السؤال: ${t.q}
+إجابة المشارك: ${t.a||'(صمت — لم يُجب)'}
+ملاحظة المحاور أثناء الجولة: ${t.note||'-'}
+درجات أولية (من 10): الحجة ${t.scores.argument}، الصلة ${t.scores.relevance}، الأداء ${t.scores.delivery}
+قياسات: بدأ الكلام بعد ${t.latency!=null?t.latency.toFixed(1)+' ث':'—'}، تكلّم ${t.st?Math.round(t.st.span)+' ث':'0'} من مهلة ${t.limit} ث، وقفات طويلة ${t.st?t.st.longPauses:'—'}، تنوّع النبرة ${t.st&&t.st.pitchSt?t.st.pitchSt.toFixed(1)+' نصف نغمة':'—'}`).join('\n\n');
+ const r=await aiJSON([{text:sysTxt()+`
+
+انتهت الجلسة. أنت الآن محكّم خبير في الخطابة والحوار والمناظرة. قيّم أداء المشارك في الجلسة كلها تقييمًا دقيقًا منصفًا غير مجامل بناءً على ما يلي:
+
+${rows}
+
+${done.length<A.rounds?`ملاحظة: أنهى المشارك الجلسة بعد ${done.length} من ${A.rounds} جولات.`:''}
+المعايير وأوزانها: قوة الحجة والإقناع (20)، الارتجال وسرعة البديهة (15)، الثبات تحت الضغط والمواجهة وعدم التهرب (15)، الإجابة في صلب السؤال (10)، الترابط والتنظيم (10)، سلامة اللغة والأسلوب — والعامية السعودية ليست خطأ (10)، نبرة الصوت والثقة (10)، الطلاقة وقلة الحشو (10).
+السلّم: 90+ متمكن جدًا، 75–89 جيد إلى ممتاز، 60–74 متوسط، أقل من ذلك ضعيف. الصمت أو التهرب يخفض الدرجات بوضوح.
+أعد JSON فقط (النصوص بالعربية):
+{"criteria":{"argument":{"score":0,"comment":""},"impromptu":{"score":0,"comment":""},"composure":{"score":0,"comment":""},"relevance":{"score":0,"comment":""},"structure":{"score":0,"comment":""},"language":{"score":0,"comment":""},"voice":{"score":0,"comment":""},"fluency":{"score":0,"comment":""}},
+"verdict":"حكم عام في جملتين",
+"strengths":["2–4 نقاط قوة محددة"],
+"improvements":[{"point":"","example":"اقتباس قصير من كلامه","suggestion":"كيف يحسّنه"}],
+"turns":[{"comment":"تعليق مختصر على كل جولة بالترتيب","score":0}],
+"best_reply":"أقوى عبارة قالها (اقتباس قصير)",
+"model":{"question":"السؤال الذي كانت إجابته الأضعف","answer":"إجابة نموذجية قوية عنه بأسلوب المشارك ولهجته (3–5 جمل)"},
+"fillers":[{"word":"","count":0}],
+"tips":["3–4 تمارين عملية لتنمية المواجهة والحجة والارتجال"]}
+"score" في turns من 10.`}],{timeout:180000,temp:0.3,max:6000,budget:1024});
+ const c={};let total=0;
+ for(const [k,,w] of ACRIT){const o=(r.criteria||{})[k]||{};let s=Number(o.score);if(!isFinite(s))s=0;if(s>w)s=s<=10?s/10*w:s/100*w;s=clamp(Math.round(s*2)/2,0,w);c[k]={score:s,comment:aStr(o.comment)};total+=s}
+ const tr=arr(r.turns);
+ const res={type:'arena',id:Date.now(),at:new Date().toISOString(),name:A.name,modeId:A.mode.id,modeName:A.mode.name,ic:A.mode.ic,level:A.level,rounds:A.rounds,topic:A.topic,total:Math.round(total),crit:c,
+  turns:done.map((t,k)=>({q:t.q,a:t.a,latency:t.latency,span:t.st?t.st.span:0,limit:t.limit,comment:aStr((tr[k]||{}).comment)||t.note,score:clamp(Math.round(Number((tr[k]||{}).score)||((t.scores.argument+t.scores.relevance+t.scores.delivery)/3)),0,10)})),
+  verdict:aStr(r.verdict),strengths:arr(r.strengths).map(aStr).filter(Boolean),
+  improvements:arr(r.improvements).filter(x=>x&&typeof x==='object').map(x=>({point:aStr(x.point),example:aStr(x.example),suggestion:aStr(x.suggestion)})).filter(x=>x.point),
+  best:aStr(r.best_reply),model:r.model&&typeof r.model==='object'?{q:aStr(r.model.question),a:aStr(r.model.answer)}:null,
+  fillers:arr(r.fillers).filter(x=>x&&aStr(x.word)).map(x=>({word:aStr(x.word),count:Math.max(0,Math.round(Number(x.count)||0))})).filter(x=>x.count>0).sort((a,b)=>b.count-a.count).slice(0,8),
+  tips:arr(r.tips).map(aStr).filter(Boolean)};
+ store.hist.unshift(res);store.hist=store.hist.slice(0,40);save();
+ arenaClose();job={result:res};view='arenaResult';render();
+}
+function arenaClose(){if(!A)return;ttsStop();try{A.rec&&A.rec.mr.stop()}catch(e){}try{A.stream.getTracks().forEach(t=>t.stop())}catch(e){}try{A.ac.close()}catch(e){}releaseAwake();A=null}
+function arenaQuit(){arenaClose();store.tab='arena';save();view='home';render()}
+function arenaEndEarly(){
+ if(!A)return;const answered=A.turns.filter(t=>t.a!=null).length;
+ if(!answered){if(confirm('إنهاء الجلسة؟ لم تُجب عن أي سؤال بعد.'))arenaQuit();return}
+ if(!confirm(`إنهاء الجلسة الآن وتقييم ${toAr(answered)} ${answered>2?'جولات':'جولة'}؟`))return;
+ A.ended=true;ttsStop();if(A.rec){try{A.rec.mr.onstop=null;A.rec.mr.stop()}catch(e){}A.rec=null}
+ A.phase='final';arenaStep(arenaFinal)}
+
+/* ---------- واجهة الجلسة ---------- */
+function renderArenaRun(){drawArena()}
+function drawArena(){
+ if(view!=='arenaRun'||!A)return;
+ const ph=A.phase,lastQ=[...A.log].reverse().find(m=>m.q);
+ const stage={
+  thinking:`<div class="stage-c"><div class="avatar think">${ICON.bot}</div><b>${esc(A.msg)}</b><span class="dots"><i></i><i></i><i></i></span></div>`,
+  final:`<div class="stage-c"><div class="avatar think">${ICON.bot}</div><b>${esc(A.msg)}</b><span class="dots"><i></i><i></i><i></i></span></div>`,
+  speaking:`<div class="stage-c"><div class="avatar talk">${ICON.bot}</div><b>المحاور يتحدث…</b>${lastQ?`<p class="qbig">${esc(lastQ.t)}</p>`:''}<button class="btn" id="aSkip">ابدأ الإجابة الآن</button></div>`,
+  prep:`<div class="stage-c"><b>فكّر في إجابتك…</b>${lastQ?`<p class="qbig">${esc(lastQ.t)}</p>`:''}<div class="prepN" id="prepN">${toAr(A.left)}</div><button class="btn" id="aGo">أنا جاهز</button></div>`,
+  rec:`<div class="stage-c">${lastQ?`<p class="qbig">${esc(lastQ.t)}</p>`:''}<div class="rec-state"><span class="rec-dot"></span>تحدّث الآن — <span id="aleft" style="font-variant-numeric:tabular-nums;direction:ltr;display:inline-block">${fmtDur(A.rec?A.rec.limit:0)}</span></div><div class="bar" style="width:100%"><i id="abar" style="width:100%"></i></div><canvas class="viz" id="aviz" style="height:80px"></canvas><button class="btn" id="aDone">أنهيت إجابتي</button></div>`,
+  error:`<div class="stage-c"><div class="err">${esc(A.err)}</div>${A.detail?`<p class="muted" style="font-size:11.5px;direction:ltr;margin:0">${esc(A.detail)}</p>`:''}<div class="row center"><button class="btn" id="aRetry">إعادة المحاولة</button></div></div>`}[ph]||'';
+ const answered=A.turns.filter(t=>t.a!=null).length;
+ $('#app').innerHTML=`
+ <section class="card arena-top"><div class="row" style="justify-content:space-between"><div><b>${A.mode.ic} ${esc(A.mode.name)}</b><div class="muted small">${esc(A.topic||'')}</div></div><span class="pill">الجولة ${toAr(Math.min(A.i+1,A.rounds))} من ${toAr(A.rounds)}</span></div>
+  <div class="dotsbar">${Array.from({length:A.rounds},(_,k)=>`<i class="${k<answered?'d':k===A.i?'c':''}"></i>`).join('')}</div></section>
+ <section class="card chat" id="chat">${A.log.map(m=>`<div class="msg ${m.w}${m.q?' q':''}"><span>${esc(m.t)}</span></div>`).join('')||'<p class="muted small" style="text-align:center;margin:0">ستظهر المحادثة هنا</p>'}</section>
+ <section class="card stage">${stage}</section>
+ <div class="row center noprint"><button class="btn ghost small" id="aEnd" style="padding:6px 14px">${answered?'إنهاء الجلسة والتقييم':'إلغاء الجلسة'}</button></div>`;
+ const ch=$('#chat');ch.scrollTop=ch.scrollHeight;
+ const on=(id,f)=>{const b=$(id);if(b)b.onclick=f};
+ on('#aSkip',()=>{ttsStop();A.ttsFin&&A.ttsFin()});
+ on('#aGo',()=>{A.phase='rec0';A.prepFin&&A.prepFin()});
+ on('#aDone',()=>{const R=A.rec;if(R&&(Date.now()-R.t0)<1500)return;arenaRecStop()});
+ on('#aRetry',()=>arenaStep(A.retry));
+ on('#aEnd',()=>arenaEndEarly());
+ if(ph==='rec')requestAnimationFrame(arenaViz);
+ window.scrollTo(0,document.body.scrollHeight);
+}
+
+/* ---------- نتيجة المواجهة ---------- */
+function renderArenaResult(){
+ const r=job.result,[lv,lc,lbg]=level(r.total),C=2*Math.PI*70,off=C*(1-r.total/100);
+ const lvName=(LEVELS.find(l=>l[0]===r.level)||['','',''])[1];
+ $('#app').innerHTML=`
+ <section class="card">
+  <div class="score-wrap">
+   <div class="gauge"><svg viewBox="0 0 160 160"><circle cx="80" cy="80" r="70" fill="none" stroke="var(--line)" stroke-width="14"/><circle id="garc" cx="80" cy="80" r="70" fill="none" stroke="${lc}" stroke-width="14" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C}" style="transition:stroke-dashoffset 1.2s ease"/></svg>
+    <div class="num"><b id="gnum" style="color:${lc}">٠</b><span>من ١٠٠</span></div></div>
+   <div class="score-info">
+    <span class="level" style="background:${lbg};color:${lc}">${lv}</span>
+    ${r.name?`<div><b>${esc(r.name)}</b></div>`:''}
+    <p style="margin:4px 0">${esc(r.verdict)}</p>
+    <div class="meta"><span>${r.ic} ${esc(r.modeName)}</span><span>مستوى ${lvName}</span><span>${toAr(r.turns.length)} من ${toAr(r.rounds)} جولات</span>${r.topic?`<span>${esc(r.topic)}</span>`:''}</div>
+   </div>
+  </div>
+ </section>
+ <section class="card"><h2>تفصيل الدرجة</h2>
+  ${ACRIT.map(([k,lab,w])=>{const o=r.crit[k],p=o.score/w;return `<div class="crit"><div class="crit-h"><span>${lab}</span><b style="color:${pctColor(p)}">${toAr(o.score)} / ${toAr(w)}</b></div><div class="bar"><i style="width:${p*100}%;background:${pctColor(p)}"></i></div>${o.comment?`<p>${esc(o.comment)}</p>`:''}</div>`}).join('')}
+ </section>
+ <section class="card"><h2>الجولات</h2>
+  ${r.turns.map((t,k)=>`<div class="turn"><div class="crit-h"><span>الجولة ${toAr(k+1)}</span><b style="color:${pctColor(t.score/10)}">${toAr(t.score)} / ١٠</b></div>
+   <p class="tq">❓ ${esc(t.q)}</p>
+   <details class="tr"><summary>إجابتك${t.latency!=null?` · بدأت بعد ${toAr(t.latency.toFixed(1))} ث`:''} · ${toAr(Math.round(t.span))} من ${toAr(t.limit)} ث</summary><div class="trtext">${esc(t.a||'(صمت)')}</div></details>
+   ${t.comment?`<p class="muted" style="margin:6px 0 0;font-size:14.5px">${esc(t.comment)}</p>`:''}</div>`).join('')}
+ </section>
+ ${r.best?`<section class="card"><h2>أقوى ما قلت</h2><p class="quote">${esc(r.best)}</p></section>`:''}
+ ${r.strengths.length?`<section class="card"><h2>نقاط القوة</h2><ul class="list">${r.strengths.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></section>`:''}
+ ${r.improvements.length?`<section class="card"><h2>ما يحتاج إلى تطوير</h2>${r.improvements.map(x=>`<div class="imp"><b>${esc(x.point)}</b>${x.example?`<div class="ex">قلت: «${esc(x.example)}»</div>`:''}${x.suggestion?`<div class="sg">✦ ${esc(x.suggestion)}</div>`:''}</div>`).join('')}</section>`:''}
+ ${r.model&&r.model.a?`<section class="card"><h2>إجابة نموذجية</h2>${r.model.q?`<p class="tq">❓ ${esc(r.model.q)}</p>`:''}<p class="quote">${esc(r.model.a)}</p></section>`:''}
+ ${r.fillers.length?`<section class="card"><h2>كلمات الحشو والتكرار</h2><div>${r.fillers.map(f=>`<span class="fill">«${esc(f.word)}» × ${toAr(f.count)}</span>`).join('')}</div></section>`:''}
+ ${r.tips.length?`<section class="card"><h2>تمارين للمرة القادمة</h2><ul class="list">${r.tips.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></section>`:''}
+ <div class="row center noprint" style="margin:6px 0 4px">
+  <button class="btn" id="bAgain">مواجهة جديدة</button>
+  <button class="btn ghost" id="bPrint">طباعة / حفظ PDF</button>
+  <button class="btn ghost" id="bShare">مشاركة النتيجة</button>
+  <button class="btn ghost" id="bHome">الرئيسية</button>
+ </div>
+ <p class="muted small" style="text-align:center">التقييم آلي بالذكاء الاصطناعي للاسترشاد والتدريب.</p>`;
+ requestAnimationFrame(()=>{setTimeout(()=>{const g=$('#garc');if(g)g.style.strokeDashoffset=off;const t0=performance.now(),gn=$('#gnum');(function an(t){const p=Math.min(1,(t-t0)/1200);gn.textContent=toAr(Math.round(r.total*(1-Math.pow(1-p,3))));if(p<1)requestAnimationFrame(an)})(t0)},60)});
+ $('#bAgain').onclick=()=>{store.tab='arena';save();view='home';render()};
+ $('#bHome').onclick=()=>{view='home';render()};
+ $('#bPrint').onclick=()=>{document.querySelectorAll('details.tr').forEach(d=>d.open=true);window.print()};
+ $('#bShare').onclick=async()=>{
+  const txt=`⚔️ نتيجتي في «ساحة المواجهة» (${r.modeName}) على تطبيق بيان: ${r.total}/100 (${lv})\n`+ACRIT.map(([k,l,w])=>`• ${l}: ${r.crit[k].score}/${w}`).join('\n')+`\n${location.href.split('#')[0]}`;
+  try{if(navigator.share){await navigator.share({title:'نتيجة ساحة المواجهة',text:txt});return}}catch(e){return}
+  try{await navigator.clipboard.writeText(txt);alert('نُسخت النتيجة.')}catch(e){prompt('انسخ النتيجة:',txt)}};
+}
+
 /* =================== تشغيل =================== */
-window.addEventListener('beforeunload',e=>{if(REC||view==='proc'&&!PROC.err){e.preventDefault();e.returnValue=''}});
+window.addEventListener('beforeunload',e=>{if(REC||(view==='arenaRun'&&A)||view==='proc'&&!PROC.err){e.preventDefault();e.returnValue=''}});
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 render();
 </script>
