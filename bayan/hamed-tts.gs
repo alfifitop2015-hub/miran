@@ -27,8 +27,8 @@ function handle_(p) {
   if (!text) return out_({ error: 'no text' });
   const rate = ALLOWED_RATES.test(String(p.rate || '')) ? String(p.rate) : '-10%';
   const props = PropertiesService.getScriptProperties();
-  const key = props.getProperty('AZURE_KEY'), region = props.getProperty('AZURE_REGION');
-  if (!key || !region) return out_({ error: 'missing AZURE_KEY or AZURE_REGION' });
+  const key = props.getProperty('AZURE_KEY'), region = props.getProperty('AZURE_REGION') || 'uaenorth';
+  if (!key) return out_({ error: 'missing AZURE_KEY' });
 
   // تخزين مؤقت: الجملة نفسها لا تُطلب من Microsoft مرتين (يوفّر الوقت والرصيد المجاني)
   const cache = CacheService.getScriptCache();
